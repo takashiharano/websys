@@ -736,9 +736,9 @@ websys.auth.cb = function(xhr, res, req) {
 };
 
 /**
- * get user info
+ * request user info
  */
-websys.getUserInfo = function(a1, a2) {
+websys.requestUserInfo = function(a1, a2) {
   var uid = null;
   var userCb = null;
   if (typeof a1 == 'string') {
@@ -760,12 +760,12 @@ websys.getUserInfo = function(a1, a2) {
     url: websys.basePath + 'websys/api.cgi',
     method: 'POST',
     data: param,
-    cb: websys.getUserInfo.cb,
+    cb: websys.requestUserInfo.cb,
     userCb: userCb
   };
   websys.http(req);
 };
-websys.getUserInfo.cb = function(xhr, res, req) {
+websys.requestUserInfo.cb = function(xhr, res, req) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   var userinfo = null;
   if (xhr.status == 200) {
