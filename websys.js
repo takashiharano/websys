@@ -361,7 +361,12 @@ websys.cmdSession = function(arg, tbl, echo) {
   websys.http(req);
 };
 websys.cmdSession.cb = function(xhr, res) {
-  websys.onResponseReceived(xhr, res, true);
+  var status = websys.onResponseReceived(xhr, res);
+  if (status != 'OK') return;
+  res = util.fromJSON(res);
+  var info = res.body;
+  var s = '\n' + websys.buildSessinInfo(info) + '\n';
+  log(s);
 };
 
 /**
@@ -383,7 +388,42 @@ websys.cmdSessions = function(arg, tbl, echo) {
   websys.http(req);
 };
 websys.cmdSessions.cb = function(xhr, res) {
-  websys.onResponseReceived(xhr, res, true);
+  var status = websys.onResponseReceived(xhr, res);
+  if (status != 'OK') return;
+  res = util.fromJSON(res);
+  var list = res.body;
+  var s = '\n';
+  if (list instanceof Array) {
+    for (var i = 0; i < list.length; i++) {
+      info = list[i];
+      s += websys.buildSessinInfo(info) + '\n';
+    }
+  } else {
+    for (var sid  in list) {
+      info = list[sid];
+      s += websys.buildSessinInfo(info) + '\n';
+    }
+  }
+  log(s);
+};
+
+websys.buildSessinInfo = function(info) {
+  var s = '';
+  s += 'uid         : ' + info.uid + '\n';
+  s += 'sid         : ' + info.sid + '\n';
+  s += 'created_time: ' + util.getDateTimeString(info.created_time) + '\n';
+  s += 'tz          : ' + info.tz + '\n';
+  s += 'addr        : ' + info.addr + '\n';
+  s += 'host        : ' + info.host + '\n';
+  s += 'ua          : ' + info.ua + '\n';
+  s += 'is_guest    : ' + info.is_guest + '\n';
+  s += 'last_accessed:\n';
+  s += '  time      : ' + util.getDateTimeString(info.last_accessed.time) + '\n';
+  s += '  tz        : ' + info.last_accessed.tz + '\n';
+  s += '  addr      : ' + info.last_accessed.addr + '\n';
+  s += '  host      : ' + info.last_accessed.host + '\n';
+  s += '  ua        : ' + info.last_accessed.ua + '\n';
+  return s;
 };
 
 /**
@@ -898,15 +938,16 @@ websys.buildClientSig = function() {
 //-----------------------------------------------------------------------------
 websys.onResponseReceived = function(xhr, res, echo) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
+  var status = '';
   if (xhr.status == 200) {
     var json = res;
-    var res = util.fromJSON(json);
-    if (res.status == 'OK') {
+    res = util.fromJSON(json);
+    status = res.status;
+    if (status == 'OK') {
       log.res('OK');
     } else {
       log.res.err(res.status);
     }
-    var res = util.fromJSON(json);
     if (echo && res.body) {
       log.p(res.body);
     }
@@ -915,6 +956,7 @@ websys.onResponseReceived = function(xhr, res, echo) {
   } else {
     websys.log.e('ERROR: ' + xhr.status);
   }
+  return status;
 };
 
 //-----------------------------------------------------------------------------
