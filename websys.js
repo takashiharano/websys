@@ -396,12 +396,20 @@ websys.cmdSessions.cb = function(xhr, res) {
   if (list instanceof Array) {
     for (var i = 0; i < list.length; i++) {
       info = list[i];
+      if (i > 0) {
+        s+= '----------------------------------------------------------------------------\n';
+      }
       s += websys.buildSessinInfo(info) + '\n';
     }
   } else {
+    i = 0;
     for (var sid  in list) {
       info = list[sid];
+      if (i > 0) {
+        s+= '----------------------------------------------------------------------------\n';
+      }
       s += websys.buildSessinInfo(info) + '\n';
+      i++;
     }
   }
   log(s);
