@@ -960,6 +960,36 @@ websys.onResponseReceived = function(xhr, res, echo) {
 };
 
 //-----------------------------------------------------------------------------
+websys.getSessionInfo = function() {
+  return websys.sessionInfo;
+};
+
+websys.getUserInfo = function() {
+  var info = null;
+  if (websys.sessionInfo && websys.sessionInfo.userinfo) {
+    info = websys.sessionInfo.userinfo;
+  }
+  return info;
+};
+
+websys.getUserId = function() {
+  var uid = null;
+  var userInfo = websys.getUserInfo();
+  if (userInfo) {
+    name = userInfo.uid;
+  }
+  return uid;
+};
+
+websys.getUserName = function() {
+  var name = null;
+  var userInfo = websys.getUserInfo();
+  if (userInfo) {
+    name = userInfo.name;
+  }
+  return name;
+};
+
 websys.hasAttr = function(a1, a2) {
   var user = null;
   var attr = null;
