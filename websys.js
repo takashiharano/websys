@@ -272,6 +272,9 @@ websys.loginlog.cb = function(xhr, res) {
     var host = a[5];
     var ua = a[6];
     var sid = a[7];
+    var brws = util.getBrowserType(ua);
+    ua = brws.name + ' ' + brws.version;
+    sid = sid.substr(0, 7) + '..' + sid.substr(sid.length - 7, 7);
     s += time + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\n';
   }
   var r = util.alignFields(s, '\t', 2);
