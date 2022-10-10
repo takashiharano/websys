@@ -272,7 +272,7 @@ websys.loginlog.cb = function(xhr, res) {
     var host = a[5];
     var ua = a[6];
     var sid = a[7];
-    var brws = util.getBrowserType(ua);
+    var brws = util.getBrowserInfo(ua);
     ua = brws.name + ' ' + brws.version;
     sid = sid.substr(0, 7) + '..' + sid.substr(sid.length - 7, 7);
     s += time + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\n';
@@ -924,7 +924,7 @@ websys.authRedirection = function(srcUrl, extAuthUrl) {
 };
 
 websys.buildClientSig = function() {
-  var b = util.getBrowserType();
+  var b = util.getBrowserInfo();
   var brw = b.name;
   if (b.version) {
     brw += '_' + b.version;
@@ -944,6 +944,7 @@ websys.buildClientSig = function() {
   var scrn = 'W' + screen.width + 'xH' + screen.height;
   var tz = util.getLocalTZ();
   var sig = brw + '_' + scrn + '_TZ' + tz + '_' + ln;
+  return sig;
 };
 
 //-----------------------------------------------------------------------------
