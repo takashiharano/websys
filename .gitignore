@@ -1,1 +1,3 @@
 _copy_js.bat
+_ESLint.bat
+.eslintrc.json
