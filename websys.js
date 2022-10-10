@@ -25,7 +25,7 @@ websys.gencode = function(arg, tbl, echo) {
 
   var code = dbg.getNonOptVals(arg)[0];
   if (code) {
-    if (code.match(/^[A-Za-z\d_\-\.]+$/)) {
+    if (code.match(/^[A-Za-z\d_\-.]+$/)) {
       param['id'] = code;
     } else {
       dbg.printUsage(tbl.help);
@@ -53,7 +53,7 @@ websys.gencode = function(arg, tbl, echo) {
 };
 websys.gencode.cb = function(xhr, res) {
   if (xhr.status == 200) {
-    var res = util.fromJSON(res);
+    res = util.fromJSON(res);
     var status = res.status;
     if (status == 'OK') {
       var code = res.body;
@@ -107,7 +107,7 @@ websys.hello = function(arg, tbl, echo) {
 websys.hello.cb = function(xhr, res) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 200) {
-    var res = util.fromJSON(res);
+    res = util.fromJSON(res);
     if (res.status == 'OK') {
       log.res(res.body);
     } else {
@@ -274,7 +274,9 @@ websys.loginlog.cb = function(xhr, res) {
     var sid = a[7];
     var brws = util.getBrowserInfo(ua);
     ua = brws.name + ' ' + brws.version;
-    sid = sid.substr(0, 7) + '..' + sid.substr(sid.length - 7, 7);
+    if (sid.length >= 16) {
+      sid = sid.substr(0, 7) + '..' + sid.substr(sid.length - 7, 7);
+    }
     s += time + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\n';
   }
   var r = util.alignFields(s, '\t', 2);
@@ -399,18 +401,14 @@ websys.cmdSessions.cb = function(xhr, res) {
   if (list instanceof Array) {
     for (var i = 0; i < list.length; i++) {
       info = list[i];
-      if (i > 0) {
-        s+= '----------------------------------------------------------------------------\n';
-      }
+      s+= '----------------------------------------------------------------------------\n';
       s += websys.buildSessinInfo(info) + '\n';
     }
   } else {
     i = 0;
     for (var sid  in list) {
       info = list[sid];
-      if (i > 0) {
-        s+= '----------------------------------------------------------------------------\n';
-      }
+      s+= '----------------------------------------------------------------------------\n';
       s += websys.buildSessinInfo(info) + '\n';
       i++;
     }
@@ -492,7 +490,7 @@ websys.sha = function(arg, tbl, echo) {
   }
 
   if (all) {
-    var ret = {};
+    ret = {};
     for (var i = 0; i < websys.ALGORYTHMS.length; i++) {
       if (i > 0) {
         if (echo) {
@@ -563,9 +561,9 @@ websys.cmdUser.cb = function(xhr, res) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 200) {
     var json = res;
-    var res = util.fromJSON(json);
+    res = util.fromJSON(json);
     if (res.status == 'OK') {
-      var res = util.fromJSON(json);
+      res = util.fromJSON(json);
       log.res('OK');
       if (res.body) {
         log.p(res.body);
@@ -988,7 +986,7 @@ websys.getUserId = function() {
   var uid = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {
-    name = userInfo.uid;
+    uid = userInfo.uid;
   }
   return uid;
 };
