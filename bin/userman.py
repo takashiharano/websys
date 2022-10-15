@@ -121,6 +121,7 @@ def delete_user(uid):
     return False
   users.pop(uid)
   save_users(users)
+  delete_user_password(uid)
   return True
 
 # Save Users
@@ -258,3 +259,17 @@ def save_user_password(uid, pw):
 
     pw_list.append(new_data)
     save_password_list(pw_list)
+
+def delete_user_password(uid):
+    pw_list = get_password_list()
+    idx = -1
+    for i in range(len(pw_list)):
+        data = pw_list[i]
+        a = data.split('\t')
+        if a[0] == uid:
+            idx = i
+            break
+
+    if idx >= 0:
+        pw_list.pop(idx)
+        save_password_list(pw_list)
