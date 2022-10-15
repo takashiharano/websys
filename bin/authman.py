@@ -30,6 +30,7 @@ def login(uid, pw, ext_auth=False):
         status = str(e)
         if status == 'NO_SUCH_USER':
             write_log(status, '')
+            status = 'NG'
         else:
             write_log(status, uid)
         raise Exception(status)
@@ -127,15 +128,15 @@ def logout(sid=None):
 # auth
 #----------------------------------------------------------
 def auth(default=False, roles=None, allow_guest=False):
-  for i in range(3):
-      if util.file_lock(LOCK_FILE_PATH):
-          status = _auth(default=default, roles=roles, allow_guest=allow_guest)
-          util.file_unlock(LOCK_FILE_PATH)
-          if status == 'OK':
-              return True
-          return False
-      else:
-          time.sleep(1)
+    for i in range(3):
+        if util.file_lock(LOCK_FILE_PATH):
+            status = _auth(default=default, roles=roles, allow_guest=allow_guest)
+            util.file_unlock(LOCK_FILE_PATH)
+            if status == 'OK':
+                return True
+            return False
+        else:
+            time.sleep(1)
 
 def _auth(default=False, roles=None, allow_guest=False):
     session_info = sessionman.get_current_session_info()

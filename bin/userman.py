@@ -44,186 +44,188 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 # get user info
 # return None is not exist
 def get_user_info(uid, guest=True):
-  user = None
+    user = None
 
-  users = get_all_user_info()
-  if users is not None and uid in users:
-    user = users[uid]
-
-  if user is None and guest:
-    users = get_all_guest_user_info()
+    users = get_all_user_info()
     if users is not None and uid in users:
-      user = users[uid]
+        user = users[uid]
 
-  return user
+    if user is None and guest:
+        users = get_all_guest_user_info()
+        if users is not None and uid in users:
+            user = users[uid]
+
+    return user
 
 # get all user info
 def get_all_user_info():
-  users = util.load_dict(USER_LIST_FILE_PATH)
-  return users
+    users = util.load_dict(USER_LIST_FILE_PATH)
+    return users
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
 def create_user(uid, pw, name=None, attr=[], roles=[], disabled=False):
-  users = get_all_user_info()
-  if users is None:
-    users = {}
-  elif uid in users:
-    raise Exception('ALREADY_EXISTS')
+    users = get_all_user_info()
+    if users is None:
+        users = {}
+    elif uid in users:
+        raise Exception('ALREADY_EXISTS')
 
-  user = {
-    'uid': uid,
-    'name': name,
-    'attr': attr,
-    'roles': roles,
-    'disabled': disabled
-  }
+    user = {
+        'uid': uid,
+        'name': name,
+        'attr': attr,
+        'roles': roles,
+        'disabled': disabled
+    }
 
-  users[uid] = user
-  save_users(users)
-  save_user_password(uid, pw)
-  return user
+    users[uid] = user
+    save_users(users)
+    save_user_password(uid, pw)
+    return user
 
 # Modify a user
 def modify_user(uid, pw=None, name=None, attr=None, roles=None, disabled=None):
-  users = get_all_user_info()
-  if users is None:
-    users = {}
-  elif uid not in users:
-    raise Exception('NOT_EXISTS')
+    users = get_all_user_info()
+    if users is None:
+        users = {}
+    elif uid not in users:
+        raise Exception('NOT_EXISTS')
 
-  user = users[uid]
+    user = users[uid]
 
-  if name is not None:
-    user['name'] = name
+    if name is not None:
+        user['name'] = name
 
-  if attr is not None:
-    user['attr'] = attr
+    if attr is not None:
+        user['attr'] = attr
 
-  if roles is not None:
-    user['roles'] = roles
+    if roles is not None:
+        user['roles'] = roles
 
-  if disabled is not None:
-    user['disabled'] = disabled
+    if disabled is not None:
+        user['disabled'] = disabled
 
-  users[uid] = user
-  save_users(users)
+    users[uid] = user
+    save_users(users)
 
-  if pw is not None:
-    save_user_password(uid, pw)
+    if pw is not None:
+        save_user_password(uid, pw)
 
-  return user
+    return user
 
 # Delete a user
 def delete_user(uid):
-  users = get_all_user_info()
-  if users is None or uid not in users or uid == 'root':
-    return False
-  users.pop(uid)
-  save_users(users)
-  delete_user_password(uid)
-  return True
+    users = get_all_user_info()
+    if users is None or uid not in users or uid == 'root':
+        return False
+    sessionman.clear_user_sessions(uid)
+    users.pop(uid)
+    save_users(users)
+    delete_user_password(uid)
+    return True
 
 # Save Users
 def save_users(users):
-  util.save_dict(USER_LIST_FILE_PATH, users, indent=2)
+    util.save_dict(USER_LIST_FILE_PATH, users, indent=2)
 
 #------------------------------------------------------------------------------
 # Guest user
 #------------------------------------------------------------------------------
 # Get all guest user
 def get_all_guest_user_info():
-  users = util.load_dict(GUEST_USER_LIST_FILE_PATH)
-  return users
+    users = util.load_dict(GUEST_USER_LIST_FILE_PATH)
+    return users
 
 # get guest user info
 # return None is not exist
 def get_guest_user_info(uid):
-  user = None
-  users = get_all_guest_user_info()
-  if users is not None and uid in users:
-    user = users[uid]
-  return user
+    user = None
+    users = get_all_guest_user_info()
+    if users is not None and uid in users:
+        user = users[uid]
+    return user
 
 # Create a guest user
 def create_guest(uid=None, uid_len=6, valid_min=30, path=None):
-  users = get_all_user_info()
+    users = get_all_user_info()
 
-  guest_users = get_all_guest_user_info()
-  if guest_users is None:
-    guest_users = {}
+    guest_users = get_all_guest_user_info()
+    if guest_users is None:
+        guest_users = {}
 
-  if uid is None:
-    new_uid = _generate_code(uid_len)
-  else:
-    new_uid = uid
-
-  if new_uid in users or new_uid in guest_users:
     if uid is None:
-      for i in range(10):
         new_uid = _generate_code(uid_len)
-        if new_uid not in users and new_uid not in guest_users:
-          break
     else:
-      raise Exception('ALREADY_EXISTS')
+        new_uid = uid
 
-  now = util.get_timestamp()
-  expire = now + valid_min * 60
-  user = {
-    'uid': new_uid,
-    'name': 'GUEST',
-    'attr': ['guest'],
-    'roles': [],
-    'path': path,
-    'disabled': False,
-    'created': now,
-    'expire': expire
-  }
+    if new_uid in users or new_uid in guest_users:
+        if uid is None:
+            for i in range(10):
+                new_uid = _generate_code(uid_len)
+                if new_uid not in users and new_uid not in guest_users:
+                    break
+        else:
+            raise Exception('ALREADY_EXISTS')
 
-  guest_users[new_uid] = user
-  save_guest_users(guest_users)
+    now = util.get_timestamp()
+    expire = now + valid_min * 60
+    user = {
+        'uid': new_uid,
+        'name': 'GUEST',
+        'attr': ['guest'],
+        'roles': [],
+        'path': path,
+        'disabled': False,
+        'created': now,
+        'expire': expire
+    }
 
-  return new_uid
+    guest_users[new_uid] = user
+    save_guest_users(guest_users)
+
+    return new_uid
 
 def _generate_code(code_len):
-  cd = util.random_str(min=code_len, max=code_len, tbl='0123456789')
-  return cd
+    cd = util.random_str(min=code_len, max=code_len, tbl='0123456789')
+    return cd
 
 # Delete expired guest
 def delete_expired_guest():
-  users = get_all_guest_user_info()
-  if users is None:
-    return
+    users = get_all_guest_user_info()
+    if users is None:
+        return
 
-  now = util.get_timestamp()
-  new_users = {}
-  for uid in users:
-    user = users[uid]
-    if user['expire'] >= now:
-      new_users[uid] = user
+    now = util.get_timestamp()
+    new_users = {}
+    for uid in users:
+        user = users[uid]
+        if user['expire'] >= now:
+            new_users[uid] = user
 
-  save_guest_users(new_users)
+    save_guest_users(new_users)
 
 # Delete a guest user
 def delete_guest_user(uid):
-  users = get_all_guest_user_info()
-  if users is None or uid not in users:
-    return False
-  users.pop(uid)
-  save_guest_users(users)
-  return True
+    users = get_all_guest_user_info()
+    if users is None or uid not in users:
+        return False
+    sessionman.clear_user_sessions(uid)
+    users.pop(uid)
+    save_guest_users(users)
+    return True
 
 # Save Guest Users
 def save_guest_users(users):
-  util.save_dict(GUEST_USER_LIST_FILE_PATH, users, indent=2)
+    util.save_dict(GUEST_USER_LIST_FILE_PATH, users, indent=2)
 
 # Has attr
 def has_attr(user_info, attr):
-  return attr in user_info['attr']
+    return attr in user_info['attr']
 
 # Has role
 def has_role(user_info, role_name):
-  return role_name in user_info['roles']
+    return role_name in user_info['roles']
 
 #------------------------------------------------------------------------------
 # Password
