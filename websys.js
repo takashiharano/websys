@@ -586,7 +586,7 @@ websys.cmdUser.cb = function(xhr, res) {
 websys.cmdUserAdd = function(arg, tbl, echo) {
   var uid = dbg.getOptVal(arg, 'u');
   var p = dbg.getOptVal(arg, 'p');
-  var name = dbg.getOptVal(arg, 'name');
+  var name = dbg.getOptVal(arg, 'n');
   if (!uid) {
     dbg.printUsage(tbl.help);
     return;
