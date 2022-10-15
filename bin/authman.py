@@ -24,46 +24,53 @@ LOCK_FILE_PATH = config.LOCK_FILE_PATH
 #  pw: SHA-256(pw + uid)
 #----------------------------------------------------------
 def login(uid, pw, ext_auth=False):
+    try:
+        login_info = _login(uid, pw, ext_auth)
+    except Exception as e:
+        status = str(e)
+        if status == 'NO_SUCH_USER':
+            write_log(status, '')
+        else:
+            write_log(status, uid)
+        raise Exception(status)
+
+    sid = login_info['session_info']['sid']
+    write_log('OK', uid, sid)
+    return login_info
+
+def _login(uid, pw, ext_auth=False):
     user_info = userman.get_user_info(uid, guest=False)
     if user_info is None:
         try:
             return _guest_login(uid, ext_auth)
         except Exception as e:
-            write_log('ERR', uid)
             raise e
 
     if user_info['disabled']:
-        write_log('DISABLED', uid)
         raise Exception('DISABLED')
 
     user_pw = userman.get_user_password(uid)
     pw2 = util.hash(pw, ALGOTRITHM)
     if pw2 != user_pw:
-        write_log('NG', uid)
         raise Exception('NG')
 
     new_session_info = sessionman.create_and_register_session_info(uid, is_guest=False, ext_auth=ext_auth)
-    sid = new_session_info['sid']
-
     loggedin_user_info = user_info
     login_info = {
         'session_info': new_session_info,
         'user_info': loggedin_user_info
     }
-
-    write_log('OK', uid, sid)
     return login_info
 
 # guest login
 def _guest_login(uid, ext_auth=False):
     user_info = userman.get_guest_user_info(uid)
     if user_info is None:
-        raise Exception('NG')
+        raise Exception('NO_SUCH_USER')
 
     if 'expire' in user_info:
         now = util.get_timestamp()
         if user_info['expire'] < now:
-            write_log('EXPIRED', uid)
             raise Exception('EXPIRED')
 
     new_session_info = sessionman.create_and_register_session_info(uid, is_guest=True, ext_auth=ext_auth)
@@ -75,7 +82,6 @@ def _guest_login(uid, ext_auth=False):
         'user_info': user_info
     }
 
-    write_log('OK', uid, sid)
     return login_info
 
 # Write Log
