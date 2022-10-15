@@ -18,7 +18,6 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 # {
 #   "root": {
 #     "uid": "root",
-#     "pw": "xxx",
 #     "attr": ["system"],
 #     "roles": ["admin"],
 #     "disabled": false
@@ -31,7 +30,6 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 #   "123456": {
 #     "uid": "123456",
 #     "name": "GUEST",
-#     "pw": "",
 #     "attr": [
 #       "guest"
 #     ],
@@ -45,10 +43,10 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 
 # get user info
 # return None is not exist
-def get_user_info(uid, all_props=False, guest=True):
+def get_user_info(uid, guest=True):
   user = None
 
-  users = get_all_user_info(all_props)
+  users = get_all_user_info()
   if users is not None and uid in users:
     user = users[uid]
 
@@ -60,17 +58,14 @@ def get_user_info(uid, all_props=False, guest=True):
   return user
 
 # get all user info
-def get_all_user_info(all_props=False):
+def get_all_user_info():
   users = util.load_dict(USER_LIST_FILE_PATH)
-  if users is not None and not all_props:
-    for uid in users:
-      users[uid].pop('pw')
   return users
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
 def create_user(uid, pw, name=None, attr=[], roles=[], disabled=False):
-  users = get_all_user_info(all_props=True)
+  users = get_all_user_info()
   if users is None:
     users = {}
   elif uid in users:
@@ -79,7 +74,6 @@ def create_user(uid, pw, name=None, attr=[], roles=[], disabled=False):
   user = {
     'uid': uid,
     'name': name,
-    'pw': pw, 
     'attr': attr,
     'roles': roles,
     'disabled': disabled
@@ -87,19 +81,18 @@ def create_user(uid, pw, name=None, attr=[], roles=[], disabled=False):
 
   users[uid] = user
   save_users(users)
+  save_user_password(uid, pw)
   return user
 
 # Modify a user
 def modify_user(uid, pw=None, name=None, attr=None, roles=None, disabled=None):
-  users = get_all_user_info(all_props=True)
+  users = get_all_user_info()
   if users is None:
     users = {}
   elif uid not in users:
     raise Exception('NOT_EXISTS')
 
   user = users[uid]
-  if pw is not None:
-    user['pw'] = pw
 
   if name is not None:
     user['name'] = name
@@ -115,11 +108,15 @@ def modify_user(uid, pw=None, name=None, attr=None, roles=None, disabled=None):
 
   users[uid] = user
   save_users(users)
+
+  if pw is not None:
+    save_user_password(uid, pw)
+
   return user
 
 # Delete a user
 def delete_user(uid):
-  users = get_all_user_info(all_props=True)
+  users = get_all_user_info()
   if users is None or uid not in users or uid == 'root':
     return False
   users.pop(uid)
@@ -134,11 +131,8 @@ def save_users(users):
 # Guest user
 #------------------------------------------------------------------------------
 # Get all guest user
-def get_all_guest_user_info(all_props=False):
+def get_all_guest_user_info():
   users = util.load_dict(GUEST_USER_LIST_FILE_PATH)
-  if users is not None and not all_props:
-    for uid in users:
-      users[uid].pop('pw')
   return users
 
 # get guest user info
@@ -154,7 +148,7 @@ def get_guest_user_info(uid):
 def create_guest(uid=None, uid_len=6, valid_min=30, path=None):
   users = get_all_user_info()
 
-  guest_users = get_all_guest_user_info(all_props=True)
+  guest_users = get_all_guest_user_info()
   if guest_users is None:
     guest_users = {}
 
@@ -177,7 +171,6 @@ def create_guest(uid=None, uid_len=6, valid_min=30, path=None):
   user = {
     'uid': new_uid,
     'name': 'GUEST',
-    'pw': '', 
     'attr': ['guest'],
     'roles': [],
     'path': path,
@@ -197,7 +190,7 @@ def _generate_code(code_len):
 
 # Delete expired guest
 def delete_expired_guest():
-  users = get_all_guest_user_info(all_props=True)
+  users = get_all_guest_user_info()
   if users is None:
     return
 
@@ -212,7 +205,7 @@ def delete_expired_guest():
 
 # Delete a guest user
 def delete_guest_user(uid):
-  users = get_all_guest_user_info(all_props=True)
+  users = get_all_guest_user_info()
   if users is None or uid not in users:
     return False
   users.pop(uid)
@@ -230,3 +223,38 @@ def has_attr(user_info, attr):
 # Has role
 def has_role(user_info, role_name):
   return role_name in user_info['roles']
+
+#------------------------------------------------------------------------------
+# Password
+#------------------------------------------------------------------------------
+def get_password_list():
+    path = config.PASSWORD_LIST_FILE_PATH
+    pw_list = util.read_text_file_as_list(path)
+    return pw_list
+
+def save_password_list(pw_list):
+    path = config.PASSWORD_LIST_FILE_PATH
+    util.write_text_file_from_list(path, pw_list)
+
+def get_user_password(uid):
+    pw_list = get_password_list()
+    for i in range(len(pw_list)):
+        data = pw_list[i]
+        a = data.split('\t')
+        if a[0] == uid:
+            return a[1]
+    return None
+
+def save_user_password(uid, pw):
+    new_data = uid + '\t' + pw
+    pw_list = get_password_list()
+    for i in range(len(pw_list)):
+        data = pw_list[i]
+        a = data.split('\t')
+        if a[0] == uid:
+            pw_list[i] = new_data
+            save_password_list(pw_list)
+            return
+
+    pw_list.append(new_data)
+    save_password_list(pw_list)

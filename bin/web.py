@@ -129,7 +129,6 @@ def get_current_user_name():
 #----------------------------------------------------------
 # users
 #   "uid": "root",
-#   "pw": "xxx",
 #   "attr": ["system"],
 #   "role": ["admin"],
 #   "disabled": false
@@ -137,7 +136,6 @@ def get_current_user_name():
 # users_guest
 #   "uid": "123456",
 #   "name": "GUEST",
-#   "pw": "",
 #   "attr": [
 #     "guest"
 #   ],

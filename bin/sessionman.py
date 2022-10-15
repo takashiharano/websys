@@ -101,13 +101,13 @@ def get_current_user_info():
 #----------------------------------------------------------
 # get user info from session id
 #----------------------------------------------------------
-def get_user_info_from_sid(sid, all_props=False):
+def get_user_info_from_sid(sid):
   session_info = get_session_info(sid)
   if session_info is None:
     return None
 
   uid = session_info['uid']
-  user_info = userman.get_user_info(uid, all_props, guest=True)
+  user_info = userman.get_user_info(uid, guest=True)
 
   return user_info
 
