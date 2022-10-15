@@ -63,6 +63,8 @@ def get_request_param(key=None, default=None):
     return q
 
 def get_raw_request_param(key=None, default=None):
+    q = util.get_query()
+
     if key is not None:
       if q == '':
           q = None
