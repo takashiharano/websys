@@ -128,7 +128,7 @@ def logout(sid=None):
 # auth
 #----------------------------------------------------------
 def auth(default=False, roles=None, allow_guest=False):
-    for i in range(3):
+    for i in range(10):
         if util.file_lock(LOCK_FILE_PATH):
             status = _auth(default=default, roles=roles, allow_guest=allow_guest)
             util.file_unlock(LOCK_FILE_PATH)

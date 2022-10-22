@@ -294,7 +294,7 @@ def load_sessions_info():
 # save sessions info
 #----------------------------------------------------------
 def save_sessions_info(sessions):
-    for i in range(3):
+    for i in range(10):
         if util.file_lock(LOCK_FILE_PATH):
             util.save_dict(SESSION_LIST_FILE_PATH, sessions)
             util.file_unlock(LOCK_FILE_PATH)
