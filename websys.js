@@ -260,6 +260,7 @@ websys.loginlog.cb = function(xhr, res) {
   } else {
     log.e('ERROR: ' + xhr.status);
   }
+  if (res.status != 'OK') return;
   var logs = res.body;
   var s = '';
   for (var i = 0; i < logs.length; i++) {
