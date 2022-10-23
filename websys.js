@@ -275,6 +275,7 @@ websys.loginlog.cb = function(xhr, res) {
     var sid = a[7];
     var brws = util.getBrowserInfo(ua);
     ua = brws.name + ' ' + brws.version;
+    time = time.replace(/T/, ' ');
     if (sid.length >= 16) {
       sid = sid.substr(0, 7) + '..' + sid.substr(sid.length - 7, 7);
     }
