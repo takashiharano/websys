@@ -116,7 +116,8 @@ def get_current_user_name():
 # users
 #   "uid": "root",
 #   "attr": ["system"],
-#   "role": ["admin"],
+#   "admin": true,
+#   "role": ["role1"],
 #   "disabled": false
 # }
 # users_guest

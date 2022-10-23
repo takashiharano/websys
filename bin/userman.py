@@ -18,8 +18,9 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 # {
 #   "root": {
 #     "uid": "root",
+#     "admin": true,
 #     "attr": ["system"],
-#     "roles": ["admin"],
+#     "roles": ["role1"],
 #     "disabled": false
 #   },
 #   ...

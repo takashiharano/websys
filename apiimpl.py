@@ -80,7 +80,7 @@ def cmd_login():
 #----------------------------------------------------------
 def cmd_loginlog():
     status = 'OK'
-    if authman.has_role('admin'):
+    if authman.is_admiin():
         p_n = web.get_request_param('n')
         n = 10
         if p_n is not None:
@@ -147,7 +147,7 @@ def cmd_logout():
 # Logout by SID
 def logout_by_sid(current_sid, sid):
     self_logout = False
-    if not authman.has_role('admin'):
+    if not authman.is_admiin():
         current_uid = sessionman.get_current_user_id()
         target_session_info = sessionman.get_session_info(sid)
         if target_session_info is None:
@@ -170,7 +170,7 @@ def logout_by_uid(uid):
     if uid == current_uid:
         self_logout = True
     else:
-        if not authman.has_role('admin'):
+        if not authman.is_admiin():
             raise Exception('FORBIDDEN')
 
     i = sessionman.clear_user_sessions(uid)
@@ -181,7 +181,7 @@ def logout_by_uid(uid):
 
 # ALL Logout
 def all_logout(current_sid, self_logout=False):
-    if not authman.has_role('admin'):
+    if not authman.is_admiin():
         raise Exception('FORBIDDEN')
 
     sessions = sessionman.get_all_sessions_info()
@@ -225,7 +225,7 @@ def cmd_sessions():
     if all is None:
         session_list = get_session_list_from_session()
     else:
-        if authman.has_role('admin'):
+        if authman.is_admiin():
             session_list = sessionman.get_all_sessions_info()
         else:
             session_list = get_session_list_from_session()
@@ -254,7 +254,7 @@ def cmd_user():
           if uid == current_uid:
               user_info = userman.get_user_info(uid)
           else:
-              if authman.has_role('admin'):
+              if authman.is_admiin():
                   user_info = userman.get_user_info(uid)
                   if user_info is None:
                       status = 'NG'
@@ -270,7 +270,7 @@ def cmd_users():
     if not authman.auth(default=True):
         return
 
-    if authman.has_role('admin'):
+    if authman.is_admiin():
         status = 'OK'
         user_list = userman.get_all_user_info()
         guest_user_list = userman.get_all_guest_user_info()
@@ -291,7 +291,7 @@ def cmd_useradd():
         return
 
     status = 'ERROR'
-    if not authman.has_role('admin'):
+    if not authman.is_admiin():
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -340,7 +340,7 @@ def cmd_usermod():
     user_info = web.get_current_user_info()
 
     status = 'ERROR'
-    if not authman.has_role('admin'):
+    if not authman.is_admiin():
         if uid != user_info['uid']:
             web.send_result_json('FORBIDDEN', body=None)
             return
@@ -374,7 +374,7 @@ def cmd_gencode():
         return
 
     uid = None
-    if not authman.has_role('admin'):
+    if not authman.is_admiin():
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -410,7 +410,7 @@ def cmd_userdel():
         return
 
     status = 'ERROR'
-    if authman.has_role('admin'):
+    if authman.is_admiin():
         uid = web.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
@@ -448,7 +448,7 @@ def cmd_guests():
     if not authman.auth(default=True):
         return
 
-    if authman.has_role('admin'):
+    if authman.is_admiin():
         status = 'OK'
         guest_user_list = userman.get_all_guest_user_info()
 
@@ -472,7 +472,7 @@ def cmd_hello():
         if not authman.auth(default=True):
             return
 
-        if authman.has_role('admin'):
+        if authman.is_admiin():
             msg= 'Hello, ' + q
         else:
             msg = 'Hi!'

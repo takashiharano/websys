@@ -233,3 +233,17 @@ def _has_role(role_list, role_name):
         if item == role_name:
             return True
     return False
+
+#----------------------------------------------------------
+# is admin
+#----------------------------------------------------------
+def is_admiin(uid=None):
+    if uid is None:
+        uid = sessionman.get_current_user_id()
+
+    user_info = userman.get_user_info(uid)
+    if user_info is not None:
+        if 'admin' in user_info and user_info['admin']:
+            return True
+
+    return False
