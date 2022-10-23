@@ -418,21 +418,21 @@ websys.cmdSessions.cb = function(xhr, res) {
 };
 
 websys.buildSessinInfo = function(info) {
+  var brwC = util.getBrowserInfo(info.ua);
+  var brwL = util.getBrowserInfo(info.last_accessed.ua);
+
   var s = '';
-  s += 'uid         : ' + info.uid + '\n';
+  s += 'uid         : ' + info.uid + (info.is_guest ? ' (GUEST)' : '') + '\n';
   s += 'sid         : ' + info.sid + '\n';
-  s += 'created_time: ' + util.getDateTimeString(info.created_time) + '\n';
-  s += 'tz          : ' + info.tz + '\n';
-  s += 'addr        : ' + info.addr + '\n';
-  s += 'host        : ' + info.host + '\n';
-  s += 'ua          : ' + info.ua + '\n';
-  s += 'is_guest    : ' + info.is_guest + '\n';
+  s += '<span style="color:#aaa;">';
+  s += 'created_time: ' + util.getDateTimeString(info.created_time) + ' ' + info.tz + '\n';
+  s += 'host        : ' + info.addr + '  ' + info.host + '\n';
+  s += 'ua          : ' + brwC.name + ' ' + brwC.version + '\n';
+  s += '</span>';
   s += 'last_accessed:\n';
-  s += '  time      : ' + util.getDateTimeString(info.last_accessed.time) + '\n';
-  s += '  tz        : ' + info.last_accessed.tz + '\n';
-  s += '  addr      : ' + info.last_accessed.addr + '\n';
-  s += '  host      : ' + info.last_accessed.host + '\n';
-  s += '  ua        : ' + info.last_accessed.ua + '\n';
+  s += '  time      : ' + util.getDateTimeString(info.last_accessed.time) + ' ' + info.last_accessed.tz + '\n';
+  s += '  host      : ' + info.last_accessed.addr + '  ' + info.last_accessed.host + '\n';
+  s += '  ua        : ' + brwL.name + ' ' + brwL.version + '\n';
   return s;
 };
 
