@@ -384,7 +384,10 @@ websys.cmdSessions = function(arg, tbl, echo) {
     cmd: 'sessions'
   };
   if (dbg.hasOpt(arg, 'a')) {
-    param.all = 'true'
+    param.all = 'a'
+  }
+  if (dbg.hasOpt(arg, 'A')) {
+    param.all = 'A'
   }
   var req = {
     url: websys.basePath + 'websys/api.cgi',
@@ -394,46 +397,50 @@ websys.cmdSessions = function(arg, tbl, echo) {
   };
   websys.http(req);
 };
-websys.cmdSessions.cb = function(xhr, res) {
+websys.cmdSessions.cb = function(xhr, res, req) {
   var status = websys.onResponseReceived(xhr, res);
   if (status != 'OK') return;
   res = util.fromJSON(res);
   var list = res.body;
+  var flgA = (req.data.all == 'A');
   var s = '\n';
   if (list instanceof Array) {
     for (var i = 0; i < list.length; i++) {
       info = list[i];
       s+= '----------------------------------------------------------------------------\n';
-      s += websys.buildSessinInfo(info) + '\n';
+      s += websys.buildSessinInfo(info, flgA) + '\n';
     }
   } else {
     i = 0;
     for (var sid  in list) {
       info = list[sid];
       s+= '----------------------------------------------------------------------------\n';
-      s += websys.buildSessinInfo(info) + '\n';
+      s += websys.buildSessinInfo(info, flgA) + '\n';
       i++;
     }
   }
   log(s);
 };
 
-websys.buildSessinInfo = function(info) {
+websys.buildSessinInfo = function(info, flgA) {
   var brwC = util.getBrowserInfo(info.ua);
   var brwL = util.getBrowserInfo(info.last_accessed.ua);
 
   var s = '';
-  s += 'uid         : ' + info.uid + (info.is_guest ? ' (GUEST)' : '') + '\n';
-  s += 'sid         : ' + info.sid + '\n';
-  s += '<span style="color:#aaa;">';
-  s += 'created_time: ' + util.getDateTimeString(info.created_time) + ' ' + info.tz + '\n';
-  s += 'host        : ' + info.addr + '  ' + info.host + '\n';
-  s += 'ua          : ' + brwC.name + ' ' + brwC.version + '\n';
+  s += 'uid     : ' + info.uid + (info.is_guest ? ' (GUEST)' : '') + '\n';
+  s += 'sid     : ' + info.sid + '\n';
+  s += 'time    : ' + util.getDateTimeString(info.last_accessed.time) + ' <span style="color:#ccc;">' + info.last_accessed.tz + '\n';
+  s += 'host    : ' + info.last_accessed.addr + '  ' + info.last_accessed.host + '\n';
+  s += 'ua      : ' + brwL.name + ' ' + brwL.version + '\n';
   s += '</span>';
-  s += 'last_accessed:\n';
-  s += '  time      : ' + util.getDateTimeString(info.last_accessed.time) + ' ' + info.last_accessed.tz + '\n';
-  s += '  host      : ' + info.last_accessed.addr + '  ' + info.last_accessed.host + '\n';
-  s += '  ua        : ' + brwL.name + ' ' + brwL.version + '\n';
+  if (flgA) {
+    s += '<span style="color:#aaa;">';
+    s += ' created:\n';
+    s += '    time: ' + util.getDateTimeString(info.created_time) + ' ' + info.tz + '\n';
+    s += '    host: ' + info.addr + '  ' + info.host + '\n';
+    s += '    ua  : ' + brwC.name + ' ' + brwC.version + '\n';
+    s += '</span>';
+  }
   return s;
 };
 
