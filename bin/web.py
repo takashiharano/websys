@@ -17,6 +17,7 @@ root_path = ''
 query = None
 
 encryption = True
+LOCK_FILE_PATH = config.LOCK_FILE_PATH
 
 #----------------------------------------------------------
 # set root path
@@ -32,10 +33,11 @@ def on_access(from_ext=False):
     sid = util.get_cookie_val('sid')
     sessionman.set_current_session_id(sid)
     sessions = sessionman.get_all_sessions_info()
-    if sessions is None:
-        return
-    sessions = sessionman.clear_expired_sessions(sessions)
-    sessionman.update_last_accessed_info(sessions)
+    if sessions is not None:
+        if synchronize_start():
+            sessions = sessionman.clear_expired_sessions(sessions)
+            sessionman.update_last_accessed_info(sessions)
+            synchronize_end()
     return sessions
 
 def get_request_param(key=None, default=None):
@@ -252,4 +254,17 @@ def redirect_auth_screen():
 
 #----------------------------------------------------------
 def auth(default=False, roles=None, allow_guest=False):
-    return authman.auth(default, roles, allow_guest)
+    ret = False
+    if synchronize_start():
+        ret = authman.auth(default, roles, allow_guest)
+        synchronize_end()
+    return ret
+
+#----------------------------------------------------------
+def synchronize_start():
+    if util.file_lock(LOCK_FILE_PATH, 50, 0.2):
+        return True
+    return False
+
+def synchronize_end():
+    util.file_unlock(LOCK_FILE_PATH)

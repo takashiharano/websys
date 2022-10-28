@@ -16,7 +16,6 @@ import web
 
 ALGOTRITHM = config.ALGOTRITHM
 LOGIN_LOG_PATH = config.LOGIN_LOG_PATH
-LOCK_FILE_PATH = config.LOCK_FILE_PATH
 
 #----------------------------------------------------------
 # login
@@ -24,6 +23,17 @@ LOCK_FILE_PATH = config.LOCK_FILE_PATH
 #  pw: SHA-256(pw + uid)
 #----------------------------------------------------------
 def login(uid, pw, ext_auth=False):
+    if web.synchronize_start():
+        try:
+            ret = do_login(uid, pw, ext_auth=ext_auth)
+            web.synchronize_end()
+        except Exception as e:
+            web.synchronize_end()
+            raise Exception(e)
+        return ret
+    raise Exception('ERROR')
+
+def do_login(uid, pw, ext_auth=False):
     try:
         login_info = _login(uid, pw, ext_auth)
     except Exception as e:
@@ -122,21 +132,20 @@ def get_login_log():
 # return cleared session info
 #----------------------------------------------------------
 def logout(sid=None):
-    return sessionman.clear_session(sid)
+    session = None
+    if web.synchronize_start():
+        session = sessionman.clear_session(sid)
+        web.synchronize_end()
+    return session
 
 #----------------------------------------------------------
 # auth
 #----------------------------------------------------------
 def auth(default=False, roles=None, allow_guest=False):
-    for i in range(10):
-        if util.file_lock(LOCK_FILE_PATH):
-            status = _auth(default=default, roles=roles, allow_guest=allow_guest)
-            util.file_unlock(LOCK_FILE_PATH)
-            if status == 'OK':
-                return True
-            return False
-        else:
-            time.sleep(1)
+    status = _auth(default=default, roles=roles, allow_guest=allow_guest)
+    if status == 'OK':
+        return True
+    return False
 
 def _auth(default=False, roles=None, allow_guest=False):
     session_info = sessionman.get_current_session_info()
