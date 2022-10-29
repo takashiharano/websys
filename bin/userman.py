@@ -18,9 +18,11 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 # {
 #   "root": {
 #     "uid": "root",
-#     "admin": true,
-#     "attr": ["system"],
-#     "roles": ["role1"],
+#     "name": "root",
+#     "is_admin": true,
+#     "permissions": ["DOMAIN.PERMISSIONNAME"],
+#     "created_at": 1667047612.967891,
+#     "updated_at": 1667047612.967891,
 #     "disabled": false
 #   },
 #   ...
@@ -31,13 +33,13 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 #   "123456": {
 #     "uid": "123456",
 #     "name": "GUEST",
-#     "attr": [
-#       "guest"
-#     ],
-#     "roles": [],
+#     "permissions": [],
+#     "is_guest": true,
 #     "path": null | '/path/',
+#     "created_at": 1667047612.967891,
+#     "updated_at": 1667047612.967891,
+#     "expires_at": 1571476916.59936
 #     "disabled": false,
-#     "expire": 1571476916.59936
 #   },
 #   ...
 # }
@@ -65,18 +67,22 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, attr=[], roles=[], disabled=False):
+def create_user(uid, pw, name=None, permissions=[], disabled=False):
     users = get_all_user_info()
     if users is None:
         users = {}
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
+    now = util.get_timestamp()
+
     user = {
         'uid': uid,
         'name': name,
-        'attr': attr,
-        'roles': roles,
+        'is_admin': False,
+        'permissions': permissions,
+        'created_at': now,
+        'updated_at': now,
         'disabled': disabled
     }
 
@@ -86,7 +92,7 @@ def create_user(uid, pw, name=None, attr=[], roles=[], disabled=False):
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, attr=None, roles=None, disabled=None):
+def modify_user(uid, pw=None, name=None, permissions=None, is_admin=None, disabled=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -98,14 +104,17 @@ def modify_user(uid, pw=None, name=None, attr=None, roles=None, disabled=None):
     if name is not None:
         user['name'] = name
 
-    if attr is not None:
-        user['attr'] = attr
+    if permissions is not None:
+        user['permissions'] = permissions
 
-    if roles is not None:
-        user['roles'] = roles
+    if is_admin is not None:
+        user['is_admin'] = is_admin
 
     if disabled is not None:
         user['disabled'] = disabled
+
+    now = util.get_timestamp()
+    user['updated_at'] = now
 
     users[uid] = user
     save_users(users)
@@ -170,16 +179,17 @@ def create_guest(uid=None, uid_len=6, valid_min=30, path=None):
             raise Exception('ALREADY_EXISTS')
 
     now = util.get_timestamp()
-    expire = now + valid_min * 60
+    expires_at = now + valid_min * 60
     user = {
         'uid': new_uid,
         'name': 'GUEST',
-        'attr': ['guest'],
-        'roles': [],
+        'permissions': [],
+        'is_guest': True,
+        'created_at': now,
+        'updated_at': now,
+        'expires_at': expires_at,
         'path': path,
-        'disabled': False,
-        'created': now,
-        'expire': expire
+        'disabled': False
     }
 
     guest_users[new_uid] = user
@@ -201,7 +211,7 @@ def delete_expired_guest():
     new_users = {}
     for uid in users:
         user = users[uid]
-        if user['expire'] >= now:
+        if user['expires_at'] >= now:
             new_users[uid] = user
 
     save_guest_users(new_users)
@@ -220,13 +230,10 @@ def delete_guest_user(uid):
 def save_guest_users(users):
     util.save_dict(GUEST_USER_LIST_FILE_PATH, users, indent=2)
 
-# Has attr
-def has_attr(user_info, attr):
-    return attr in user_info['attr']
-
-# Has role
-def has_role(user_info, role_name):
-    return role_name in user_info['roles']
+# Has permission
+# permission_name: case-insensitive
+def has_permission(user_info, permission_name):
+    return permission_name in user_info['permissions']
 
 #------------------------------------------------------------------------------
 # Password

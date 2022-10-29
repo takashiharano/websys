@@ -79,9 +79,9 @@ def _guest_login(uid, ext_auth=False):
     if user_info is None:
         raise Exception('NO_SUCH_USER')
 
-    if 'expire' in user_info:
+    if 'expires_at' in user_info:
         now = util.get_timestamp()
-        if user_info['expire'] < now:
+        if user_info['expires_at'] < now:
             raise Exception('EXPIRED')
 
     new_session_info = sessionman.create_and_register_session_info(uid, is_guest=True, ext_auth=ext_auth)
@@ -141,13 +141,13 @@ def logout(sid=None):
 #----------------------------------------------------------
 # auth
 #----------------------------------------------------------
-def auth(default=False, roles=None, allow_guest=False):
-    status = _auth(default=default, roles=roles, allow_guest=allow_guest)
+def auth(default=False, allow_guest=True):
+    status = _auth(default=default, allow_guest=allow_guest)
     if status == 'OK':
         return True
     return False
 
-def _auth(default=False, roles=None, allow_guest=False):
+def _auth(default, allow_guest):
     session_info = sessionman.get_current_session_info()
     if session_info is None:
         if default:
@@ -169,14 +169,14 @@ def _auth(default=False, roles=None, allow_guest=False):
             _on_auth_error()
         return 'USER_IS_DISABLED'
 
-    if 'expire' in user_info:
+    if 'expires_at' in user_info:
         now = util.get_timestamp()
-        if user_info['expire'] < now:
+        if user_info['expires_at'] < now:
             if default:
                 _on_auth_error()
             return 'USER_IS_EXPIRED'
 
-    if not allow_guest and 'guest' in user_info['attr']:
+    if not allow_guest and 'guest' in user_info and user_info['is_guest']:
         if default:
             _on_auth_error()
         return 'GUEST_USER_NOT_ALLOWED'
@@ -191,19 +191,6 @@ def _auth(default=False, roles=None, allow_guest=False):
                 _on_auth_error()
             return 'FORBIDDEN_PATH'
 
-    if roles is not None:
-        if userman.has_attr(user_info, 'system'):
-            # OK
-            return 'OK'
-
-        for role_name in roles:
-            if userman.has_role(user_info, role_name):
-                # OK
-                return 'OK'
-
-        # No role
-        return 'NO_ROLE'
-
     # OK
     return 'OK'
 
@@ -214,45 +201,3 @@ def _on_auth_error():
     ]
     result = {'status': 'AUTH_ERROR'}
     web._send_response('json', result, headers=headers);
-
-#----------------------------------------------------------
-# is logged in
-#----------------------------------------------------------
-def is_logged_in():
-    return sessionman.get_current_session_id() is not None
-
-#----------------------------------------------------------
-# has role
-# uid is None = current user
-#----------------------------------------------------------
-def has_role(role_name, uid=None):
-    if uid is None:
-        uid = sessionman.get_current_user_id()
-
-    user_info = userman.get_user_info(uid)
-    if user_info is not None:
-        if 'system' in user_info['attr']:
-            return True
-        role_list = user_info['roles']
-        return _has_role(role_list, role_name)
-    return False
-
-def _has_role(role_list, role_name):
-    for item in role_list:
-        if item == role_name:
-            return True
-    return False
-
-#----------------------------------------------------------
-# is admin
-#----------------------------------------------------------
-def is_admiin(uid=None):
-    if uid is None:
-        uid = sessionman.get_current_user_id()
-
-    user_info = userman.get_user_info(uid)
-    if user_info is not None:
-        if 'admin' in user_info and user_info['admin']:
-            return True
-
-    return False

@@ -153,6 +153,8 @@ websys.login.cancel = function() {
   dbg.cmd.setMode('text');
 };
 websys.login.doLogin = function(id, pw) {
+  id = id.trim();
+  pw = pw.trim();
   var param = {
     cmd: 'login',
     id: id
@@ -638,8 +640,9 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var uid = dbg.getOptVal(arg, 'u');
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
+  var admin = dbg.getOptVal(arg, 'admin');
   var disabled = dbg.getOptVal(arg, 'disabled');
-  if (!uid || (disabled && (disabled != 'true') && (disabled != 'false'))) {
+  if (!uid || (admin && (admin != 'true') && (admin != 'false')) || (disabled && (disabled != 'true') && (disabled != 'false'))) {
     dbg.printUsage(tbl.help);
     return;
   }
@@ -663,6 +666,9 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   }
   if (disabled) {
     param.disabled = (disabled == 'true' ? 'true' : 'false');
+  }
+  if (admin) {
+    param.admin = (admin == 'true' ? 'true' : 'false');
   }
 
   var req = {
@@ -1009,25 +1015,10 @@ websys.getUserName = function() {
   return name;
 };
 
-websys.hasAttr = function(a1, a2) {
-  var user = null;
-  var attr = null;
-  if (typeof a1 == 'object') {
-    user = a1;
-    attr = a2;
-  } else {
-    attr = a1;
-  }
-  if (!user && websys.sessionInfo) {
-    user = websys.sessionInfo.userinfo;
-  }
-  if (!user) {
-    return false;
-  }
-  for (var i = 0; i < user.attr.length; i++) {
-    if (user.attr[i] == attr) {
-      return true;
-    }
+websys.isAdmin = function() {
+  var userInfo = websys.getUserInfo();
+  if (userInfo && userInfo.is_admin) {
+    return true;
   }
   return false;
 };
@@ -1161,7 +1152,7 @@ websys.CMD_TBL = [
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
   {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-disabled]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-disabled true|false]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-disabled true|false]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];

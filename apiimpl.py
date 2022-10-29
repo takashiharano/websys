@@ -16,28 +16,10 @@ import authman
 import web
 
 #----------------------------------------------------------
-# main
-#----------------------------------------------------------
-def main():
-    web.on_access()
-    cmd = web.get_request_param('cmd')
-
-    if cmd is None:
-        web.send_result_json('ERR_NO_CMD_SPECIFIED', body=cmd)
-        return
-
-    func_name = 'cmd_' + cmd
-    g = globals()
-    if func_name in g:
-        g[func_name]()
-    else:
-        web.send_result_json('ERR_CMD_NOT_FOUND', body=cmd)
-
-#----------------------------------------------------------
 # login
 # ?id=ID&pw=HASH(SHA-256(pw + uid))
 #----------------------------------------------------------
-def cmd_login():
+def cmd_login(context):
     id = web.get_request_param('id')
     pw = web.get_request_param('pw')
     p_ext_auth = web.get_request_param('ext_auth')
@@ -47,7 +29,7 @@ def cmd_login():
 
     if not ext_auth:
         web.on_access()
-        current_sid = sessionman.get_current_session_id()
+        current_sid = web.get_session_id(context)
         if current_sid is not None:
             authman.logout(current_sid)
 
@@ -78,9 +60,9 @@ def cmd_login():
 #----------------------------------------------------------
 # loginlog
 #----------------------------------------------------------
-def cmd_loginlog():
+def cmd_loginlog(context):
     status = 'OK'
-    if authman.is_admiin():
+    if web.is_admin(context):
         p_n = web.get_request_param('n')
         n = 10
         if p_n is not None:
@@ -101,7 +83,7 @@ def cmd_loginlog():
 # ?sid=SID (prior)
 # ?uid=UID
 #----------------------------------------------------------
-def cmd_logout():
+def cmd_logout(context):
     web.on_access()
 
     p_sid = web.get_request_param('sid')
@@ -111,7 +93,7 @@ def cmd_logout():
         p_uid = None
 
     status = 'OK'
-    current_sid = sessionman.get_current_session_id()
+    current_sid = web.get_session_id(context)
 
     target_sid = None
     if p_sid is None and p_uid is None:
@@ -122,13 +104,13 @@ def cmd_logout():
     self_logout = False
     try:
         if web.get_request_param('all') == 'true':
-            self_logout = all_logout(current_sid)
+            self_logout = all_logout(context, current_sid)
         elif target_sid is not None:
             # current session or specified sid
-            self_logout = logout_by_sid(current_sid, target_sid)
+            self_logout = logout_by_sid(context, current_sid, target_sid)
         elif p_uid is not None:
             # all sessions of the user
-            self_logout = logout_by_uid(p_uid)
+            self_logout = logout_by_uid(context, p_uid)
     except Exception as e:
         status = str(e)
 
@@ -145,10 +127,10 @@ def cmd_logout():
     web.send_result_json(status, body=None)
 
 # Logout by SID
-def logout_by_sid(current_sid, sid):
+def logout_by_sid(context, current_sid, sid):
     self_logout = False
-    if not authman.is_admiin():
-        current_uid = sessionman.get_current_user_id()
+    if web.is_admin(context):
+        current_uid = web.get_user_id(context)
         target_session_info = sessionman.get_session_info(sid)
         if target_session_info is None:
             return False
@@ -164,13 +146,13 @@ def logout_by_sid(current_sid, sid):
     return self_logout
 
 # Logout by UID
-def logout_by_uid(uid):
+def logout_by_uid(context, uid):
     self_logout = False
-    current_uid = sessionman.get_current_user_id()
+    current_uid = web.get_user_id(context)
     if uid == current_uid:
         self_logout = True
     else:
-        if not authman.is_admiin():
+        if not web.is_admin(context):
             raise Exception('FORBIDDEN')
 
     i = sessionman.clear_user_sessions(uid)
@@ -180,21 +162,21 @@ def logout_by_uid(uid):
     return self_logout
 
 # ALL Logout
-def all_logout(current_sid, self_logout=False):
-    if not authman.is_admiin():
+def all_logout(context, current_sid, self_logout=False):
+    if not web.is_admin(context):
         raise Exception('FORBIDDEN')
 
     sessions = sessionman.get_all_sessions_info()
     for sid in sessions:
         if self_logout or sid != current_sid:
-            logout_by_sid(current_sid, sid)
+            logout_by_sid(context, current_sid, sid)
 
     return self_logout
 
 #----------------------------------------------------------
 # auth
 #----------------------------------------------------------
-def cmd_auth():
+def cmd_auth(context):
     web.on_access()
     status = 'FORBIDDEN'
     if authman.auth(default=False):
@@ -204,14 +186,14 @@ def cmd_auth():
 #----------------------------------------------------------
 # session
 #----------------------------------------------------------
-def cmd_session():
+def cmd_session(context):
     web.on_access()
     status = 'OK'
-    session_info = sessionman.get_current_session_info()
+    session_info = web.get_session_info(context)
     p_userinfo = web.get_request_param('userinfo')
 
     if session_info is not None and p_userinfo == 'true':
-        user_info = sessionman.get_current_user_info()
+        user_info = web.get_user_info(context)
         session_info['userinfo'] = user_info
 
     web.send_result_json(status, body=session_info)
@@ -219,42 +201,42 @@ def cmd_session():
 #----------------------------------------------------------
 # sessions
 #----------------------------------------------------------
-def cmd_sessions():
+def cmd_sessions(context):
     status = 'OK'
     all = web.get_request_param('all')
     if all is None:
-        session_list = get_session_list_from_session()
+        session_list = get_session_list_from_session(context)
     else:
-        if authman.is_admiin():
+        if web.is_admin(context):
             session_list = sessionman.get_all_sessions_info()
         else:
-            session_list = get_session_list_from_session()
+            session_list = get_session_list_from_session(context)
     web.send_result_json(status, body=session_list)
 
 #----------------------------------------------------------
 # user
 # uid=UID
 #----------------------------------------------------------
-def cmd_user():
+def cmd_user(context):
     status = 'OK'
     user_info = None
     uid = web.get_request_param('uid')
 
     if uid is None:
-        sid = sessionman.get_current_session_id()
+        sid = web.get_session_id(context)
         if sid is None:
             status = 'NOT_LOGGED_IN'
         else:
-            user_info = sessionman.get_current_user_info()
+            user_info = web.get_user_info(context)
     else:
-      current_uid = sessionman.get_current_user_id()
+      current_uid = web.get_user_id(context)
       if current_uid is None:
           status = 'FORBIDDEN'
       else:
           if uid == current_uid:
               user_info = userman.get_user_info(uid)
           else:
-              if authman.is_admiin():
+              if web.is_admin(context):
                   user_info = userman.get_user_info(uid)
                   if user_info is None:
                       status = 'NG'
@@ -266,11 +248,11 @@ def cmd_user():
 #----------------------------------------------------------
 # users
 #----------------------------------------------------------
-def cmd_users():
+def cmd_users(context):
     if not authman.auth(default=True):
         return
 
-    if authman.is_admiin():
+    if web.is_admin(context):
         status = 'OK'
         user_list = userman.get_all_user_info()
         guest_user_list = userman.get_all_guest_user_info()
@@ -286,12 +268,12 @@ def cmd_users():
 #----------------------------------------------------------
 # add a user
 #----------------------------------------------------------
-def cmd_useradd():
+def cmd_useradd(context):
     if not authman.auth(default=True):
         return
 
     status = 'ERROR'
-    if not authman.is_admiin():
+    if not web.is_admin(context):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -318,7 +300,7 @@ def cmd_useradd():
     disabled = p_disabled == 'true'
 
     try:
-        userman.create_user(uid, pw_hash, name=name, attr=[], roles=[], disabled=disabled)
+        userman.create_user(uid, pw_hash, name=name, permissions=[], disabled=disabled)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -328,19 +310,20 @@ def cmd_useradd():
 #----------------------------------------------------------
 # mod a user
 #----------------------------------------------------------
-def cmd_usermod():
+def cmd_usermod(context):
     if not authman.auth(default=True):
         return
 
     uid = web.get_request_param('uid')
     name = web.get_request_param('name')
     pw = web.get_request_param('pw')
+    p_admin = web.get_request_param('admin')
     p_disabled = web.get_request_param('disabled')
 
-    user_info = web.get_current_user_info()
+    user_info = web.get_user_info(context)
 
     status = 'ERROR'
-    if not authman.is_admiin():
+    if not web.is_admin(context):
         if uid != user_info['uid']:
             web.send_result_json('FORBIDDEN', body=None)
             return
@@ -353,12 +336,16 @@ def cmd_usermod():
     if pw is not None:
         pw_hash = util.hash(pw, config.ALGOTRITHM)
 
+    is_admin = None
+    if p_admin is not None:
+        is_admin = p_admin == 'true'
+
     disabled = None
     if p_disabled is not None:
         disabled = p_disabled == 'true'
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, disabled=disabled)
+        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, disabled=disabled)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -369,12 +356,12 @@ def cmd_usermod():
 # gencode
 # ?validsec=1800
 #----------------------------------------------------------
-def cmd_gencode():
+def cmd_gencode(context):
     if not authman.auth(default=True):
         return
 
     uid = None
-    if not authman.is_admiin():
+    if not web.is_admin(context):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -405,12 +392,12 @@ def cmd_gencode():
 # userdel
 # ?uid=UID
 #----------------------------------------------------------
-def cmd_userdel():
+def cmd_userdel(context):
     if not authman.auth(default=True):
         return
 
     status = 'ERROR'
-    if authman.is_admiin():
+    if web.is_admin(context):
         uid = web.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
@@ -442,13 +429,13 @@ def _is_prohibited_uid(uid):
 #----------------------------------------------------------
 # guests
 #----------------------------------------------------------
-def cmd_guests():
+def cmd_guests(context):
     userman.delete_expired_guest()
 
     if not authman.auth(default=True):
         return
 
-    if authman.is_admiin():
+    if web.is_admin(context):
         status = 'OK'
         guest_user_list = userman.get_all_guest_user_info()
 
@@ -461,7 +448,7 @@ def cmd_guests():
 #----------------------------------------------------------
 # hello
 #----------------------------------------------------------
-def cmd_hello():
+def cmd_hello(context):
     status = 'OK'
     msg = None
 
@@ -472,7 +459,7 @@ def cmd_hello():
         if not authman.auth(default=True):
             return
 
-        if authman.is_admiin():
+        if web.is_admin(context):
             msg= 'Hello, ' + q
         else:
             msg = 'Hi!'
@@ -483,7 +470,25 @@ def cmd_hello():
 #----------------------------------------------------------
 # get user info
 #----------------------------------------------------------
-def get_session_list_from_session():
-    uid = sessionman.get_current_user_id()
+def get_session_list_from_session(context):
+    uid = web.get_user_id(context)
     session_list = sessionman.get_session_info_list_from_uid(uid)
     return session_list
+
+#----------------------------------------------------------
+# main
+#----------------------------------------------------------
+def main():
+    context = web.on_access()
+    cmd = web.get_request_param('cmd')
+
+    if cmd is None:
+        web.send_result_json('ERR_NO_CMD_SPECIFIED', body=cmd)
+        return
+
+    func_name = 'cmd_' + cmd
+    g = globals()
+    if func_name in g:
+        g[func_name](context)
+    else:
+        web.send_result_json('ERR_CMD_NOT_FOUND', body=cmd)

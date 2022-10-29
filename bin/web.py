@@ -10,6 +10,7 @@ sys.path.append(config.UTIL_PATH)
 import util
 import bsb64
 
+import userman
 import sessionman
 import authman
 
@@ -29,16 +30,38 @@ def set_root_path(path):
 #----------------------------------------------------------
 # on access
 #----------------------------------------------------------
-def on_access(from_ext=False):
+def on_access():
     sid = util.get_cookie_val('sid')
     sessionman.set_current_session_id(sid)
+
+    session_info = None
+    user_info = None
+
     sessions = sessionman.get_all_sessions_info()
     if sessions is not None:
         if synchronize_start():
             sessions = sessionman.clear_expired_sessions(sessions)
             sessionman.update_last_accessed_info(sessions)
             synchronize_end()
-    return sessions
+            if sid in sessions:
+                session_info = sessions[sid]
+
+    if session_info is not None:
+        uid = session_info['uid']
+        user_info = userman.get_user_info(uid)
+
+    is_admin = False
+    if user_info is not None and 'is_admin' in user_info:
+        is_admin = user_info['is_admin']
+
+    context = {
+        'session_info': session_info,
+        'user_info': user_info, # see userman.create_user() for object fields
+        'is_admin': is_admin,
+        'authorized': False
+    }
+
+    return context
 
 def get_request_param(key=None, default=None):
     q = util.get_query()
@@ -81,62 +104,112 @@ def get_raw_request_param(key=None, default=None):
     return q
 
 #----------------------------------------------------------
-# get_current_session_id
-# session id or None
+# get_session_info
+# Returns: session_info or None
 #----------------------------------------------------------
-def get_current_session_id():
-    return sessionman.get_current_session_id()
+def get_session_info(context):
+    session_info = None
+    if 'session_info' in context:
+        session_info = context['session_info']
+    return session_info
+
 
 #----------------------------------------------------------
-# get_current_session_info
-# session info or None
+# get_session_id
+# Returns: session id or None
 #----------------------------------------------------------
-def get_current_session_info():
-    return sessionman.get_current_session_info()
+def get_session_id(context):
+    if 'session_info' in context:
+        session_info = context['session_info']
+        if session_info is not None and 'sid' in session_info:
+            return session_info['sid']
+    return None
 
 #----------------------------------------------------------
-# get_current_user_id
-# user id or None
-#----------------------------------------------------------
-def get_current_user_id():
-    return sessionman.get_current_user_id()
-
-#----------------------------------------------------------
-# get_current_user_name
-# user name or None
-#----------------------------------------------------------
-def get_current_user_name():
-    name = None
-    userinfo = sessionman.get_current_user_info()
-    if userinfo is not None:
-        name = userinfo['name']
-    return name
-
-#----------------------------------------------------------
-# get_current_user_info
-#----------------------------------------------------------
+# get_user_info
+#
+# Returns:
 # users
 #   "uid": "root",
-#   "attr": ["system"],
-#   "admin": true,
-#   "role": ["role1"],
+#   "name": "root",
+#   "is_admin": true,
+#   "permissions": ["DOMAIN.PERMISSIONNAME"],
 #   "disabled": false
 # }
 # users_guest
 #   "uid": "123456",
 #   "name": "GUEST",
-#   "attr": [
-#     "guest"
-#   ],
-#   "role": [],
+#   "permissions": [],
+#   "is_guest": true,
 #   "path": null | '/path/',
 #   "disabled": false,
 #   "expire": 1571476916.59936
 # }
 #
 # or None
-def get_current_user_info():
-    return sessionman.get_current_user_info()
+#----------------------------------------------------------
+def get_user_info(context):
+    user_info = None
+    if 'user_info' in context:
+        user_info = context['user_info']
+    return user_info
+
+#----------------------------------------------------------
+# get_user_id
+# Returns: user id or None
+#----------------------------------------------------------
+def get_user_id(context):
+    if 'user_info' in context:
+        user_info = context['user_info']
+        if user_info is not None and 'uid' in user_info:
+            return user_info['uid']
+    return None
+
+#----------------------------------------------------------
+# get_user_name
+# Returns: user name or ''
+#----------------------------------------------------------
+def get_user_name(context):
+    if 'user_info' in context:
+        user_info = context['user_info']
+        if user_info is not None and 'name' in user_info:
+            return user_info['name']
+    return ''
+
+#----------------------------------------------------------
+# is_admin
+#----------------------------------------------------------
+def is_admin(context):
+    if 'user_info' in context:
+        user_info = context['user_info']
+        if user_info is not None:
+            if 'is_admin' in user_info and user_info['is_admin']:
+                return True
+    return False
+
+#----------------------------------------------------------
+# has_permission
+# permission_name: case-insensitive
+#----------------------------------------------------------
+def has_permission(context, permission_name):
+    if is_admin(context):
+        return True
+    if 'user_info' in context:
+        user_info = context['user_info']
+        if user_info is not None:
+            return permission_name in user_info['permissions']
+    return False
+
+#----------------------------------------------------------
+# is_guest
+#----------------------------------------------------------
+def is_guest(context):
+    if 'session_info' in context:
+        session_info = context['session_info']
+        if session_info is not None:
+            if 'is_guest' in session_info and session_info['is_guest']:
+                return True
+    return False
 
 #----------------------------------------------------------
 # build logout cookies
@@ -159,14 +232,9 @@ def build_session_cookie(session_info):
     else:
         sid = session_info['sid']
         uid = session_info['uid']
-        is_guest = session_info['is_guest']
         session_timeout = sessionman.get_session_timeout_value()
         cookie1 = util.build_cookie('sid', sid, max_age=str(session_timeout), path='/', http_only=True)
         cookies.append({'Set-Cookie': cookie1})
-
-        if is_guest:
-            cookie2 = util.build_cookie('guest', 'true', max_age=str(session_timeout), path='/', http_only=True)
-            cookies.append({'Set-Cookie': cookie2})
 
     return cookies
 
@@ -253,10 +321,10 @@ def redirect_auth_screen():
     send_response('html', html)
 
 #----------------------------------------------------------
-def auth(default=False, roles=None, allow_guest=False):
+def auth(default=False, allow_guest=True):
     ret = False
     if synchronize_start():
-        ret = authman.auth(default, roles, allow_guest)
+        ret = authman.auth(default, allow_guest)
         synchronize_end()
     return ret
 
