@@ -16,7 +16,7 @@ SESSION_LIST_FILE_PATH = config.SESSION_LIST_FILE_PATH
 SESSION_TIMEOUT_SEC = config.SESSION_TIMEOUT_SEC
 ALGOTRITHM = config.ALGOTRITHM
 
-current_session_id = None
+current_session_info = None
 
 #----------------------------------------------------------
 # get all sessions info
@@ -57,25 +57,29 @@ def get_session_info(sid):
     return session
 
 #----------------------------------------------------------
-# get session id
-# Returns id or None
+# get current session info
 #----------------------------------------------------------
-def get_current_session_id():
-    return current_session_id
-
-#----------------------------------------------------------
-# get session id
-#----------------------------------------------------------
-def set_current_session_id(id):
-    global current_session_id
-    current_session_id = id
+def get_current_session_info():
+    global current_session_info
+    return current_session_info
 
 #----------------------------------------------------------
 # get current session info
 #----------------------------------------------------------
-def get_current_session_info():
-    sid = current_session_id
-    return get_session_info(sid)
+def set_current_session_info(info):
+    global current_session_info
+    current_session_info = info
+
+#----------------------------------------------------------
+# get current session id
+# Returns id or None
+#----------------------------------------------------------
+def get_current_session_id():
+    session_id = None
+    session_info = get_current_session_info()
+    if session_info is not None:
+        session_id = session_info['sid']
+    return session_id
 
 #----------------------------------------------------------
 # get current user id (from session)
@@ -193,8 +197,7 @@ def create_session_id(uid):
 #----------------------------------------------------------
 # update last accessed info
 #----------------------------------------------------------
-def update_last_accessed_info(sessions):
-    sid = get_current_session_id()
+def update_last_accessed_info(sessions, sid):
     now = util.get_timestamp()
     addr = util.get_ip_addr()
     host = util.get_host_name()
@@ -242,7 +245,7 @@ def clear_session(sid):
         save_sessions_info(sessions)
 
     if get_current_session_id() == sid:
-        set_current_session_id(None)
+        set_current_session_info(None)
 
     return session
 

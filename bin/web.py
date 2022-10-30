@@ -31,38 +31,55 @@ def set_root_path(path):
 # on access
 #----------------------------------------------------------
 def on_access():
-    sid = util.get_cookie_val('sid')
-    sessionman.set_current_session_id(sid)
-
-    session_info = None
-    user_info = None
-
-    sessions = sessionman.get_all_sessions_info()
-    if sessions is not None:
-        if synchronize_start():
-            sessions = sessionman.clear_expired_sessions(sessions)
-            sessionman.update_last_accessed_info(sessions)
-            synchronize_end()
-            if sid in sessions:
-                session_info = sessions[sid]
-
-    if session_info is not None:
-        uid = session_info['uid']
-        user_info = userman.get_user_info(uid)
-
-    is_admin = False
-    if user_info is not None and 'is_admin' in user_info:
-        is_admin = user_info['is_admin']
-
     context = {
-        'session_info': session_info,
-        'user_info': user_info, # see userman.create_user() for object fields
-        'is_admin': is_admin,
+        'session_info': None,
+        'user_info': None,
+        'is_admin': False,
         'authorized': False
     }
 
+    if synchronize_start():
+        context = _on_access(context)
+
     return context
 
+def _on_access(context):
+    sid = util.get_cookie_val('sid')
+    session_info = None
+    user_info = None
+    sessionman.set_current_session_info(None)
+
+    sessions = sessionman.get_all_sessions_info()
+    if sessions is None:
+        return context
+
+    sessions = sessionman.clear_expired_sessions(sessions)
+    sessionman.update_last_accessed_info(sessions, sid)
+    synchronize_end()
+    if sid in sessions:
+        session_info = sessions[sid]
+
+    if session_info is None:
+        return context
+
+    uid = session_info['uid']
+    user_info = userman.get_user_info(uid)
+
+    is_admin = False
+    if'is_admin' in user_info:
+        is_admin = user_info['is_admin']
+
+    sessionman.set_current_session_info(session_info)
+    context['session_info'] = session_info
+    context['user_info'] = user_info # see userman.create_user() for object fields
+    context['is_admin'] = is_admin,
+    context['authorized'] = False
+
+    return context
+
+#----------------------------------------------------------
+# Get Request Param
+#----------------------------------------------------------
 def get_request_param(key=None, default=None):
     q = util.get_query()
 

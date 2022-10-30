@@ -45,6 +45,9 @@ def do_login(uid, pw, ext_auth=False):
             write_log(status, uid)
         raise Exception(status)
 
+    session_info = login_info['session_info']
+    sessionman.set_current_session_info(session_info)
+
     sid = login_info['session_info']['sid']
     write_log('OK', uid, sid)
     return login_info
@@ -86,7 +89,6 @@ def _guest_login(uid, ext_auth=False):
 
     new_session_info = sessionman.create_and_register_session_info(uid, is_guest=True, ext_auth=ext_auth)
     sid = new_session_info['sid']
-    sessionman.set_current_session_id(sid)
 
     login_info = {
         'session_info': new_session_info,

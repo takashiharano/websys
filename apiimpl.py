@@ -28,7 +28,6 @@ def cmd_login(context):
     userman.delete_expired_guest()
 
     if not ext_auth:
-        web.on_access()
         current_sid = web.get_session_id(context)
         if current_sid is not None:
             authman.logout(current_sid)
@@ -44,9 +43,6 @@ def cmd_login(context):
         }
         for key in user_info:
             body[key] = user_info[key]
-
-        if not ext_auth:
-            sessionman.set_current_session_id(sid)
 
     except Exception as e:
         status = str(e)

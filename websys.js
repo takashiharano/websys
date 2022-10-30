@@ -374,8 +374,10 @@ websys.cmdSession.cb = function(xhr, res) {
   if (status != 'OK') return;
   res = util.fromJSON(res);
   var info = res.body;
-  var s = '\n' + websys.buildSessinInfo(info) + '\n';
-  log(s);
+  if (info) {
+    var s = '\n' + websys.buildSessinInfo(info, true) + '\n';
+    log(s);
+  }
 };
 
 /**
