@@ -80,8 +80,6 @@ def cmd_loginlog(context):
 # ?uid=UID
 #----------------------------------------------------------
 def cmd_logout(context):
-    web.on_access()
-
     p_sid = web.get_request_param('sid')
     if p_sid is None:
         p_uid = web.get_request_param('uid')
@@ -125,7 +123,7 @@ def cmd_logout(context):
 # Logout by SID
 def logout_by_sid(context, current_sid, sid):
     self_logout = False
-    if web.is_admin(context):
+    if not web.is_admin(context):
         current_uid = web.get_user_id(context)
         target_session_info = sessionman.get_session_info(sid)
         if target_session_info is None:
@@ -173,7 +171,6 @@ def all_logout(context, current_sid, self_logout=False):
 # auth
 #----------------------------------------------------------
 def cmd_auth(context):
-    web.on_access()
     status = 'FORBIDDEN'
     if authman.auth(default=False):
         status = 'OK'
@@ -183,7 +180,6 @@ def cmd_auth(context):
 # session
 #----------------------------------------------------------
 def cmd_session(context):
-    web.on_access()
     status = 'OK'
     session_info = web.get_session_info(context)
     p_userinfo = web.get_request_param('userinfo')
@@ -289,6 +285,20 @@ def cmd_useradd(context):
     if name is None:
         name = uid
 
+    p_permissions = web.get_request_param('permissions')
+    permissions = []
+    if p_permissions is not None:
+        p_permissions = p_permissions.strip()
+        p_permissions = util.replace(p_permissions, '\s{2,}', ' ')
+        permissions = p_permissions.split(' ')
+        if len(permissions) == 1 and permissions[0] == '':
+            permissions = []
+
+    p_admin = web.get_request_param('admin')
+    is_admin = False
+    if p_admin is not None:
+        is_admin = p_admin == 'true'
+
     if p_disabled is None:
         p_disabled = 'false'
 
@@ -296,7 +306,7 @@ def cmd_useradd(context):
     disabled = p_disabled == 'true'
 
     try:
-        userman.create_user(uid, pw_hash, name=name, permissions=[], disabled=disabled)
+        userman.create_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, disabled=disabled)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -311,15 +321,9 @@ def cmd_usermod(context):
         return
 
     uid = web.get_request_param('uid')
-    name = web.get_request_param('name')
-    pw = web.get_request_param('pw')
-    p_admin = web.get_request_param('admin')
-    p_disabled = web.get_request_param('disabled')
 
-    user_info = web.get_user_info(context)
-
-    status = 'ERROR'
     if not web.is_admin(context):
+        user_info = web.get_user_info(context)
         if uid != user_info['uid']:
             web.send_result_json('FORBIDDEN', body=None)
             return
@@ -328,20 +332,34 @@ def cmd_usermod(context):
         web.send_result_json('ERR_UID', body=None)
         return
 
+    name = web.get_request_param('name')
+
+    pw = web.get_request_param('pw')
     pw_hash = None
     if pw is not None:
         pw_hash = util.hash(pw, config.ALGOTRITHM)
 
+    p_permissions = web.get_request_param('permissions')
+    permissions = None
+    if p_permissions is not None:
+        p_permissions = p_permissions.strip()
+        p_permissions = util.replace(p_permissions, '\s{2,}', ' ')
+        permissions = p_permissions.split(' ')
+        if len(permissions) == 1 and permissions[0] == '':
+            permissions = []
+
+    p_admin = web.get_request_param('admin')
     is_admin = None
     if p_admin is not None:
         is_admin = p_admin == 'true'
 
+    p_disabled = web.get_request_param('disabled')
     disabled = None
     if p_disabled is not None:
         disabled = p_disabled == 'true'
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, disabled=disabled)
+        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, disabled=disabled)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)

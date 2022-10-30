@@ -67,7 +67,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, permissions=[], disabled=False):
+def create_user(uid, pw, name=None, is_admin=False, permissions=[], disabled=False):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -79,7 +79,7 @@ def create_user(uid, pw, name=None, permissions=[], disabled=False):
     user = {
         'uid': uid,
         'name': name,
-        'is_admin': False,
+        'is_admin': is_admin,
         'permissions': permissions,
         'created_at': now,
         'updated_at': now,
@@ -92,7 +92,7 @@ def create_user(uid, pw, name=None, permissions=[], disabled=False):
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, permissions=None, is_admin=None, disabled=None):
+def modify_user(uid, pw=None, name=None, is_admin=None, permissions=None, disabled=None):
     users = get_all_user_info()
     if users is None:
         users = {}

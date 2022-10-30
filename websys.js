@@ -598,12 +598,14 @@ websys.cmdUser.cb = function(xhr, res) {
  */
 websys.cmdUserAdd = function(arg, tbl, echo) {
   var uid = dbg.getOptVal(arg, 'u');
-  var p = dbg.getOptVal(arg, 'p');
-  var name = dbg.getOptVal(arg, 'n');
   if (!uid) {
     dbg.printUsage(tbl.help);
     return;
   }
+  var p = dbg.getOptVal(arg, 'p');
+  var name = dbg.getOptVal(arg, 'n');
+  var permissions = dbg.getOptVal(arg, 'permissions');
+  var admin = dbg.getOptVal(arg, 'admin');
   if (!p) p = '';
   var pw = websys.sha.getHash('SHA-256', p, uid);
   var param = {
@@ -619,6 +621,18 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
       return;
     }
     param.name = name;
+  }
+  if (permissions) {
+    try {
+      permissions = eval(permissions);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.permissions = permissions;
+  }
+  if (admin) {
+    param.admin = (admin == 'true' ? 'true' : 'false');
   }
   if (dbg.hasOpt(arg, 'disabled')) {
     param.disabled = 'true';
@@ -642,6 +656,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var uid = dbg.getOptVal(arg, 'u');
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
+  var permissions = dbg.getOptVal(arg, 'permissions');
   var admin = dbg.getOptVal(arg, 'admin');
   var disabled = dbg.getOptVal(arg, 'disabled');
   if (!uid || (admin && (admin != 'true') && (admin != 'false')) || (disabled && (disabled != 'true') && (disabled != 'false'))) {
@@ -666,11 +681,20 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     var pw = websys.sha.getHash('SHA-256', p, uid);
     param.pw = pw;
   }
-  if (disabled) {
-    param.disabled = (disabled == 'true' ? 'true' : 'false');
+  if (permissions) {
+    try {
+      permissions = eval(permissions);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.permissions = permissions;
   }
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
+  }
+  if (disabled) {
+    param.disabled = (disabled == 'true' ? 'true' : 'false');
   }
 
   var req = {
@@ -1154,7 +1178,7 @@ websys.CMD_TBL = [
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
   {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-disabled]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-disabled true|false]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-disabled true|false]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];

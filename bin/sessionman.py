@@ -4,7 +4,6 @@
 #==============================================================================
 import os
 import sys
-import time
 
 import config
 sys.path.append(config.UTIL_PATH)
@@ -19,13 +18,13 @@ ALGOTRITHM = config.ALGOTRITHM
 current_session_info = None
 
 #----------------------------------------------------------
-# get all sessions info
+# Get all sessions info
 #----------------------------------------------------------
 def get_all_sessions_info():
     return load_sessions_info()
 
 #----------------------------------------------------------
-# get session info
+# Get session info
 #----------------------------------------------------------
 # {
 #  "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef": {
@@ -57,21 +56,21 @@ def get_session_info(sid):
     return session
 
 #----------------------------------------------------------
-# get current session info
+# Get current session info
 #----------------------------------------------------------
 def get_current_session_info():
     global current_session_info
     return current_session_info
 
 #----------------------------------------------------------
-# get current session info
+# Set current session info
 #----------------------------------------------------------
 def set_current_session_info(info):
     global current_session_info
     current_session_info = info
 
 #----------------------------------------------------------
-# get current session id
+# Get current session id
 # Returns id or None
 #----------------------------------------------------------
 def get_current_session_id():
@@ -82,27 +81,7 @@ def get_current_session_id():
     return session_id
 
 #----------------------------------------------------------
-# get current user id (from session)
-#----------------------------------------------------------
-def get_current_user_id():
-    uid = None
-    session = get_current_session_info()
-    if session is not None:
-        uid = session['uid']
-    return uid
-
-#----------------------------------------------------------
-# get current user info (from session)
-#----------------------------------------------------------
-def get_current_user_info():
-    user_info = None
-    sid = get_current_session_id()
-    if sid is not None:
-        user_info = get_user_info_from_sid(sid)
-    return user_info
-
-#----------------------------------------------------------
-# get user info from session id
+# Get user info from session id
 #----------------------------------------------------------
 def get_user_info_from_sid(sid):
     session_info = get_session_info(sid)
@@ -115,7 +94,7 @@ def get_user_info_from_sid(sid):
     return user_info
 
 #----------------------------------------------------------
-# get session info list for the user
+# Get session info list for the user
 #----------------------------------------------------------
 def get_session_info_list_from_uid(uid):
     session_list = []
@@ -128,13 +107,13 @@ def get_session_info_list_from_uid(uid):
     return session_list
 
 #----------------------------------------------------------
-# get session timeout value
+# Get session timeout value
 #----------------------------------------------------------
 def get_session_timeout_value():
     return SESSION_TIMEOUT_SEC
 
 #----------------------------------------------------------
-# create and register new session info
+# Create and register new session info
 #----------------------------------------------------------
 def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
     new_session_info = create_session_info(uid, is_guest)
@@ -145,7 +124,7 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
     return new_session_info
 
 #----------------------------------------------------------
-# create session info
+# Create session info
 #----------------------------------------------------------
 def create_session_info(uid, is_guest=False):
     now = util.get_timestamp()
@@ -175,7 +154,7 @@ def create_session_info(uid, is_guest=False):
     return new_session
 
 #----------------------------------------------------------
-# register session info
+# Register session info
 #----------------------------------------------------------
 def register_session_info(sid, session_info):
     sessions = get_all_sessions_info()
@@ -187,7 +166,7 @@ def register_session_info(sid, session_info):
     save_sessions_info(sessions)
 
 #----------------------------------------------------------
-# create session id
+# Create session id
 #----------------------------------------------------------
 def create_session_id(uid):
     input = util.get_datetime_str() + uid
@@ -195,7 +174,7 @@ def create_session_id(uid):
     return sid
 
 #----------------------------------------------------------
-# update last accessed info
+# Update last accessed info
 #----------------------------------------------------------
 def update_last_accessed_info(sessions, sid):
     now = util.get_timestamp()
@@ -206,7 +185,7 @@ def update_last_accessed_info(sessions, sid):
     update_session_info(sessions, sid, now, addr, host, useragent, tz)
 
 #----------------------------------------------------------
-# update session info
+# Update session info
 #----------------------------------------------------------
 def update_session_info(sessions, sid, time=None, addr=None, host=None, ua=None, tz=None):
     if sessions is None:
@@ -231,7 +210,7 @@ def update_session_info(sessions, sid, time=None, addr=None, host=None, ua=None,
     save_sessions_info(sessions)
 
 #----------------------------------------------------------
-# clear session
+# Clear session
 #----------------------------------------------------------
 def clear_session(sid):
     if sid is None:
@@ -250,7 +229,7 @@ def clear_session(sid):
     return session
 
 #----------------------------------------------------------
-# clear expired sessions
+# Clear expired sessions
 #----------------------------------------------------------
 def clear_expired_sessions(sessions):
   if sessions is None:
@@ -271,7 +250,7 @@ def clear_expired_sessions(sessions):
   return new_sessions
 
 #----------------------------------------------------------
-# clear user sessions
+# Clear user sessions
 #----------------------------------------------------------
 def clear_user_sessions(uid):
     user_sessions = get_session_info_list_from_uid(uid)
@@ -283,7 +262,7 @@ def clear_user_sessions(uid):
     return i
 
 #----------------------------------------------------------
-# load sessions info
+# Load sessions info
 #----------------------------------------------------------
 def load_sessions_info():
     try:
@@ -293,7 +272,7 @@ def load_sessions_info():
     return info
 
 #----------------------------------------------------------
-# save sessions info
+# Save sessions info
 #----------------------------------------------------------
 def save_sessions_info(sessions):
     util.save_dict(SESSION_LIST_FILE_PATH, sessions)

@@ -34,12 +34,12 @@ def on_access():
     context = {
         'session_info': None,
         'user_info': None,
-        'is_admin': False,
         'authorized': False
     }
 
     if synchronize_start():
         context = _on_access(context)
+        synchronize_end()
 
     return context
 
@@ -55,7 +55,7 @@ def _on_access(context):
 
     sessions = sessionman.clear_expired_sessions(sessions)
     sessionman.update_last_accessed_info(sessions, sid)
-    synchronize_end()
+
     if sid in sessions:
         session_info = sessions[sid]
 
@@ -65,14 +65,9 @@ def _on_access(context):
     uid = session_info['uid']
     user_info = userman.get_user_info(uid)
 
-    is_admin = False
-    if'is_admin' in user_info:
-        is_admin = user_info['is_admin']
-
     sessionman.set_current_session_info(session_info)
     context['session_info'] = session_info
     context['user_info'] = user_info # see userman.create_user() for object fields
-    context['is_admin'] = is_admin,
     context['authorized'] = False
 
     return context
