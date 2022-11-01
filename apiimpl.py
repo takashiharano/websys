@@ -49,9 +49,7 @@ def cmd_login(context):
         body = None
         util.sleep(0.5)
 
-    do_not_set_cookie = True if ext_auth else False
-
-    web.send_result_json(status, body=body, do_not_set_cookie=do_not_set_cookie)
+    web.send_result_json(status, body=body)
 
 #----------------------------------------------------------
 # loginlog
@@ -113,12 +111,9 @@ def cmd_logout(context):
 
     headers = None
     if self_logout:
-        cookie = util.build_cookie_clear('sid', '/')
-        headers = [
-            ('Set-Cookie', cookie)
-        ]
+        headers = web.build_logout_cookies()
 
-    web.send_result_json(status, body=None)
+    web.send_result_json(status, body=None, http_headers=headers)
 
 # Logout by SID
 def logout_by_sid(context, current_sid, sid):
@@ -172,7 +167,7 @@ def all_logout(context, current_sid, self_logout=False):
 #----------------------------------------------------------
 def cmd_auth(context):
     status = 'FORBIDDEN'
-    if authman.auth(default=False):
+    if authman.auth():
         status = 'OK'
     web.send_result_json(status, body=None)
 
@@ -241,7 +236,8 @@ def cmd_user(context):
 # users
 #----------------------------------------------------------
 def cmd_users(context):
-    if not authman.auth(default=True):
+    if not authman.auth():
+        on_auth_error()
         return
 
     if web.is_admin(context):
@@ -250,7 +246,6 @@ def cmd_users(context):
         guest_user_list = userman.get_all_guest_user_info()
         if guest_user_list is not None:
             user_list.update(guest_user_list)
-
     else:
         status = 'FORBIDDEN'
         user_list = None
@@ -261,7 +256,8 @@ def cmd_users(context):
 # add a user
 #----------------------------------------------------------
 def cmd_useradd(context):
-    if not authman.auth(default=True):
+    if not authman.auth():
+        on_auth_error()
         return
 
     status = 'ERROR'
@@ -317,7 +313,8 @@ def cmd_useradd(context):
 # mod a user
 #----------------------------------------------------------
 def cmd_usermod(context):
-    if not authman.auth(default=True):
+    if not authman.auth():
+        on_auth_error()
         return
 
     uid = web.get_request_param('uid')
@@ -371,7 +368,8 @@ def cmd_usermod(context):
 # ?validsec=1800
 #----------------------------------------------------------
 def cmd_gencode(context):
-    if not authman.auth(default=True):
+    if not authman.auth():
+        on_auth_error()
         return
 
     uid = None
@@ -407,7 +405,8 @@ def cmd_gencode(context):
 # ?uid=UID
 #----------------------------------------------------------
 def cmd_userdel(context):
-    if not authman.auth(default=True):
+    if not authman.auth():
+        on_auth_error()
         return
 
     status = 'ERROR'
@@ -446,7 +445,8 @@ def _is_prohibited_uid(uid):
 def cmd_guests(context):
     userman.delete_expired_guest()
 
-    if not authman.auth(default=True):
+    if not authman.auth():
+        on_auth_error()
         return
 
     if web.is_admin(context):
@@ -470,7 +470,8 @@ def cmd_hello(context):
     if q is None:
         msg = 'Hello, World!'
     else:
-        if not authman.auth(default=True):
+        if not authman.auth():
+            on_auth_error()
             return
 
         if web.is_admin(context):
@@ -481,6 +482,13 @@ def cmd_hello(context):
     web.send_result_json(status, body=msg)
 
 #------------------------------------------------------------------------------
+#----------------------------------------------------------
+# On auth error
+#----------------------------------------------------------
+def on_auth_error():
+    obj = {'status': 'AUTH_ERROR'}
+    web.send_response('json', obj)
+
 #----------------------------------------------------------
 # get user info
 #----------------------------------------------------------

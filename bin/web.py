@@ -30,7 +30,7 @@ def set_root_path(path):
 #----------------------------------------------------------
 # on access
 #----------------------------------------------------------
-def on_access():
+def on_access(allow_guest=True):
     context = {
         'session_info': None,
         'user_info': None,
@@ -38,12 +38,12 @@ def on_access():
     }
 
     if synchronize_start():
-        context = _on_access(context)
+        context = _on_access(context, allow_guest)
         synchronize_end()
 
     return context
 
-def _on_access(context):
+def _on_access(context, allow_guest):
     sid = util.get_cookie_val('sid')
     session_info = None
     user_info = None
@@ -68,7 +68,7 @@ def _on_access(context):
     sessionman.set_current_session_info(session_info)
     context['session_info'] = session_info
     context['user_info'] = user_info # see userman.create_user() for object fields
-    context['authorized'] = False
+    context['authorized'] = authman.auth(allow_guest)
 
     return context
 
@@ -124,7 +124,6 @@ def get_session_info(context):
     if 'session_info' in context:
         session_info = context['session_info']
     return session_info
-
 
 #----------------------------------------------------------
 # get_session_id
@@ -227,25 +226,22 @@ def is_guest(context):
 # build logout cookies
 #----------------------------------------------------------
 def build_logout_cookies():
+    cookie1 = util.build_cookie_for_clear('sid', path='/', http_only=True)
     cookies = []
-    cookie1 = util.build_cookie_clear('sid', path='/', http_only=True)
-    cookie2 = util.build_cookie_clear('guest', path='/', http_only=True)
     cookies.append({'Set-Cookie': cookie1})
-    cookies.append({'Set-Cookie': cookie2})
     return cookies
 
 #----------------------------------------------------------
 # build session cookie
 #----------------------------------------------------------
 def build_session_cookie(session_info):
-    cookies = []
-    if session_info is None:
-        cookies = build_logout_cookies()
-    else:
+    cookies = None
+    if session_info is not None:
         sid = session_info['sid']
         uid = session_info['uid']
         session_timeout = sessionman.get_session_timeout_value()
         cookie1 = util.build_cookie('sid', sid, max_age=str(session_timeout), path='/', http_only=True)
+        cookies = []
         cookies.append({'Set-Cookie': cookie1})
 
     return cookies
@@ -253,14 +249,11 @@ def build_session_cookie(session_info):
 #----------------------------------------------------------
 # send response
 #----------------------------------------------------------
-def send_response(type, result, encoding=None, do_not_set_cookie=False):
-    headers = None
-
-    if not do_not_set_cookie:
+def send_response(type, result, headers=None, encoding=None):
+    if headers is None:
         session_info = sessionman.get_current_session_info()
         cookies = build_session_cookie(session_info)
         headers = cookies
-
     _send_response(type, result, headers, encoding)
 
 def _send_response(type, result, headers=None, encoding=None):
@@ -278,10 +271,10 @@ def _send_response(type, result, headers=None, encoding=None):
 
     util.send_response(type, content, headers=headers)
 
-def send_result_json(status, body=None, headers=None, do_not_set_cookie=False):
+def send_result_json(status, body=None, headers=None, http_headers=None):
     result = util.build_result_object(status, body, headers)
     content = util.to_json(result)
-    send_response('json', content, do_not_set_cookie=do_not_set_cookie)
+    send_response('json', content, headers=http_headers)
 
 # Blue Screen
 def blue_screen(msg=None):
@@ -331,14 +324,6 @@ def redirect_auth_screen():
 </body>
 </html>'''
     send_response('html', html)
-
-#----------------------------------------------------------
-def auth(default=False, allow_guest=True):
-    ret = False
-    if synchronize_start():
-        ret = authman.auth(default, allow_guest)
-        synchronize_end()
-    return ret
 
 #----------------------------------------------------------
 def synchronize_start():

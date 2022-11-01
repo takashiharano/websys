@@ -43,7 +43,7 @@ def output_text_file(root_path, path):
 
 def main(root_path, path, allow_guest=False, auth_required=True):
     web.on_access()
-    if auth_required and  not authman.auth(default=False, allow_guest=allow_guest):
+    if auth_required and  not authman.auth(allow_guest=allow_guest):
         util.send_response('text', 'FORBIDDEN')
     else:
         if is_text_file(path):

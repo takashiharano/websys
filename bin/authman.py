@@ -143,17 +143,15 @@ def logout(sid=None):
 #----------------------------------------------------------
 # auth
 #----------------------------------------------------------
-def auth(default=False, allow_guest=True):
-    status = _auth(default=default, allow_guest=allow_guest)
+def auth(allow_guest=True):
+    status = _auth(allow_guest=allow_guest)
     if status == 'OK':
         return True
     return False
 
-def _auth(default, allow_guest):
+def _auth(allow_guest):
     session_info = sessionman.get_current_session_info()
     if session_info is None:
-        if default:
-            _on_auth_error()
         return 'SESSION_INFO_NOT_FOUND'
 
     if 'ext_user' in session_info and session_info['ext_user']:
@@ -162,25 +160,17 @@ def _auth(default, allow_guest):
     sid = session_info['sid']
     user_info = sessionman.get_user_info_from_sid(sid)
     if user_info is None:
-        if default:
-            _on_auth_error()
         return 'USER_INFO_NOT_FOUND'
 
     if user_info['disabled']:
-        if default:
-            _on_auth_error()
         return 'USER_IS_DISABLED'
 
     if 'expires_at' in user_info:
         now = util.get_timestamp()
         if user_info['expires_at'] < now:
-            if default:
-                _on_auth_error()
             return 'USER_IS_EXPIRED'
 
     if not allow_guest and 'guest' in user_info and user_info['is_guest']:
-        if default:
-            _on_auth_error()
         return 'GUEST_USER_NOT_ALLOWED'
 
     if 'path' in user_info and user_info['path'] is not None:
@@ -189,17 +179,7 @@ def _auth(default, allow_guest):
         pattern = util.replace(pattern, '\.', '\\.')
         pattern = util.replace(pattern, '\?', '\\?')
         if not util.match(req_uri, pattern):
-            if default:
-                _on_auth_error()
             return 'FORBIDDEN_PATH'
 
     # OK
     return 'OK'
-
-def _on_auth_error():
-    cookie = util.build_cookie_clear('sid', '/')
-    headers = [
-        {'Set-Cookie': cookie}
-    ]
-    result = {'status': 'AUTH_ERROR'}
-    web._send_response('json', result, headers=headers);
