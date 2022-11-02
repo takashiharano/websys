@@ -231,7 +231,7 @@ def clear_session(sid):
 #----------------------------------------------------------
 # Clear expired sessions
 #----------------------------------------------------------
-def clear_expired_sessions(sessions):
+def clear_expired_sessions(sessions, save=False):
   if sessions is None:
       return
 
@@ -246,7 +246,9 @@ def clear_expired_sessions(sessions):
   except:
       pass
 
-  save_sessions_info(new_sessions)
+  if save:
+      save_sessions_info(new_sessions)
+
   return new_sessions
 
 #----------------------------------------------------------

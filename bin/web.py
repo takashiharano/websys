@@ -32,6 +32,7 @@ def set_root_path(path):
 #----------------------------------------------------------
 def on_access(allow_guest=True):
     context = {
+        'status': '',
         'session_info': None,
         'user_info': None,
         'authorized': False
@@ -39,7 +40,10 @@ def on_access(allow_guest=True):
 
     if synchronize_start():
         context = _on_access(context, allow_guest)
+        context['status'] = 'OK'
         synchronize_end()
+    else:
+        context['status'] = 'SYSTEM_BUSY'
 
     return context
 
@@ -47,7 +51,6 @@ def _on_access(context, allow_guest):
     sid = util.get_cookie_val('sid')
     session_info = None
     user_info = None
-    sessionman.set_current_session_info(None)
 
     sessions = sessionman.get_all_sessions_info()
     if sessions is None:
