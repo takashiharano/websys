@@ -268,7 +268,7 @@ def cmd_useradd(context):
     uid = web.get_request_param('uid')
     name = web.get_request_param('name')
     pw = web.get_request_param('pw')
-    p_disabled = web.get_request_param('disabled')
+    p_st = web.get_request_param('st')
 
     if uid is None:
         web.send_result_json('ERR_UID', body=None)
@@ -295,14 +295,14 @@ def cmd_useradd(context):
     if p_admin is not None:
         is_admin = p_admin == 'true'
 
-    if p_disabled is None:
-        p_disabled = 'false'
+    if p_st is None:
+        p_st = '0'
 
     pw_hash = util.hash(pw, config.ALGOTRITHM)
-    disabled = p_disabled == 'true'
+    u_status = p_st
 
     try:
-        userman.create_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, disabled=disabled)
+        userman.create_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -350,13 +350,13 @@ def cmd_usermod(context):
     if p_admin is not None:
         is_admin = p_admin == 'true'
 
-    p_disabled = web.get_request_param('disabled')
-    disabled = None
-    if p_disabled is not None:
-        disabled = p_disabled == 'true'
+    p_st = web.get_request_param('st')
+    u_status = None
+    if p_st is not None:
+        u_status = p_st
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, disabled=disabled)
+        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)

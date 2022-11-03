@@ -640,8 +640,14 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
   }
-  if (dbg.hasOpt(arg, 'disabled')) {
-    param.disabled = 'true';
+  var st = dbg.getOptVal(arg, 'st');
+  if (st) {
+    if (util.isInteger(st)) {
+      param.st = st;
+    } else {
+      log.e('ERROR: st should be an integer value');
+      return;
+    }
   }
   var req = {
     url: websys.basePath + 'websys/api.cgi',
@@ -664,8 +670,8 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var name = dbg.getOptVal(arg, 'n');
   var permissions = dbg.getOptVal(arg, 'permissions');
   var admin = dbg.getOptVal(arg, 'admin');
-  var disabled = dbg.getOptVal(arg, 'disabled');
-  if (!uid || (admin && (admin != 'true') && (admin != 'false')) || (disabled && (disabled != 'true') && (disabled != 'false'))) {
+
+  if (!uid || (admin && (admin != 'true') && (admin != 'false'))) {
     dbg.printUsage(tbl.help);
     return;
   }
@@ -699,8 +705,14 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
   }
-  if (disabled) {
-    param.disabled = (disabled == 'true' ? 'true' : 'false');
+  var st = dbg.getOptVal(arg, 'st');
+  if (st) {
+    if (util.isInteger(st)) {
+      param.st = st;
+    } else {
+      log.e('ERROR: st should be an integer value');
+      return;
+    }
   }
 
   var req = {
@@ -1182,9 +1194,9 @@ websys.CMD_TBL = [
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},
   {cmd: 'sha', fn: websys.sha, desc: 'Generate and display cryptographic hash', help: 'sha [1|224|3-224|256|3-256|384|3-384|512|3-512] -i "input" [-salt "salt"]'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
-  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-disabled]'},
+  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-st STATUS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-disabled true|false]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-st STATUS]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];

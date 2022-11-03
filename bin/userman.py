@@ -14,6 +14,9 @@ import sessionman
 USER_LIST_FILE_PATH = config.USER_LIST_FILE_PATH
 GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 
+U_ST_DISABLED = 1
+U_ST_RESTRICTED = 1 << 1
+
 # users.json
 # {
 #   "root": {
@@ -23,7 +26,7 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 #     "permissions": ["DOMAIN.PERMISSIONNAME"],
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
-#     "disabled": false
+#     "status": 0
 #   },
 #   ...
 # }
@@ -38,7 +41,7 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
 #     "expires_at": 1571476916.59936
-#     "disabled": false,
+#     "status": 0,
 #   },
 #   ...
 # }
@@ -66,7 +69,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, is_admin=False, permissions=[], disabled=False):
+def create_user(uid, pw, name=None, is_admin=False, permissions=[], status='0'):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -74,6 +77,7 @@ def create_user(uid, pw, name=None, is_admin=False, permissions=[], disabled=Fal
         raise Exception('ALREADY_EXISTS')
 
     now = util.get_timestamp()
+    u_status = parse_int(status)
 
     user = {
         'uid': uid,
@@ -82,7 +86,7 @@ def create_user(uid, pw, name=None, is_admin=False, permissions=[], disabled=Fal
         'permissions': permissions,
         'created_at': now,
         'updated_at': now,
-        'disabled': disabled
+        'status': u_status
     }
 
     users[uid] = user
@@ -91,7 +95,7 @@ def create_user(uid, pw, name=None, is_admin=False, permissions=[], disabled=Fal
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, is_admin=None, permissions=None, disabled=None):
+def modify_user(uid, pw=None, name=None, is_admin=None, permissions=None, status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -109,8 +113,12 @@ def modify_user(uid, pw=None, name=None, is_admin=None, permissions=None, disabl
     if is_admin is not None:
         user['is_admin'] = is_admin
 
-    if disabled is not None:
-        user['disabled'] = disabled
+    if status is not None:
+        try:
+            u_status = int(status)
+            user['status'] = u_status
+        except:
+            pass
 
     now = util.get_timestamp()
     user['updated_at'] = now
@@ -190,7 +198,7 @@ def create_guest(uid=None, uid_len=6, valid_min=30, permissions=[]):
         'created_at': now,
         'updated_at': now,
         'expires_at': expires_at,
-        'disabled': False
+        'status': 0
     }
 
     guest_users[new_uid] = user
@@ -284,3 +292,26 @@ def delete_user_password(uid):
     if idx >= 0:
         pw_list.pop(idx)
         save_password_list(pw_list)
+
+#------------------------------------------------------------------------------
+# User Status
+#------------------------------------------------------------------------------
+def is_disabled(user_info):
+    return check_user_status(user_info, U_ST_DISABLED)
+
+def check_user_status(user_info, st):
+    u_status =  '0'
+    if 'status' in user_info:
+        u_status =  user_info['status']
+    i_status = parse_int(u_status)
+    if i_status & st:
+        return True
+    return False
+
+def parse_int(s):
+    v = 0
+    try:
+        v = int(s)
+    except:
+        pass
+    return v

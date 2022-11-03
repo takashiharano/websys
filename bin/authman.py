@@ -60,7 +60,7 @@ def _login(uid, pw, ext_auth=False):
         except Exception as e:
             raise e
 
-    if user_info['disabled']:
+    if userman.is_disabled(user_info):
         raise Exception('DISABLED')
 
     user_pw = userman.get_user_password(uid)
@@ -162,7 +162,7 @@ def _auth(allow_guest):
     if user_info is None:
         return 'USER_INFO_NOT_FOUND'
 
-    if user_info['disabled']:
+    if userman.is_disabled(user_info):
         return 'USER_IS_DISABLED'
 
     if 'expires_at' in user_info:
