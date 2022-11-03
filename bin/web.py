@@ -211,7 +211,24 @@ def has_permission(context, permission_name):
     if 'user_info' in context:
         user_info = context['user_info']
         if user_info is not None:
-            return permission_name in user_info['permissions']
+            permissions = user_info['permissions']
+            if permission_name in permissions:
+                return True
+            if _has_permission_by_domain(permissions, permission_name):
+                return True
+    return False
+
+def _has_permission_by_domain(permission_list, domain_name):
+    for permission in permission_list:
+        if permission == domain_name:
+            return True
+
+        last_index = domain_name.rfind('.')
+        if last_index != -1:
+            domain = domain_name[:last_index]
+            if permission == domain:
+                return True
+
     return False
 
 #----------------------------------------------------------
