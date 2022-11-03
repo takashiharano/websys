@@ -35,7 +35,6 @@ GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
 #     "name": "GUEST",
 #     "permissions": [],
 #     "is_guest": true,
-#     "path": null | '/path/',
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
 #     "expires_at": 1571476916.59936
@@ -157,7 +156,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def create_guest(uid=None, uid_len=6, valid_min=30, path=None):
+def create_guest(uid=None, uid_len=6, valid_min=30, permissions=[]):
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -178,17 +177,19 @@ def create_guest(uid=None, uid_len=6, valid_min=30, path=None):
         else:
             raise Exception('ALREADY_EXISTS')
 
+    gid = len(guest_users) + 1
+    name = 'GUEST' + str(gid)
+
     now = util.get_timestamp()
     expires_at = now + valid_min * 60
     user = {
         'uid': new_uid,
-        'name': 'GUEST',
-        'permissions': [],
+        'name': name,
+        'permissions': permissions,
         'is_guest': True,
         'created_at': now,
         'updated_at': now,
         'expires_at': expires_at,
-        'path': path,
         'disabled': False
     }
 

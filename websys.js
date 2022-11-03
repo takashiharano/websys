@@ -38,9 +38,15 @@ websys.gencode = function(arg, tbl, echo) {
     param['validtime'] = valid;
   }
 
-  var path = dbg.getOptVal(arg, 'path');
-  if (path != null) {
-    param['path'] = path;
+  var permissions = dbg.getOptVal(arg, 'permissions');
+  if (permissions) {
+    try {
+      permissions = eval(permissions);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.permissions = permissions;
   }
 
   var req = {
@@ -1165,7 +1171,7 @@ websys.init = function(path, readyFn) {
 };
 
 websys.CMD_TBL = [
-  {cmd: 'gencode', fn: websys.gencode, desc: 'Make a guest user', help: 'gencode [ID(A-Za-z0-9_-)] [-valid MIN] [-path PATH]'},
+  {cmd: 'gencode', fn: websys.gencode, desc: 'Make a guest user', help: 'gencode [ID(A-Za-z0-9_-)] [-valid MIN] [-permissions "DOMAIN.P1 DOMAIN.P2"]'},
   {cmd: 'guests', fn: websys.guests, desc: 'Show all guest user info'},
   {cmd: 'hello', fn: websys.hello, desc: 'Hello'},
   {cmd: 'login', fn: websys.login, desc: 'Login'},

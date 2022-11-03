@@ -386,15 +386,21 @@ def cmd_gencode(context):
         except:
             pass
 
-    p_path = web.get_request_param('path')
-
     id = None
     p_id = web.get_request_param('id')
     if p_id is not None:
         id = p_id
 
+    p_permissions = web.get_request_param('permissions')
+    permissions = []
+    if p_permissions is not None:
+        p_permissions = p_permissions.strip()
+        p_permissions = util.replace(p_permissions, '\s{2,}', ' ')
+        permissions = p_permissions.split(' ')
+        if len(permissions) == 1 and permissions[0] == '':
+            permissions = []
     try:
-        uid = userman.create_guest(uid=id, valid_min=valid_min, path=p_path)
+        uid = userman.create_guest(uid=id, valid_min=valid_min, permissions=permissions)
     except Exception as e:
         status = str(e)
 
