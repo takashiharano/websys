@@ -195,7 +195,10 @@ def cmd_sessions(context):
         session_list = get_session_list_from_session(context)
     else:
         if web.is_admin(context):
-            session_list = sessionman.get_all_sessions_info()
+            session_list = []
+            sessions = sessionman.get_all_sessions_info()
+            for sid in sessions:
+                session_list.append(sessions[sid])
         else:
             session_list = get_session_list_from_session(context)
     web.send_result_json(status, body=session_list)
