@@ -284,6 +284,15 @@ def cmd_useradd(context):
     if name is None:
         name = uid
 
+    p_group = web.get_request_param('group')
+    group = []
+    if p_group is not None:
+        p_group = p_group.strip()
+        p_group = util.replace(p_group, '\s{2,}', ' ')
+        group = p_group.split(' ')
+        if len(group) == 1 and group[0] == '':
+            group = []
+
     p_permissions = web.get_request_param('permissions')
     permissions = []
     if p_permissions is not None:
@@ -305,7 +314,7 @@ def cmd_useradd(context):
     u_status = p_st
 
     try:
-        userman.create_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, status=u_status)
+        userman.create_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, permissions=permissions, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -339,6 +348,15 @@ def cmd_usermod(context):
     if pw is not None:
         pw_hash = util.hash(pw, config.ALGOTRITHM)
 
+    p_group = web.get_request_param('group')
+    group = []
+    if p_group is not None:
+        p_group = p_group.strip()
+        p_group = util.replace(p_group, '\s{2,}', ' ')
+        group = p_group.split(' ')
+        if len(group) == 1 and group[0] == '':
+            group = []
+
     p_permissions = web.get_request_param('permissions')
     permissions = None
     if p_permissions is not None:
@@ -359,7 +377,7 @@ def cmd_usermod(context):
         u_status = p_st
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, permissions=permissions, status=u_status)
+        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, permissions=permissions, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -394,6 +412,15 @@ def cmd_gencode(context):
     if p_id is not None:
         id = p_id
 
+    p_group = web.get_request_param('group')
+    group = []
+    if p_group is not None:
+        p_group = p_group.strip()
+        p_group = util.replace(p_group, '\s{2,}', ' ')
+        group = p_group.split(' ')
+        if len(group) == 1 and group[0] == '':
+            group = []
+
     p_permissions = web.get_request_param('permissions')
     permissions = []
     if p_permissions is not None:
@@ -403,7 +430,7 @@ def cmd_gencode(context):
         if len(permissions) == 1 and permissions[0] == '':
             permissions = []
     try:
-        uid = userman.create_guest(uid=id, valid_min=valid_min, permissions=permissions)
+        uid = userman.create_guest(uid=id, valid_min=valid_min, group=group, permissions=permissions)
     except Exception as e:
         status = str(e)
 

@@ -23,6 +23,7 @@ U_ST_RESTRICTED = 1 << 1
 #     "uid": "root",
 #     "name": "root",
 #     "is_admin": true,
+#     "group": ["GROUPNAME"],
 #     "permissions": ["DOMAIN.PERMISSIONNAME"],
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
@@ -36,6 +37,7 @@ U_ST_RESTRICTED = 1 << 1
 #   "123456": {
 #     "uid": "123456",
 #     "name": "GUEST",
+#     "group": ["GROUPNAME"],
 #     "permissions": [],
 #     "is_guest": true,
 #     "created_at": 1667047612.967891,
@@ -69,7 +71,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, is_admin=False, permissions=[], status='0'):
+def create_user(uid, pw, name=None, is_admin=False, group=[], permissions=[], status='0'):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -83,6 +85,7 @@ def create_user(uid, pw, name=None, is_admin=False, permissions=[], status='0'):
         'uid': uid,
         'name': name,
         'is_admin': is_admin,
+        'group': group,
         'permissions': permissions,
         'created_at': now,
         'updated_at': now,
@@ -95,7 +98,7 @@ def create_user(uid, pw, name=None, is_admin=False, permissions=[], status='0'):
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, is_admin=None, permissions=None, status=None):
+def modify_user(uid, pw=None, name=None, is_admin=None, group=None, permissions=None, status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -106,6 +109,9 @@ def modify_user(uid, pw=None, name=None, is_admin=None, permissions=None, status
 
     if name is not None:
         user['name'] = name
+
+    if group is not None:
+        user['group'] = group
 
     if permissions is not None:
         user['permissions'] = permissions
@@ -164,7 +170,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def create_guest(uid=None, uid_len=6, valid_min=30, permissions=[]):
+def create_guest(uid=None, uid_len=6, valid_min=30, group=[], permissions=[]):
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -193,6 +199,7 @@ def create_guest(uid=None, uid_len=6, valid_min=30, permissions=[]):
     user = {
         'uid': new_uid,
         'name': name,
+        'group': group,
         'permissions': permissions,
         'is_guest': True,
         'created_at': now,
@@ -239,10 +246,71 @@ def delete_guest_user(uid):
 def save_guest_users(users):
     util.save_dict(GUEST_USER_LIST_FILE_PATH, users, indent=2)
 
-# Has permission
+#----------------------------------------------------------
+def is_admin(user_info):
+    if 'is_admin' in user_info and user_info['is_admin']:
+        return True
+    return False
+
+#----------------------------------------------------------
+# is_member_of
+# group_name: case-insensitive
+#----------------------------------------------------------
+def is_member_of(user_info, group_name):
+    return _has_item(user_info, 'group', group_name)
+
+#----------------------------------------------------------
+# has_permission
 # permission_name: case-insensitive
+#----------------------------------------------------------
 def has_permission(user_info, permission_name):
-    return permission_name in user_info['permissions']
+    return _has_item(user_info, 'permissions', permission_name)
+
+#----------------------------------------------------------
+def _has_item(user_info, key, value):
+    if user_info is None:
+        return False
+
+    if is_admin(user_info):
+        return True
+
+    items = user_info[key]
+    if value in items:
+        return True
+
+    last_index = value.rfind('.')
+    if last_index == -1:
+        if _has_any_item_for_domain(items, value):
+            return True
+    else:
+        if _has_item_by_domain(items, value):
+            return True
+
+    return False
+
+def _has_any_item_for_domain(item_list, domain_name):
+    for value in item_list:
+        if value == domain_name:
+            return True
+        last_index = value.rfind('.')
+        if last_index != -1:
+            domain = value[:last_index]
+            if domain == domain_name:
+                return True
+    return False
+
+def _has_item_by_domain(item_list, value):
+    for item in item_list:
+        if item == value:
+            return True
+
+        last_index = value.rfind('.')
+        if last_index != -1:
+            domain = value[:last_index]
+            if item == domain:
+                return True
+
+    return False
 
 #------------------------------------------------------------------------------
 # Password
