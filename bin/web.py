@@ -202,13 +202,21 @@ def is_admin(context):
     return False
 
 #----------------------------------------------------------
+# is_member_of
+# group_name: case-insensitive
+#----------------------------------------------------------
+def is_member_of(context, group_name):
+    if 'user_info' in context:
+        user_info = context['user_info']
+        return userman.is_member_of(user_info, group_name)
+
+    return False
+
+#----------------------------------------------------------
 # has_permission
 # permission_name: case-insensitive
 #----------------------------------------------------------
 def has_permission(context, permission_name):
-    if is_admin(context):
-        return True
-
     if 'user_info' in context:
         user_info = context['user_info']
         return userman.has_permission(user_info, permission_name)
