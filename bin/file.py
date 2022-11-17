@@ -13,7 +13,7 @@ import bsb64
 import authman
 import web
 
-TXT_EXT = ['bas', 'bat', 'c', 'css', 'html', 'java', 'js', 'sh', 'txt', 'xml']
+TXT_EXT = ['bas', 'bat', 'c', 'css', 'html', 'java', 'js', 'log', 'ps1', 'sh', 'txt', 'xml']
 
 # is text file
 def is_text_file(filename):
