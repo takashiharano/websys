@@ -349,13 +349,31 @@ def cmd_usermod(context):
         pw_hash = util.hash(pw, config.ALGOTRITHM)
 
     p_group = web.get_request_param('group')
-    group = []
+    group = None
     if p_group is not None:
         p_group = p_group.strip()
         p_group = util.replace(p_group, '\s{2,}', ' ')
         group = p_group.split(' ')
         if len(group) == 1 and group[0] == '':
             group = []
+
+    p_agroup = web.get_request_param('agroup')
+    agroup = None
+    if p_agroup is not None:
+        p_agroup = p_agroup.strip()
+        p_agroup = util.replace(p_agroup, '\s{2,}', ' ')
+        agroup = p_agroup.split(' ')
+        if len(agroup) == 1 and agroup[0] == '':
+            agroup = None
+
+    p_rgroup = web.get_request_param('rgroup')
+    rgroup = None
+    if p_rgroup is not None:
+        p_rgroup = p_rgroup.strip()
+        p_rgroup = util.replace(p_rgroup, '\s{2,}', ' ')
+        rgroup = p_rgroup.split(' ')
+        if len(rgroup) == 1 and rgroup[0] == '':
+            rgroup = None
 
     p_permissions = web.get_request_param('permissions')
     permissions = None
@@ -377,7 +395,7 @@ def cmd_usermod(context):
         u_status = p_st
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, permissions=permissions, status=u_status)
+        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, permissions=permissions, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)

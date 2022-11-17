@@ -98,7 +98,7 @@ def create_user(uid, pw, name=None, is_admin=False, group=[], permissions=[], st
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, is_admin=None, group=None, permissions=None, status=None):
+def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None, rgroup=None, permissions=None, status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -112,6 +112,12 @@ def modify_user(uid, pw=None, name=None, is_admin=None, group=None, permissions=
 
     if group is not None:
         user['group'] = group
+
+    if agroup is not None:
+        user['group'] = _add_group(user['group'], agroup)
+
+    if rgroup is not None:
+        user['group'] = _remove_group(user['group'], rgroup)
 
     if permissions is not None:
         user['permissions'] = permissions
@@ -136,6 +142,21 @@ def modify_user(uid, pw=None, name=None, is_admin=None, group=None, permissions=
         save_user_password(uid, pw)
 
     return user
+
+def _add_group(group, agroup):
+    for ag in agroup:
+        exists = False
+        for g in group:
+            if g == ag:
+                exists = True
+        if not exists:
+            group.append(ag)
+    return group
+
+def _remove_group(group, rgroup):
+    for rg in rgroup:
+        group.remove(rg)
+    return group
 
 # Delete a user
 def delete_user(uid):

@@ -691,6 +691,8 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
   var group = dbg.getOptVal(arg, 'g');
+  var agroup = dbg.getOptVal(arg, 'aG');
+  var rgroup = dbg.getOptVal(arg, 'rG');
   var permissions = dbg.getOptVal(arg, 'permissions');
   var admin = dbg.getOptVal(arg, 'admin');
 
@@ -724,6 +726,24 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       return;
     }
     param.group = group;
+  }
+  if (agroup) {
+    try {
+      agroup = eval(agroup);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.agroup = agroup;
+  }
+  if (rgroup) {
+    try {
+      rgroup = eval(rgroup);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.rgroup = rgroup;
   }
   if (permissions) {
     try {
@@ -1228,7 +1248,7 @@ websys.CMD_TBL = [
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
   {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-st STATUS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-st STATUS]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-st STATUS]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];
