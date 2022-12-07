@@ -235,7 +235,7 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group=[], permissions=[]):
     return new_uid
 
 def _generate_code(code_len):
-    cd = util.random_str(min=code_len, max=code_len, tbl='0123456789')
+    cd = util.random_string(min=code_len, max=code_len, tbl='0123456789')
     return cd
 
 # Delete expired guest
