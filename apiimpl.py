@@ -58,7 +58,7 @@ def cmd_loginlog(context):
     status = 'OK'
     if web.is_admin(context):
         p_n = web.get_request_param('n')
-        n = 10
+        n = 50
         if p_n is not None:
             try:
                 n = int(p_n)
