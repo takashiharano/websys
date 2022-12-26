@@ -5,15 +5,15 @@
 import os
 import sys
 
-import config
-sys.path.append(config.UTIL_PATH)
+import websysconf
+sys.path.append(websysconf.UTIL_PATH)
 import util
 import userman
 import web
 
-SESSION_LIST_FILE_PATH = config.SESSION_LIST_FILE_PATH
-SESSION_TIMEOUT_SEC = config.SESSION_TIMEOUT_SEC
-ALGOTRITHM = config.ALGOTRITHM
+SESSION_LIST_FILE_PATH = websysconf.SESSION_LIST_FILE_PATH
+SESSION_TIMEOUT_SEC = websysconf.SESSION_TIMEOUT_SEC
+ALGOTRITHM = websysconf.ALGOTRITHM
 
 current_session_info = None
 

@@ -5,8 +5,8 @@
 import os
 import sys
 
-import config
-sys.path.append(config.UTIL_PATH)
+import websysconf
+sys.path.append(websysconf.UTIL_PATH)
 import util
 import bsb64
 

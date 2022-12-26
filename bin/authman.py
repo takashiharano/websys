@@ -6,16 +6,16 @@ import os
 import sys
 import time
 
-import config
-sys.path.append(config.UTIL_PATH)
+import websysconf
+sys.path.append(websysconf.UTIL_PATH)
 import util
 
 import sessionman
 import userman
 import web
 
-ALGOTRITHM = config.ALGOTRITHM
-LOGIN_LOG_PATH = config.LOGIN_LOG_PATH
+ALGOTRITHM = websysconf.ALGOTRITHM
+LOGIN_LOG_PATH = websysconf.LOGIN_LOG_PATH
 
 #----------------------------------------------------------
 # login

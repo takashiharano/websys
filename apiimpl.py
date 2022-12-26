@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../libs'))
 import util
 
 util.append_system_path(__file__, './bin')
-import config
+import websysconf
 import userman
 import sessionman
 import authman
@@ -310,7 +310,7 @@ def cmd_useradd(context):
     if p_st is None:
         p_st = '0'
 
-    pw_hash = util.hash(pw, config.ALGOTRITHM)
+    pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
     u_status = p_st
 
     try:
@@ -346,7 +346,7 @@ def cmd_usermod(context):
     pw = web.get_request_param('pw')
     pw_hash = None
     if pw is not None:
-        pw_hash = util.hash(pw, config.ALGOTRITHM)
+        pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     p_group = web.get_request_param('group')
     group = None

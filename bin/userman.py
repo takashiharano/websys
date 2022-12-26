@@ -5,14 +5,14 @@
 import os
 import sys
 
-import config
-sys.path.append(config.UTIL_PATH)
+import websysconf
+sys.path.append(websysconf.UTIL_PATH)
 import util
 
 import sessionman
 
-USER_LIST_FILE_PATH = config.USER_LIST_FILE_PATH
-GUEST_USER_LIST_FILE_PATH = config.GUEST_USER_LIST_FILE_PATH
+USER_LIST_FILE_PATH = websysconf.USER_LIST_FILE_PATH
+GUEST_USER_LIST_FILE_PATH = websysconf.GUEST_USER_LIST_FILE_PATH
 
 U_ST_DISABLED = 1
 U_ST_RESTRICTED = 1 << 1
@@ -337,12 +337,12 @@ def _has_item_by_domain(item_list, value):
 # Password
 #------------------------------------------------------------------------------
 def get_password_list():
-    path = config.PASSWORD_LIST_FILE_PATH
+    path = websysconf.PASSWORD_LIST_FILE_PATH
     pw_list = util.read_text_file_as_list(path)
     return pw_list
 
 def save_password_list(pw_list):
-    path = config.PASSWORD_LIST_FILE_PATH
+    path = websysconf.PASSWORD_LIST_FILE_PATH
     util.write_text_file_from_list(path, pw_list)
 
 def get_user_password(uid):

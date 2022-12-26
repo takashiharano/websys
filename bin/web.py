@@ -5,8 +5,8 @@
 import os
 import sys
 
-import config
-sys.path.append(config.UTIL_PATH)
+import websysconf
+sys.path.append(websysconf.UTIL_PATH)
 import util
 import bsb64
 
@@ -18,7 +18,7 @@ root_path = ''
 query = None
 
 encryption = True
-LOCK_FILE_PATH = config.LOCK_FILE_PATH
+LOCK_FILE_PATH = websysconf.LOCK_FILE_PATH
 
 #----------------------------------------------------------
 # set root path
