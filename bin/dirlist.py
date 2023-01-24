@@ -9,28 +9,28 @@ import web
 ALLOW_GUESTS = True
 
 # dir list
-def dir_list(root_path, self_path, auth_required=False):
-  web.on_access()
-  if auth_required and not authman.auth(allow_guest=ALLOW_GUESTS):
-    web.redirect_auth_screen()
-    return
+def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
+    web.on_access()
+    if auth_required and not authman.auth(allow_guest=ALLOW_GUESTS):
+        web.redirect_auth_screen()
+        return
 
-  dir_info = util.get_dir_info('.', recursive=1)
-  dir_list = dir_info['children']
+    dir_info = util.get_dir_info('.', recursive=1)
+    dir_list = dir_info['children']
 
-  dirs = []
-  files = []
-  for key in dir_list:
-    item = dir_list[key]
-    if item['isdir']:
-      dirs.append(key)
-    else:
-      files.append(key)
+    dirs = []
+    files = []
+    for key in dir_list:
+        item = dir_list[key]
+        if item['isdir']:
+            dirs.append(key)
+        else:
+            files.append(key)
 
-  dirs.sort()
-  files.sort()
+    dirs.sort()
+    files.sort()
 
-  html = '''<!DOCTYPE html>
+    html = '''<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">
@@ -119,91 +119,107 @@ window.addEventListener('DOMContentLoaded', fm.onReady, true);
 </head>
 <body>
 <div class="frame">
-<div id="clock">---------- --- --:--:--</div>
+<div>
+  <span id="clock">---------- --- --:--:--</span>
+'''
+    if upload:
+        html += '''
+  <div style="display:inline-block;">
+    <form action="./" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="mode" value="upload">
+      <input type="file" name="file"><input type="submit" value="Upload">
+    </form>
+  </div>
+'''
+    html += '  <div style="display:inline-block;">'
+    html += '<span>' + info + '</span>'
+    html += '''
+  </div>
+</div>
 <a href="../" class="dir">..</a><br>
 '''
-  html += '<table>'
-  for i in range(len(dirs)):
-    key = dirs[i]
-    item = dir_list[key]
-    html += dir_item(item)
+    html += '<table>'
+    for i in range(len(dirs)):
+        key = dirs[i]
+        item = dir_list[key]
+        html += dir_item(item)
 
-  for i in range(len(files)):
-    key = files[i]
-    item = dir_list[key]
-    filename = item['filename']
-    if filename == util.get_filename(self_path):
-      continue
-    else:
-      html += dir_item(item)
+    for i in range(len(files)):
+        key = files[i]
+        item = dir_list[key]
+        filename = item['filename']
+        if filename == util.get_filename(self_path):
+            continue
+        else:
+            html += dir_item(item)
 
-  html += '</table>'
-  html += '''
+    html += '</table>'
+    html += '''
 </div>
 </body>
 </html>'''
 
-  web.send_response('html', html)
+    web.send_response('html', html)
 
 # is hidden file name
 def is_hidden(name):
-  return util.match(name, r'^\.') or util.match(name, r'^__.*__$')
+    return util.match(name, r'^\.') or util.match(name, r'^__.*__$')
 
 # dir item
 def dir_item(info):
-  name = info['filename']
-  ext = util.get_file_ext(name)
+    name = info['filename']
+    ext = util.get_file_ext(name)
 
-  class_name = ''
-  if is_hidden(name):
-    class_name = 'hidden-file'
-  if info['isdir']:
-    class_name += ' dir'
-
-  html = ''
-  html += '<tr'
-  if class_name != '':
-    html += ' class="' + class_name + '"'
-  html += '>'
-  html += '<td>'
-
-  filename = ''
-  with_a_tag = False
-  if not is_hidden(name):
+    class_name = ''
+    if is_hidden(name):
+        class_name = 'hidden-file'
     if info['isdir']:
-      with_a_tag = True
-      filename += '<a href="' + name + '"'
-    elif ext == 'html':
-      with_a_tag = True
-      filename += '<a href="' + name + '"'
-    else:
-      with_a_tag = True
-      filename += '<a href="./?file=' + name + '"'
+        class_name += ' dir'
 
+    html = ''
+    html += '<tr'
     if class_name != '':
-      filename += ' class="' + class_name + '"'
+        html += ' class="' + class_name + '"'
+    html += '>'
+    html += '<td>'
 
-    filename += '>'
+    filename = ''
+    with_a_tag = False
+    if not is_hidden(name):
+        if info['isdir']:
+            with_a_tag = True
+            filename += '<a href="' + name + '"'
+        elif ext == 'html':
+            with_a_tag = True
+            filename += '<a href="' + name + '"'
+        else:
+            with_a_tag = True
+            filename += '<a href="./?file=' + name + '"'
 
-  filename += name
+        if class_name != '':
+            filename += ' class="' + class_name + '"'
 
-  if with_a_tag:
-    filename += '</a>'
+        filename += '>'
 
-  src_link = ''
-  if ext == 'html' or ext == 'py':
-    src_link += '<a href="./?file=' + name + '" class="src">[SRC]</a>'
+    filename += name
 
-  html += filename
-  html += src_link
-  html += '</td>'
+    if with_a_tag:
+        filename += '</a>'
 
-  html += '<td align="right" style="padding-left:10px;">'
-  if info['isdir']:
-    html += '&lt;DIR&gt;'
-  else:
-    html += '{:,d}'.format(info['size'])
-  html += '</td>'
-  html += '<td style="padding-left:10px;">' + util.get_datetime_str(info['mtime'], fmt='%Y-%m-%d %H:%M:%S') + '</td>'
-  html += '</tr>'
-  return html
+    src_link = ''
+    if ext == 'html' or ext == 'py':
+        src_link += '<a href="./?file=' + name + '" class="src">[SRC]</a>'
+
+    html += filename
+    html += src_link
+    html += '</td>'
+
+    html += '<td align="right" style="padding-left:10px;">'
+    if info['isdir']:
+        html += '&lt;DIR&gt;'
+    else:
+        html += '{:,d}'.format(info['size'])
+    html += '</td>'
+    html += '<td style="padding-left:10px;">' + util.get_datetime_str(info['mtime'], fmt='%Y-%m-%d %H:%M:%S') + '</td>'
+    html += '</tr>'
+    return html
