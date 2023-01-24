@@ -19,6 +19,10 @@ def main(root_path, target_path, auth_required, upload):
     if content_type.startswith('multipart/form-data'):
         form = util.get_field_storage()
 
+    context = web.on_access()
+    if not context['authorized']:
+        upload = False
+
     if form is None:
         file_path = util.get_request_param('file')
         if file_path is None:
