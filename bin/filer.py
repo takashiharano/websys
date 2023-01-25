@@ -11,7 +11,7 @@ import web
 #----------------------------------------------------------
 # main
 #----------------------------------------------------------
-def main(root_path, target_path, auth_required, upload):
+def main(root_path, target_path, auth_required, upload=False):
     web.set_root_path(root_path)
 
     form = None
@@ -28,7 +28,12 @@ def main(root_path, target_path, auth_required, upload):
         if file_path is None:
             dirlist.dir_list(root_path, target_path, auth_required=auth_required, upload=upload, info='')
         else:
-            file.main(root_path, file_path, auth_required=auth_required)
+            mode = util.get_request_param('mode')
+            if mode == 'delete':
+                util.delete(file_path)
+                dirlist.dir_list(root_path, target_path, auth_required=auth_required, upload=upload, info='Deleted')
+            else:
+                file.main(root_path, file_path, auth_required=auth_required)
     else:
         save_dir = './'
         result = save_file(form, save_dir)

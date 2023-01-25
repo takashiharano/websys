@@ -79,6 +79,21 @@ a:hover {
   border-radius: 4px;
 }
 
+.pseudo-button:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.reload-button {
+  margin: 0 16px;
+  color: #0ff;
+}
+
+.delete-button {
+  margin-left: 16px;
+  color: #f88;
+}
+
 #clock {
   color: #0f0;
 }
@@ -114,13 +129,42 @@ fm.updateClock = function() {
   fm.clock.innerText = clock;
   setTimeout(fm.updateClock, 500);
 };
+fm.delete = function(file) {
+  var f = confirm('Delete?');
+  if (f) {
+    var p = {mode: 'delete', file: file};
+    util.postSubmit('./', p);
+  }
+};
 window.addEventListener('DOMContentLoaded', fm.onReady, true);
+var util = {};
+util.submit = function(url, method, params, uriEnc) {
+  var form = document.createElement('form');
+  form.action = url;
+  form.method = method;
+  for (var key in params) {
+    var input = document.createElement('input');
+    var val = params[key];
+    if (uriEnc) val = encodeURIComponent(val);
+    input.type = 'hidden';
+    input.name = key;
+    input.value = val;
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+};
+
+util.postSubmit = function(url, params, uriEnc) {
+  util.submit(url, 'POST', params, uriEnc);
+};
 </script>
 </head>
 <body>
 <div class="frame">
 <div>
   <span id="clock">---------- --- --:--:--</span>
+  <span class="reload-button pseudo-button" onclick="location.href='./'">RELOAD</span>
 '''
     if upload:
         html += '''
@@ -151,7 +195,7 @@ window.addEventListener('DOMContentLoaded', fm.onReady, true);
         if filename == util.get_filename(self_path):
             continue
         else:
-            html += dir_item(item)
+            html += dir_item(item, upload)
 
     html += '</table>'
     html += '''
@@ -166,7 +210,7 @@ def is_hidden(name):
     return util.match(name, r'^\.') or util.match(name, r'^__.*__$')
 
 # dir item
-def dir_item(info):
+def dir_item(info, delete_enable):
     name = info['filename']
     ext = util.get_file_ext(name)
 
@@ -219,6 +263,10 @@ def dir_item(info):
         html += '&lt;DIR&gt;'
     else:
         html += '{:,d}'.format(info['size'])
+
+        if delete_enable:
+            html += '<span class="delete-button pseudo-button" onclick="fm.delete(\'' + name + '\');">X</span>'
+
     html += '</td>'
     html += '<td style="padding-left:10px;">' + util.get_datetime_str(info['mtime'], fmt='%Y-%m-%d %H:%M:%S') + '</td>'
     html += '</tr>'
