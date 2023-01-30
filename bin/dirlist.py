@@ -180,6 +180,7 @@ util.postSubmit = function(url, params, uriEnc) {
     html += '''
   </div>
 </div>
+<div style="height:calc(100% - 30px);overflow:auto;">
 <a href="../" class="dir">..</a><br>
 '''
     html += '<table>'
@@ -199,6 +200,7 @@ util.postSubmit = function(url, params, uriEnc) {
 
     html += '</table>'
     html += '''
+</div>
 </div>
 </body>
 </html>'''
