@@ -187,7 +187,7 @@ util.postSubmit = function(url, params, uriEnc) {
     for i in range(len(dirs)):
         key = dirs[i]
         item = dir_list[key]
-        html += dir_item(item)
+        html += dir_item(item, upload)
 
     for i in range(len(files)):
         key = files[i]
