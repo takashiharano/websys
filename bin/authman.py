@@ -6,7 +6,9 @@ import os
 import sys
 import time
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
+
 sys.path.append(websysconf.UTIL_PATH)
 import util
 

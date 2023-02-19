@@ -2,6 +2,13 @@
 # DIR List
 # Copyright (c) 2020 Takashi Harano
 #==============================================================================
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import websysconf
+
+sys.path.append(websysconf.UTIL_PATH)
 import util
 import authman
 import web
