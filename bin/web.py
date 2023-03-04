@@ -261,6 +261,23 @@ def build_session_cookie(session_info):
     return cookies
 
 #----------------------------------------------------------
+# get ip addr
+#----------------------------------------------------------
+def get_ip_addr():
+    addr = util.get_ip_addr()
+    return addr
+
+#----------------------------------------------------------
+# get host name
+#----------------------------------------------------------
+def get_host_name():
+    if websysconf.USE_HOSTNAME:
+        host = util.get_host_name()
+    else:
+        host = ''
+    return host
+
+#----------------------------------------------------------
 # send response
 #----------------------------------------------------------
 def send_response(type, result, headers=None, encoding=None):

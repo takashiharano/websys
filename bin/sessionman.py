@@ -130,8 +130,8 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
 #----------------------------------------------------------
 def create_session_info(uid, is_guest=False):
     now = util.get_timestamp()
-    addr = util.get_ip_addr()
-    host = util.get_host_name()
+    addr = web.get_ip_addr()
+    host = web.get_host_name()
     useragent = util.get_user_agent()
     tz = web.get_request_param('_tz')
 
@@ -180,8 +180,8 @@ def create_session_id(uid):
 #----------------------------------------------------------
 def update_last_accessed_info(sessions, sid):
     now = util.get_timestamp()
-    addr = util.get_ip_addr()
-    host = util.get_host_name()
+    addr = web.get_ip_addr()
+    host = web.get_host_name()
     useragent = util.get_user_agent()
     tz = web.get_request_param('_tz')
     update_session_info(sessions, sid, now, addr, host, useragent, tz)

@@ -14,3 +14,5 @@ PASSWORD_LIST_FILE_PATH = DATA_DIR + 'userspw.txt'
 SESSION_LIST_FILE_PATH = DATA_DIR + 'sessions.json'
 ALGOTRITHM = 'SHA-256'
 LOGIN_LOG_PATH = DATA_DIR + 'logs/login.log'
+
+USE_HOSTNAME = True

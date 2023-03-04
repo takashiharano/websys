@@ -102,8 +102,8 @@ def _guest_login(uid, ext_auth=False):
 def write_log(status, id, sid=''):
     now = util.get_timestamp()
     date_time = util.get_datetime_str(now, fmt='%Y-%m-%dT%H:%M:%S.%f')
-    addr = util.get_ip_addr()
-    host = util.get_host_name()
+    addr = web.get_ip_addr()
+    host = web.get_host_name()
     ua = util.get_user_agent()
 
     data = date_time
