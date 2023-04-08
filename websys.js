@@ -694,6 +694,8 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var agroup = dbg.getOptVal(arg, 'aG');
   var rgroup = dbg.getOptVal(arg, 'rG');
   var privs = dbg.getOptVal(arg, 'privs');
+  var aprivs = dbg.getOptVal(arg, 'aPrivs');
+  var rprivs = dbg.getOptVal(arg, 'rPrivs');
   var admin = dbg.getOptVal(arg, 'admin');
 
   if (!uid || (admin && (admin != 'true') && (admin != 'false'))) {
@@ -753,6 +755,24 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       return;
     }
     param.privs = privs;
+  }
+  if (aprivs) {
+    try {
+      aprivs = eval(aprivs);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.aprivs = aprivs;
+  }
+  if (rprivs) {
+    try {
+      rprivs = eval(rprivs);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.rprivs = rprivs;
   }
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');

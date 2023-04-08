@@ -284,23 +284,19 @@ def cmd_useradd(context):
     if name is None:
         name = uid
 
-    p_group = web.get_request_param('group')
-    group = []
+    p_group = web.get_request_param('group', '')
+    group = ''
     if p_group is not None:
-        p_group = p_group.strip()
-        p_group = util.replace(p_group, '\s{2,}', ' ')
-        group = p_group.split(' ')
-        if len(group) == 1 and group[0] == '':
-            group = []
+        group = p_group
+        group = util.replace(group, '\s{2,}', ' ')
+        group = group.strip()
 
     p_privs = web.get_request_param('privs')
-    privs = []
+    privs = ''
     if p_privs is not None:
-        p_privs = p_privs.strip()
-        p_privs = util.replace(p_privs, '\s{2,}', ' ')
-        privs = p_privs.split(' ')
-        if len(privs) == 1 and privs[0] == '':
-            privs = []
+        privs = p_privs
+        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = privs.strip()
 
     p_admin = web.get_request_param('admin')
     is_admin = False
@@ -351,38 +347,24 @@ def cmd_usermod(context):
     p_group = web.get_request_param('group')
     group = None
     if p_group is not None:
-        p_group = p_group.strip()
-        p_group = util.replace(p_group, '\s{2,}', ' ')
+        group = p_group.strip()
+        group = util.replace(group, '\s{2,}', ' ')
         group = p_group.split(' ')
         if len(group) == 1 and group[0] == '':
             group = []
 
-    p_agroup = web.get_request_param('agroup')
-    agroup = None
-    if p_agroup is not None:
-        p_agroup = p_agroup.strip()
-        p_agroup = util.replace(p_agroup, '\s{2,}', ' ')
-        agroup = p_agroup.split(' ')
-        if len(agroup) == 1 and agroup[0] == '':
-            agroup = None
-
-    p_rgroup = web.get_request_param('rgroup')
-    rgroup = None
-    if p_rgroup is not None:
-        p_rgroup = p_rgroup.strip()
-        p_rgroup = util.replace(p_rgroup, '\s{2,}', ' ')
-        rgroup = p_rgroup.split(' ')
-        if len(rgroup) == 1 and rgroup[0] == '':
-            rgroup = None
+    agroup = _get_optional_param_by_list('agroup')
+    rgroup = _get_optional_param_by_list('rgroup')
 
     p_privs = web.get_request_param('privs')
     privs = None
     if p_privs is not None:
-        p_privs = p_privs.strip()
-        p_privs = util.replace(p_privs, '\s{2,}', ' ')
-        privs = p_privs.split(' ')
-        if len(privs) == 1 and privs[0] == '':
-            privs = []
+        privs = p_privs
+        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = privs.strip()
+
+    aprivs = _get_optional_param_by_list('aprivs')
+    rprivs = _get_optional_param_by_list('rprivs')
 
     p_admin = web.get_request_param('admin')
     is_admin = None
@@ -395,12 +377,23 @@ def cmd_usermod(context):
         u_status = p_st
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, status=u_status)
+        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
 
     web.send_result_json(status, body=None)
+
+def _get_optional_param_by_list(key):
+    p_value = web.get_request_param(key)
+    param_list = None
+    if p_value is not None:
+        p_value = p_value.strip()
+        p_value = util.replace(p_value, '\s{2,}', ' ')
+        param_list = p_value.split(' ')
+        if len(param_list) == 1 and param_list[0] == '':
+            param_list = None
+    return param_list
 
 #----------------------------------------------------------
 # gencode
@@ -431,22 +424,19 @@ def cmd_gencode(context):
         id = p_id
 
     p_group = web.get_request_param('group')
-    group = []
+    group = ''
     if p_group is not None:
-        p_group = p_group.strip()
-        p_group = util.replace(p_group, '\s{2,}', ' ')
-        group = p_group.split(' ')
-        if len(group) == 1 and group[0] == '':
-            group = []
+        group = p_group
+        group = util.replace(group, '\s{2,}', ' ')
+        group = group.strip()
 
     p_privs = web.get_request_param('privs')
-    privs = []
+    privs = ''
     if p_privs is not None:
-        p_privs = p_privs.strip()
-        p_privs = util.replace(p_privs, '\s{2,}', ' ')
-        privs = p_privs.split(' ')
-        if len(privs) == 1 and privs[0] == '':
-            privs = []
+        privs = p_privs
+        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = privs.strip()
+
     try:
         uid = userman.create_guest(uid=id, valid_min=valid_min, group=group, privs=privs)
     except Exception as e:

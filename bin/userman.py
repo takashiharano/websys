@@ -25,8 +25,8 @@ U_ST_RESTRICTED = 1 << 1
 #     "uid": "root",
 #     "name": "root",
 #     "is_admin": true,
-#     "group": ["GROUPNAME"],
-#     "privs": ["PRIVILEGENAME"],
+#     "group": "GROUP1 GROUP2",
+#     "privs": "PRIVILEGE1 PRIVILEGE2"
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
 #     "status": 0
@@ -39,8 +39,8 @@ U_ST_RESTRICTED = 1 << 1
 #   "123456": {
 #     "uid": "123456",
 #     "name": "GUEST",
-#     "group": ["GROUPNAME"],
-#     "privs": [],
+#     "group": "GROUP1",
+#     "privs": "",
 #     "is_guest": true,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
@@ -73,7 +73,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, is_admin=False, group=[], privs=[], status='0'):
+def create_user(uid, pw, name=None, is_admin=False, group='', privs='', status='0'):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -100,7 +100,7 @@ def create_user(uid, pw, name=None, is_admin=False, group=[], privs=[], status='
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, status=None):
+def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -116,13 +116,19 @@ def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None,
         user['group'] = group
 
     if agroup is not None:
-        user['group'] = _add_group(user['group'], agroup)
+        user['group'] = _add_item_value(user['group'], agroup)
 
     if rgroup is not None:
-        user['group'] = _remove_group(user['group'], rgroup)
+        user['group'] = _remove_item_value(user['group'], rgroup)
 
     if privs is not None:
         user['privs'] = privs
+
+    if aprivs is not None:
+        user['privs'] = _add_item_value(user['privs'], aprivs)
+
+    if rprivs is not None:
+        user['privs'] = _remove_item_value(user['privs'], rprivs)
 
     if is_admin is not None:
         user['is_admin'] = is_admin
@@ -145,20 +151,15 @@ def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None,
 
     return user
 
-def _add_group(group, agroup):
-    for ag in agroup:
-        exists = False
-        for g in group:
-            if g == ag:
-                exists = True
-        if not exists:
-            group.append(ag)
-    return group
+def _add_item_value(items, aitems):
+    for item in aitems:
+        items = util.add_item_value(items, item, separator=' ')
+    return items
 
-def _remove_group(group, rgroup):
-    for rg in rgroup:
-        group.remove(rg)
-    return group
+def _remove_item_value(items, ritems):
+    for item in ritems:
+        items = util.remove_item_value(items, item, separator=' ')
+    return items
 
 # Delete a user
 def delete_user(uid):
@@ -193,7 +194,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def create_guest(uid=None, uid_len=6, valid_min=30, group=[], privs=[]):
+def create_guest(uid=None, uid_len=6, valid_min=30, group=[], privs=''):
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -298,6 +299,7 @@ def _has_item(user_info, key, value):
         return True
 
     items = user_info[key]
+    items = items.split(' ')
     if value in items:
         return True
 
