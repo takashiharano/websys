@@ -149,13 +149,13 @@ def get_session_id(context):
 #   "uid": "root",
 #   "name": "root",
 #   "is_admin": true,
-#   "permissions": ["DOMAIN.PERMISSIONNAME"],
+#   "privs": ["PRIVILEGENAME"],
 #   "disabled": false
 # }
 # users_guest
 #   "uid": "123456",
 #   "name": "GUEST",
-#   "permissions": [],
+#   "privs": [],
 #   "is_guest": true,
 #   "path": null | '/path/',
 #   "disabled": false,
@@ -215,13 +215,13 @@ def is_member_of(context, group_name):
     return False
 
 #----------------------------------------------------------
-# has_permission
-# permission_name: case-insensitive
+# has_privilege
+# privilege_name: case-insensitive
 #----------------------------------------------------------
-def has_permission(context, permission_name):
+def has_privilege(context, privilege_name):
     if 'user_info' in context:
         user_info = context['user_info']
-        return userman.has_permission(user_info, permission_name)
+        return userman.has_privilege(user_info, privilege_name)
 
     return False
 
@@ -358,7 +358,7 @@ def redirect_auth_screen():
 
 #----------------------------------------------------------
 def synchronize_start():
-    if util.file_lock(LOCK_FILE_PATH, 50, 0.2):
+    if util.file_lock(LOCK_FILE_PATH, 25, 0.2):
         return True
     return False
 

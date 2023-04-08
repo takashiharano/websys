@@ -49,15 +49,15 @@ websys.gencode = function(arg, tbl, echo) {
     param.group = group;
   }
 
-  var permissions = dbg.getOptVal(arg, 'permissions');
-  if (permissions) {
+  var privs = dbg.getOptVal(arg, 'privs');
+  if (privs) {
     try {
-      permissions = eval(permissions);
+      privs = eval(privs);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.permissions = permissions;
+    param.privs = privs;
   }
 
   var req = {
@@ -623,7 +623,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
   var group = dbg.getOptVal(arg, 'g');
-  var permissions = dbg.getOptVal(arg, 'permissions');
+  var privs = dbg.getOptVal(arg, 'privs');
   var admin = dbg.getOptVal(arg, 'admin');
   if (!p) p = '';
   var pw = websys.sha.getHash('SHA-256', p, uid);
@@ -653,14 +653,14 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     }
     param.group = group;
   }
-  if (permissions) {
+  if (privs) {
     try {
-      permissions = eval(permissions);
+      privs = eval(privs);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.permissions = permissions;
+    param.privs = privs;
   }
   var st = dbg.getOptVal(arg, 'st');
   if (st) {
@@ -693,7 +693,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var group = dbg.getOptVal(arg, 'g');
   var agroup = dbg.getOptVal(arg, 'aG');
   var rgroup = dbg.getOptVal(arg, 'rG');
-  var permissions = dbg.getOptVal(arg, 'permissions');
+  var privs = dbg.getOptVal(arg, 'privs');
   var admin = dbg.getOptVal(arg, 'admin');
 
   if (!uid || (admin && (admin != 'true') && (admin != 'false'))) {
@@ -745,14 +745,14 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     }
     param.rgroup = rgroup;
   }
-  if (permissions) {
+  if (privs) {
     try {
-      permissions = eval(permissions);
+      privs = eval(privs);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.permissions = permissions;
+    param.privs = privs;
   }
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
@@ -1235,7 +1235,7 @@ websys.init = function(path, readyFn) {
 };
 
 websys.CMD_TBL = [
-  {cmd: 'gencode', fn: websys.gencode, desc: 'Make a guest user', help: 'gencode [ID(A-Za-z0-9_-)] [-valid MIN] [-g "GROUP1 GROUP2"] [-permissions "DOMAIN.P1 DOMAIN.P2"]'},
+  {cmd: 'gencode', fn: websys.gencode, desc: 'Make a guest user', help: 'gencode [ID(A-Za-z0-9_-)] [-valid MIN] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"]'},
   {cmd: 'guests', fn: websys.guests, desc: 'Show all guest user info'},
   {cmd: 'hello', fn: websys.hello, desc: 'Hello'},
   {cmd: 'login', fn: websys.login, desc: 'Login'},
@@ -1246,9 +1246,9 @@ websys.CMD_TBL = [
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},
   {cmd: 'sha', fn: websys.sha, desc: 'Generate and display cryptographic hash', help: 'sha [1|224|3-224|256|3-256|384|3-384|512|3-512] -i "input" [-salt "salt"]'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
-  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-st STATUS]'},
+  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-permissions "DOMAIN.P1 DOMAIN.P2"] [-st STATUS]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];

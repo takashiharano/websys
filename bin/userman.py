@@ -26,7 +26,7 @@ U_ST_RESTRICTED = 1 << 1
 #     "name": "root",
 #     "is_admin": true,
 #     "group": ["GROUPNAME"],
-#     "permissions": ["DOMAIN.PERMISSIONNAME"],
+#     "privs": ["PRIVILEGENAME"],
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
 #     "status": 0
@@ -40,7 +40,7 @@ U_ST_RESTRICTED = 1 << 1
 #     "uid": "123456",
 #     "name": "GUEST",
 #     "group": ["GROUPNAME"],
-#     "permissions": [],
+#     "privs": [],
 #     "is_guest": true,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
@@ -73,7 +73,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, is_admin=False, group=[], permissions=[], status='0'):
+def create_user(uid, pw, name=None, is_admin=False, group=[], privs=[], status='0'):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -88,7 +88,7 @@ def create_user(uid, pw, name=None, is_admin=False, group=[], permissions=[], st
         'name': name,
         'is_admin': is_admin,
         'group': group,
-        'permissions': permissions,
+        'privs': privs,
         'created_at': now,
         'updated_at': now,
         'status': u_status
@@ -100,7 +100,7 @@ def create_user(uid, pw, name=None, is_admin=False, group=[], permissions=[], st
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None, rgroup=None, permissions=None, status=None):
+def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -121,8 +121,8 @@ def modify_user(uid, pw=None, name=None, is_admin=None, group=None, agroup=None,
     if rgroup is not None:
         user['group'] = _remove_group(user['group'], rgroup)
 
-    if permissions is not None:
-        user['permissions'] = permissions
+    if privs is not None:
+        user['privs'] = privs
 
     if is_admin is not None:
         user['is_admin'] = is_admin
@@ -193,7 +193,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def create_guest(uid=None, uid_len=6, valid_min=30, group=[], permissions=[]):
+def create_guest(uid=None, uid_len=6, valid_min=30, group=[], privs=[]):
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -223,7 +223,7 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group=[], permissions=[]):
         'uid': new_uid,
         'name': name,
         'group': group,
-        'permissions': permissions,
+        'privs': privs,
         'is_guest': True,
         'created_at': now,
         'updated_at': now,
@@ -283,11 +283,11 @@ def is_member_of(user_info, group_name):
     return _has_item(user_info, 'group', group_name)
 
 #----------------------------------------------------------
-# has_permission
-# permission_name: case-insensitive
+# has_privilege
+# priv_name: case-insensitive
 #----------------------------------------------------------
-def has_permission(user_info, permission_name):
-    return _has_item(user_info, 'permissions', permission_name)
+def has_privilege(user_info, priv_name):
+    return _has_item(user_info, 'privs', priv_name)
 
 #----------------------------------------------------------
 def _has_item(user_info, key, value):
