@@ -344,37 +344,43 @@ def cmd_usermod(context):
     if pw is not None:
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
-    p_group = web.get_request_param('group')
     group = None
-    if p_group is not None:
-        group = p_group.strip()
-        group = util.replace(group, '\s{2,}', ' ')
-        group = p_group.split(' ')
-        if len(group) == 1 and group[0] == '':
-            group = []
-
-    agroup = _get_optional_param_by_list('agroup')
-    rgroup = _get_optional_param_by_list('rgroup')
-
-    p_privs = web.get_request_param('privs')
+    agroup = None
+    rgroup = None
     privs = None
-    if p_privs is not None:
-        privs = p_privs
-        privs = util.replace(privs, '\s{2,}', ' ')
-        privs = privs.strip()
-
-    aprivs = _get_optional_param_by_list('aprivs')
-    rprivs = _get_optional_param_by_list('rprivs')
-
-    p_admin = web.get_request_param('admin')
+    aprivs = None
+    rprivs = None
     is_admin = None
-    if p_admin is not None:
-        is_admin = p_admin == 'true'
-
-    p_st = web.get_request_param('st')
     u_status = None
-    if p_st is not None:
-        u_status = p_st
+
+    if web.is_admin(context):
+        p_group = web.get_request_param('group')
+        if p_group is not None:
+            group = p_group.strip()
+            group = util.replace(group, '\s{2,}', ' ')
+            group = p_group.split(' ')
+            if len(group) == 1 and group[0] == '':
+                group = []
+
+        agroup = _get_optional_param_by_list('agroup')
+        rgroup = _get_optional_param_by_list('rgroup')
+
+        p_privs = web.get_request_param('privs')
+        if p_privs is not None:
+            privs = p_privs
+            privs = util.replace(privs, '\s{2,}', ' ')
+            privs = privs.strip()
+
+        aprivs = _get_optional_param_by_list('aprivs')
+        rprivs = _get_optional_param_by_list('rprivs')
+
+        p_admin = web.get_request_param('admin')
+        if p_admin is not None:
+            is_admin = p_admin == 'true'
+
+        p_st = web.get_request_param('st')
+        if p_st is not None:
+            u_status = p_st
 
     try:
         userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, status=u_status)
