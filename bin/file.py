@@ -41,12 +41,12 @@ def output_text_file(root_path, path):
     html += 'document.getElementById(\'t\').innerHTML=a;'
     html += '};window.addEventListener(\'DOMContentLoaded\',onReady,true);'
     html += '</script></head><body><pre id="t"></pre></body></html>'
-    web.send_response('html', html)
+    web.send_response(html, 'text/html')
 
 def main(root_path, path, allow_guest=False, auth_required=True):
     web.on_access()
     if auth_required and  not authman.auth(allow_guest=allow_guest):
-        util.send_response('text', 'FORBIDDEN')
+        util.send_response('FORBIDDEN')
     else:
         if is_text_file(path):
             output_text_file(root_path, path)
@@ -54,4 +54,4 @@ def main(root_path, path, allow_guest=False, auth_required=True):
             headers = [
                 {'Location': path}
             ]
-            util.send_response('text', 'bin', status=302, headers=headers)
+            util.send_response('FILE', status=302, headers=headers)

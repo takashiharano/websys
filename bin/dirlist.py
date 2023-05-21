@@ -212,7 +212,7 @@ util.postSubmit = function(url, params, uriEnc) {
 </body>
 </html>'''
 
-    web.send_response('html', html)
+    web.send_response(html, 'text/html')
 
 # is hidden file name
 def is_hidden(name):

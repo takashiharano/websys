@@ -268,32 +268,32 @@ def get_host_name():
 #----------------------------------------------------------
 # send response
 #----------------------------------------------------------
-def send_response(type, result, headers=None, encoding=None):
+def send_response(result, type, headers=None, encoding=None):
     if headers is None:
         session_info = sessionman.get_current_session_info()
         cookies = build_session_cookie(session_info)
         headers = cookies
-    _send_response(type, result, headers, encoding)
+    _send_response(result, type, headers, encoding)
 
-def _send_response(type, result, headers=None, encoding=None):
-    if type == 'json' and util.typename(result) != 'str':
+def _send_response(result, type, headers=None, encoding=None):
+    if type == 'application/json' and util.typename(result) != 'str':
         result = util.to_json(result)
 
-    if type == 'html':
+    if type == 'text/html':
         content = result
     else:
         if encryption:
             content = bsb64.encode_string(result, 7)
-            type = 'text'
+            type = 'text/plain'
         else:
             content = result
 
-    util.send_response(type, content, headers=headers)
+    util.send_response(content, type, headers=headers)
 
 def send_result_json(status, body=None, headers=None, http_headers=None):
     result = util.build_result_object(status, body, headers)
     content = util.to_json(result)
-    send_response('json', content, headers=http_headers)
+    send_response(content, 'application/json', headers=http_headers)
 
 # Blue Screen
 def blue_screen(msg=None):
@@ -318,7 +318,7 @@ body, pre {
 <pre>''' +  msg + '''</pre>
 </body>
 </html>'''
-    send_response('html', html)
+    send_response(html, 'text/html')
 
 # Auth Redirection
 def redirect_auth_screen():
@@ -342,7 +342,7 @@ def redirect_auth_screen():
 <body>
 </body>
 </html>'''
-    send_response('html', html)
+    send_response(html, 'text/html')
 
 #----------------------------------------------------------
 def synchronize_start():

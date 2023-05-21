@@ -537,7 +537,7 @@ def cmd_hello(context):
 #----------------------------------------------------------
 def on_auth_error():
     obj = {'status': 'AUTH_ERROR'}
-    web.send_response('json', obj)
+    web.send_response(obj, 'application/json')
 
 #----------------------------------------------------------
 # get user info
