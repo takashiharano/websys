@@ -82,20 +82,21 @@ def _on_access(context, allow_guest):
 #----------------------------------------------------------
 def get_request_param(key=None, default=None):
     q = util.get_query()
+    if q is None:
+        return default
 
-    if q is not None:
-        if encryption:
-            q = util.replace(q, '&?_trcid=.+', '')
-            try:
-                q = bsb64.decode_string(q, 1)
-            except:
-                pass
+    if encryption:
+        q = util.replace(q, '&?_trcid=.+', '')
+        try:
+            q = bsb64.decode_string(q, 1)
+        except:
+            pass
 
     if key is not None:
         if q == '':
             q = None
         else:
-            q = util.get_query(key, q)
+            q = util.get_query_value(q, key)
 
     if q is None:
         q = default
@@ -105,20 +106,7 @@ def get_request_param(key=None, default=None):
     return q
 
 def get_raw_request_param(key=None, default=None):
-    q = util.get_query()
-
-    if key is not None:
-      if q == '':
-          q = None
-      else:
-          q = util.get_query(key, q)
-
-    if q is None:
-        q = default
-    else:
-        q = util.decode_uri(q)
-
-    return q
+    return get_request_param(key, default)
 
 #----------------------------------------------------------
 # get_session_info
