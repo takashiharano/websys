@@ -176,7 +176,7 @@ websys.login.doLogin = function(id, pw) {
     cmd: 'login',
     id: id
   };
-  var hash = websys.sha.getHash('SHA-256', pw, id);
+  var hash = websys.getHash('SHA-256', pw, id);
   param.pw = hash;
   var req = {
     url: websys.basePath + 'websys/api.cgi',
@@ -350,7 +350,7 @@ websys.cmdPasswd.cancel = function() {
   websys.status = 0;
 };
 websys._cmdPasswd = function(uid, p) {
-  var pw = websys.sha.getHash('SHA-256', p, uid);
+  var pw = websys.getHash('SHA-256', p, uid);
   var param = {
     cmd: 'usermod',
     uid: uid,
@@ -467,95 +467,9 @@ websys.buildSessinInfo = function(info, flgA) {
 };
 
 /**
- * sha
+ * hash
  */
-websys.ALGORYTHMS = ['1', '224', '256', '384', '512', '3-224', '3-256', '3-384', '3-512'];
-websys.sha = function(arg, tbl, echo) {
-  var src, ret;
-  var variant = dbg.getOptVal(arg, '')[0];
-  if (variant == '') {
-    dbg.printUsage(tbl.help);
-    return;
-  }
-
-  var all = false;
-  var noOptsLen = dbg.getOptVal(arg, '').length;
-  if (noOptsLen == 0) {
-    all = true;
-    src = dbg.getOptVal(arg, '')[0];
-  } else if (noOptsLen == 1) {
-    if (!websys.sha.isValidVariant(variant)) {
-      all = true;
-    }
-    src = dbg.getOptVal(arg, '')[0];
-  } else {
-    if (websys.sha.isValidVariant(variant)) {
-      src = dbg.getOptVal(arg, '')[1];
-    } else {
-      dbg.printUsage(tbl.help);
-      return;
-    }
-  }
-
-  var input = dbg.getOptVal(arg, 'i');
-  if (input != undefined) {
-    src = input;
-  }
-  try {
-    src = eval(src);
-  } catch (e) {
-    log.e(e);
-    return;
-  }
-  if (src == undefined) {
-    dbg.printUsage(tbl.help);
-    return;
-  }
-
-  var salt = dbg.getOptVal(arg, 'salt');
-  try {
-    salt = eval(salt);
-  } catch (e) {
-    log.e(e);
-    return;
-  }
-
-  if (all) {
-    ret = {};
-    for (var i = 0; i < websys.ALGORYTHMS.length; i++) {
-      if (i > 0) {
-        if (echo) {
-          log('');
-        }
-      }
-      algorithm = websys.sha.getAlgorythmName(websys.ALGORYTHMS[i]);
-      var hash = websys.sha.getHash(algorithm, src, salt, echo);
-      if (echo) {
-        log(algorithm);
-        log.res(hash);
-      }
-      ret[algorithm] = hash;
-    }
-  } else {
-    algorithm = websys.sha.getAlgorythmName(variant);
-    hash = websys.sha.getHash(algorithm, src, salt, echo);
-    if (echo) {
-      log.res(hash);
-    }
-    ret = hash;
-  }
-  return ret;
-};
-websys.sha.getAlgorythmName = function(variant) {
-  var algorithm = 'SHA'
-  if (variant.match('-')) {
-    algorithm += variant;
-  } else {
-    algorithm += '-' + variant;
-  }
-  return algorithm;
-};
-websys.sha.getHash = function(algorithm, src, salt) {
+websys.getHash = function(algorithm, src, salt) {
   var shaObj = new jsSHA(algorithm, 'TEXT');
   shaObj.update(src);
   if (salt != undefined) {
@@ -563,9 +477,6 @@ websys.sha.getHash = function(algorithm, src, salt) {
   }
   var hash = shaObj.getHash('HEX');
   return hash;
-};
-websys.sha.isValidVariant = function(v) {
-  return dbg.arr.has(websys.ALGORYTHMS, v);
 };
 
 /**
@@ -626,7 +537,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var privs = dbg.getOptVal(arg, 'privs');
   var admin = dbg.getOptVal(arg, 'admin');
   if (!p) p = '';
-  var pw = websys.sha.getHash('SHA-256', p, uid);
+  var pw = websys.getHash('SHA-256', p, uid);
   var param = {
     cmd: 'useradd',
     uid: uid,
@@ -717,7 +628,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     param.name = name;
   }
   if (p) {
-    var pw = websys.sha.getHash('SHA-256', p, uid);
+    var pw = websys.getHash('SHA-256', p, uid);
     param.pw = pw;
   }
   if (group) {
@@ -1264,7 +1175,6 @@ websys.CMD_TBL = [
   {cmd: 'passwd', fn: websys.cmdPasswd, desc: 'Change user\'s password', help: 'passwd [-u UID] [-p PW]'},
   {cmd: 'session', fn: websys.cmdSession, desc: 'Show current session info'},
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},
-  {cmd: 'sha', fn: websys.sha, desc: 'Generate and display cryptographic hash', help: 'sha [1|224|3-224|256|3-256|384|3-384|512|3-512] -i "input" [-salt "salt"]'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
   {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
