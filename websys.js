@@ -205,11 +205,10 @@ websys.login.cb = function(xhr, res) {
 /**
  * logout
  */
-websys.logout = function(arg, tbl, echo) {
-  var param = {
-    cmd: 'logout'
-  };
+websys.cmdLogout = function(arg, tbl, echo) {
+  arg = arg.trim();
 
+  var param = {};
   var sid = dbg.getOptVal(arg, 'sid');
   if (sid != null) {
     param.sid = sid;
@@ -225,16 +224,21 @@ websys.logout = function(arg, tbl, echo) {
     param.all = 'true';
   }
 
-  if (!sid && !uid && !isAll && arg.trim()) {
+  if (!sid && !uid && !isAll && arg) {
     dbg.printUsage(tbl.help);
     return;
   }
 
+  websys.logout(param, websys.logout.cb);
+};
+websys.logout = function(param, cb) {
+  if (!param) param = {};
+  param.cmd = 'logout';
   var req = {
     url: websys.basePath + 'websys/api.cgi',
     method: 'POST',
     data: param,
-    cb: websys.logout.cb
+    cb: cb
   };
   websys.http(req);
 };
@@ -1171,7 +1175,7 @@ websys.CMD_TBL = [
   {cmd: 'hello', fn: websys.hello, desc: 'Hello'},
   {cmd: 'login', fn: websys.login, desc: 'Login'},
   {cmd: 'loginlog', fn: websys.loginlog, desc: 'Show Login Log'},
-  {cmd: 'logout', fn: websys.logout, desc: 'Logout', help: 'logout [-sid sid]|[-u uid]'},
+  {cmd: 'logout', fn: websys.cmdLogout, desc: 'Logout', help: 'logout [-sid sid]|[-u uid]'},
   {cmd: 'passwd', fn: websys.cmdPasswd, desc: 'Change user\'s password', help: 'passwd [-u UID] [-p PW]'},
   {cmd: 'session', fn: websys.cmdSession, desc: 'Show current session info'},
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},
