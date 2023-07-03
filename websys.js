@@ -308,7 +308,6 @@ websys.loginlog.cb = function(xhr, res) {
   log.mlt(r);
 };
 
-
 /**
  * passwd
  */
@@ -537,6 +536,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   }
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
+  var nameL = dbg.getOptVal(arg, 'nlocal');
   var group = dbg.getOptVal(arg, 'g');
   var privs = dbg.getOptVal(arg, 'privs');
   var admin = dbg.getOptVal(arg, 'admin');
@@ -555,6 +555,15 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
       return;
     }
     param.name = name;
+  }
+  if (nameL) {
+    try {
+      nameL = eval(nameL);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.name_l = nameL;
   }
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
@@ -605,6 +614,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var uid = dbg.getOptVal(arg, 'u');
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
+  var nameL = dbg.getOptVal(arg, 'nlocal');
   var group = dbg.getOptVal(arg, 'g');
   var agroup = dbg.getOptVal(arg, 'aG');
   var rgroup = dbg.getOptVal(arg, 'rG');
@@ -630,6 +640,15 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       return;
     }
     param.name = name;
+  }
+  if (nameL) {
+    try {
+      nameL = eval(nameL);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.name_l = nameL;
   }
   if (p) {
     var pw = websys.getHash('SHA-256', p, uid);
@@ -1046,6 +1065,15 @@ websys.getUserName = function() {
   return name;
 };
 
+websys.getUserLocalName = function() {
+  var nameL = null;
+  var userInfo = websys.getUserInfo();
+  if (userInfo) {
+    nameL = userInfo.name_l;
+  }
+  return nameL;
+};
+
 websys.isAdmin = function() {
   var userInfo = websys.getUserInfo();
   if (userInfo && userInfo.is_admin) {
@@ -1180,9 +1208,9 @@ websys.CMD_TBL = [
   {cmd: 'session', fn: websys.cmdSession, desc: 'Show current session info'},
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
-  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
+  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"] [-st STATUS]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"] [-st STATUS]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];

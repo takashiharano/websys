@@ -270,6 +270,7 @@ def cmd_useradd(context):
 
     uid = web.get_request_param('uid')
     name = web.get_request_param('name')
+    name_l = web.get_request_param('name_l')
     pw = web.get_request_param('pw')
     p_st = web.get_request_param('st')
 
@@ -283,6 +284,9 @@ def cmd_useradd(context):
 
     if name is None:
         name = uid
+
+    if name_l is None:
+        name_l = name
 
     p_group = web.get_request_param('group', '')
     group = ''
@@ -310,7 +314,7 @@ def cmd_useradd(context):
     u_status = p_st
 
     try:
-        userman.create_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, privs=privs, status=u_status)
+        userman.create_user(uid, pw_hash, name=name, name_l=name_l, is_admin=is_admin, group=group, privs=privs, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -338,6 +342,7 @@ def cmd_usermod(context):
         return
 
     name = web.get_request_param('name')
+    name_l = web.get_request_param('name_l')
 
     pw = web.get_request_param('pw')
     pw_hash = None
@@ -383,7 +388,7 @@ def cmd_usermod(context):
             u_status = p_st
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, status=u_status)
+        userman.modify_user(uid, pw_hash, name=name, name_l=name_l, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
