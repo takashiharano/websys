@@ -563,7 +563,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.name_l = nameL;
+    param.local_name = nameL;
   }
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
@@ -648,7 +648,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.name_l = nameL;
+    param.local_name = nameL;
   }
   if (p) {
     var pw = websys.getHash('SHA-256', p, uid);
@@ -1069,7 +1069,7 @@ websys.getUserLocalName = function() {
   var nameL = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {
-    nameL = userInfo.name_l;
+    nameL = userInfo.local_name;
   }
   return nameL;
 };

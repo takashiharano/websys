@@ -24,7 +24,7 @@ U_ST_RESTRICTED = 1 << 1
 #   "root": {
 #     "uid": "root",
 #     "name": "root",
-#     "name_l": "root_L",
+#     "local_name": "root_L",
 #     "is_admin": true,
 #     "group": "GROUP1 GROUP2",
 #     "privs": "PRIVILEGE1 PRIVILEGE2"
@@ -40,7 +40,7 @@ U_ST_RESTRICTED = 1 << 1
 #   "123456": {
 #     "uid": "123456",
 #     "name": "GUEST",
-#     "name_l": "GUEST_L",
+#     "local_name": "GUEST_L",
 #     "group": "GROUP1",
 #     "privs": "",
 #     "is_guest": true,
@@ -75,7 +75,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, name_l=None, is_admin=False, group='', privs='', status='0'):
+def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', status='0'):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -88,7 +88,7 @@ def create_user(uid, pw, name=None, name_l=None, is_admin=False, group='', privs
     user = {
         'uid': uid,
         'name': name,
-        'name_l': name_l,
+        'local_name': local_name,
         'is_admin': is_admin,
         'group': group,
         'privs': privs,
@@ -103,7 +103,7 @@ def create_user(uid, pw, name=None, name_l=None, is_admin=False, group='', privs
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, name_l=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, status=None):
+def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -115,8 +115,8 @@ def modify_user(uid, pw=None, name=None, name_l=None, is_admin=None, group=None,
     if name is not None:
         user['name'] = name
 
-    if name_l is not None:
-        user['name_l'] = name_l
+    if local_name is not None:
+        user['local_name'] = local_name
 
     if group is not None:
         user['group'] = group
@@ -223,14 +223,14 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group=[], privs=''):
 
     gid = len(guest_users) + 1
     name = 'GUEST' + str(gid)
-    name_l = name
+    local_name = name
 
     now = util.get_timestamp()
     expires_at = now + valid_min * 60
     user = {
         'uid': new_uid,
         'name': name,
-        'name_l': name_l,
+        'local_name': local_name,
         'group': group,
         'privs': privs,
         'is_guest': True,

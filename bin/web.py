@@ -136,7 +136,7 @@ def get_session_id(context):
 # user: {
 #   "uid": "root",
 #   "name": "root",
-#   "name_l": "root_L",
+#   "local_name": "root_L",
 #   "is_admin": true,
 #   "group": "GROUP1 GROUP2",
 #   "privs": "PRIVILEGE1 PRIVILEGE2"
@@ -148,7 +148,7 @@ def get_session_id(context):
 # users_guest: {
 #   "uid": "123456",
 #   "name": "GUEST",
-#   "name_l": "GUEST_L",
+#   "local_name": "GUEST_L",
 #   "group": "GROUP1",
 #   "privs": "",
 #   "is_guest": true,
@@ -189,14 +189,14 @@ def get_user_name(context):
     return ''
 
 #----------------------------------------------------------
-# get_user_name_l
+# get_user_local_name
 # Returns: user local name or ''
 #----------------------------------------------------------
-def get_user_name_l(context):
+def get_user_local_name(context):
     if 'user_info' in context:
         user_info = context['user_info']
-        if user_info is not None and 'name_l' in user_info:
-            return user_info['name_l']
+        if user_info is not None and 'local_name' in user_info:
+            return user_info['local_name']
     return ''
 
 #----------------------------------------------------------
