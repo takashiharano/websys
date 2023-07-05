@@ -15,6 +15,7 @@ import sessionman
 
 USER_LIST_FILE_PATH = websysconf.USER_LIST_FILE_PATH
 GUEST_USER_LIST_FILE_PATH = websysconf.GUEST_USER_LIST_FILE_PATH
+GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
 
 U_ST_DISABLED = 1
 U_ST_RESTRICTED = 1 << 1
@@ -200,7 +201,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def create_guest(uid=None, uid_len=6, valid_min=30, group=[], privs=''):
+def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs=''):
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -289,6 +290,12 @@ def is_admin(user_info):
 # group_name: case-insensitive
 #----------------------------------------------------------
 def is_member_of(user_info, group_name):
+    if user_info is None:
+        return False
+
+    if is_admin(user_info):
+        return True
+
     return _has_item(user_info, 'group', group_name)
 
 #----------------------------------------------------------
@@ -296,17 +303,23 @@ def is_member_of(user_info, group_name):
 # priv_name: case-insensitive
 #----------------------------------------------------------
 def has_privilege(user_info, priv_name):
-    return _has_item(user_info, 'privs', priv_name)
-
-#----------------------------------------------------------
-def _has_item(user_info, key, value):
     if user_info is None:
         return False
 
     if is_admin(user_info):
         return True
 
-    items = user_info[key]
+    return _has_item(user_info, 'privs', priv_name)
+
+#----------------------------------------------------------
+def _has_item(obj, key, value):
+    if obj is None:
+        return False
+
+    if key not in obj:
+        return False
+
+    items = obj[key]
     items = items.split(' ')
     if value in items:
         return True
@@ -416,3 +429,40 @@ def parse_int(s):
     except:
         pass
     return v
+
+#------------------------------------------------------------------------------
+# Groups
+#------------------------------------------------------------------------------
+def get_all_group_info():
+    groups = util.load_dict(GROUPS_FILE_PATH)
+    return groups
+
+def get_group_info(gid):
+    groups = get_all_group_info()
+    group = None
+    if groups is not None:
+        if gid in groups:
+            group = groups[gid]
+    return group
+
+def get_group_privileges(gid):
+    privs = None
+    group = get_group_info(gid)
+    if group is not None:
+        if 'privs' in group:
+            privs = group['privs']
+    return privs
+
+def has_privilege_in_group(gid, priv_name):
+    group = get_group_info(gid)
+    return _has_item(group, 'privs', priv_name)
+
+def get_groups_for_user(uid):
+    user_info = get_user_info(uid)
+    if user_info is None:
+        return None
+    if group is not None:
+        return None
+    groups = user_info['group']
+    group_list = groups.split(' ')
+    return group_list

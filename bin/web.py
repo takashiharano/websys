@@ -222,13 +222,45 @@ def is_member_of(context, group_name):
     return False
 
 #----------------------------------------------------------
-# has_privilege
-# privilege_name: case-insensitive
+# get groups
 #----------------------------------------------------------
-def has_privilege(context, privilege_name):
+def get_groups(context):
+    user_info = get_user_info(context)
+    if user_info is None:
+        return []
+
+    if 'group' not in user_info:
+        return []
+
+    groups = user_info['group']
+    group_list = groups.split(' ')
+    return group_list
+
+#----------------------------------------------------------
+# has_privilege
+# priv_name: case-insensitive
+#----------------------------------------------------------
+def has_privilege(context, priv_name):
     if 'user_info' in context:
         user_info = context['user_info']
-        return userman.has_privilege(user_info, privilege_name)
+        return userman.has_privilege(user_info, priv_name)
+
+    return False
+
+#----------------------------------------------------------
+# has_permission
+# Returns if the user has privilege in privileges or groups
+# priv_name: case-insensitive
+#----------------------------------------------------------
+def has_permission(context, priv_name):
+    if has_privilege(context, priv_name):
+        return True
+
+    groups = get_groups(context)
+    for i in range(len(groups)):
+        gid = groups[i]
+        if userman.has_privilege_in_group(gid, priv_name):
+            return True
 
     return False
 

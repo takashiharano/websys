@@ -361,11 +361,9 @@ def cmd_usermod(context):
     if web.is_admin(context):
         p_group = web.get_request_param('group')
         if p_group is not None:
-            group = p_group.strip()
+            group = p_group
             group = util.replace(group, '\s{2,}', ' ')
-            group = p_group.split(' ')
-            if len(group) == 1 and group[0] == '':
-                group = []
+            group = group.strip()
 
         agroup = _get_optional_param_by_list('agroup')
         rgroup = _get_optional_param_by_list('rgroup')
