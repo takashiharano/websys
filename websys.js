@@ -18,23 +18,20 @@ websys.basePath = '';
 websys.sessionInfo = null;
 
 //-----------------------------------------------------------------------------
-websys.logout = function(cbUrl) {
-  var param = {};
-  if (cbUrl) param.url = cbUrl;
-  websys.callLogoutApi(param, websys.logout.cb);
+websys.logout = function(cb) {
+  websys.logout.usrCb = cb;
+  websys.callLogoutApi(null, websys.logout.cb);
 };
+websys.logout.usrCb = null;
 websys.logout.cb = function(xhr, res) {
   if (xhr.status != 200) {
     log.e('ERROR: ' + xhr.status);
     return;
   }
   var res = util.fromJSON(res);
-  var cbUrl = res.body.url;
-  if (res.status == 'OK') {
-    if (cbUrl) {
-      location.href = cbUrl;
-    }
-  }
+  var f = websys.logout.usrCb;
+  websys.logout.usrCb = null;
+  if (f) f(res.status);
 };
 
 //-----------------------------------------------------------------------------
