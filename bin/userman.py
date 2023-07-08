@@ -18,7 +18,8 @@ GUEST_USER_LIST_FILE_PATH = websysconf.GUEST_USER_LIST_FILE_PATH
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
 
 U_ST_DISABLED = 1
-U_ST_RESTRICTED = 1 << 1
+U_ST_LOCKED = 1 << 1
+U_ST_NEED_PW_CHANGE = 1 << 2
 
 # users.json
 # {
@@ -78,7 +79,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', status='0'):
+def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -86,7 +87,10 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         raise Exception('ALREADY_EXISTS')
 
     now = util.get_timestamp()
-    u_status = parse_int(status)
+    if status is None:
+        u_status = U_ST_NEED_PW_CHANGE
+    else:
+        u_status = parse_int(status)
 
     user = {
         'uid': uid,
@@ -166,6 +170,7 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
     if pw is not None:
         save_user_password(uid, pw)
         user['pw_changed_at'] = now
+        user['status'] = unset_user_state(user['status'], U_ST_NEED_PW_CHANGE)
 
     if updated:
         user['updated_at'] = now
@@ -429,16 +434,29 @@ def delete_user_password(uid):
 # User Status
 #------------------------------------------------------------------------------
 def is_disabled(user_info):
-    return check_user_status(user_info, U_ST_DISABLED)
+    return has_user_state(user_info, U_ST_DISABLED)
 
-def check_user_status(user_info, st):
-    u_status =  '0'
+def has_user_state(user_info, st):
+    status =  0
     if 'status' in user_info:
-        u_status =  user_info['status']
-    i_status = parse_int(u_status)
-    if i_status & st:
+        status =  user_info['status']
+        if util.typename(status) == 'str':
+            status = parse_int(status)
+    if status & st:
         return True
     return False
+
+def set_user_state(status, st):
+    if util.typename(status) == 'str':
+        status = parse_int(status)
+    status |= st
+    return status
+
+def unset_user_state(status, st):
+    if util.typename(status) == 'str':
+        status = parse_int(status)
+    status &= ~st
+    return status
 
 def parse_int(s):
     v = 0

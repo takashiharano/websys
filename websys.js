@@ -13,6 +13,104 @@ websys.basePath = '';
 websys.sessionInfo = null;
 
 //-----------------------------------------------------------------------------
+websys.logout = function(cbUrl) {
+  var param = {};
+  if (cbUrl) param.url = cbUrl;
+  websys.callLogoutApi(param, websys.logout.cb);
+};
+websys.logout.cb = function(xhr, res) {
+  if (xhr.status != 200) {
+    log.e('ERROR: ' + xhr.status);
+    return;
+  }
+  var res = util.fromJSON(res);
+  var cbUrl = res.body.url;
+  if (res.status == 'OK') {
+    if (cbUrl) {
+      location.href = cbUrl;
+    }
+  }
+};
+
+//-----------------------------------------------------------------------------
+websys.openChangePwDialog = function() {
+  var html = '<table>';
+  html += '<tr>';
+  html += '<td>New Password:</td>';
+  html += '<td><input type="password" id="websys-pw1" class="websys-dialog"></td>';
+  html += '</tr>';
+  html += '<tr>';
+  html += '<td>Re-type:</td>';
+  html += '<td><input type="password" id="websys-pw2" class="websys-dialog"></td>';
+  html += '</tr>';
+  html += '</tr>';
+  html += '</table>\n\n';
+  html += '<button onclick="websys.changePw();">OK</button>';
+  html += '<button onclick="websys.closeDialog();" style="margin-left:4px;">Cancel</button>';
+  var opt = {
+    closeAnywhere: false
+  };
+  util.dialog.open(html, opt);
+  $el('#websys-pw1').focus();
+};
+
+websys.changePw = function() {
+  var uid = websys.getUserId();
+  var pw1 = $el('#websys-pw1').value;
+  var pw2 = $el('#websys-pw2').value;
+  var m;
+  if (!pw1) {
+    m = 'Password is required';
+  } else if (pw1 != pw2) {
+    m = 'Password mismatch';
+  } else if (!uid) {
+    m = 'Not logged in'
+  }
+  if (m) {
+    websys.showInfotip(m);
+    return;
+  }
+  websys.closeDialog();
+  websys._changePw(uid, pw1);
+};
+
+websys._changePw = function(uid, p) {
+  var pw = websys.getUserPwHash(uid, p);
+  var param = {
+    cmd: 'usermod',
+    uid: uid,
+    pw: pw
+  };
+  var req = {
+    url: websys.basePath + 'websys/api.cgi',
+    method: 'POST',
+    data: param,
+    cb: websys.changePwCb
+  };
+  websys.http(req);
+};
+websys.changePwCb = function(xhr, res) {
+  var res = util.fromJSON(res);
+  if (res.status != 'OK') {
+    websys.showInfotip(res.status);
+    return;
+  }
+  util.confirm('Success!\n\nLogout?\n', websys.logoutAfterCngPw);
+};
+websys.logoutAfterCngPw = function() {
+  websys.logout(location.href);
+};
+
+//-----------------------------------------------------------------------------
+websys.closeDialog = function() {
+  util.dialog.close();
+};
+
+websys.showInfotip = function(m, a2, a3) {
+  util.infotip.show(m, a2, a3)
+};
+
+//-----------------------------------------------------------------------------
 // commands
 //-----------------------------------------------------------------------------
 /**
@@ -229,9 +327,9 @@ websys.cmdLogout = function(arg, tbl, echo) {
     return;
   }
 
-  websys.logout(param, websys.logout.cb);
+  websys.callLogoutApi(param, websys.logoutCmdCb);
 };
-websys.logout = function(param, cb) {
+websys.callLogoutApi = function(param, cb) {
   if (!param) param = {};
   param.cmd = 'logout';
   var req = {
@@ -242,7 +340,7 @@ websys.logout = function(param, cb) {
   };
   websys.http(req);
 };
-websys.logout.cb = function(xhr, res) {
+websys.logoutCmdCb = function(xhr, res) {
   if (xhr.status == 200) {
     res = util.fromJSON(res);
     if (res.status == 'OK') {
@@ -353,7 +451,7 @@ websys.cmdPasswd.cancel = function() {
   websys.status = 0;
 };
 websys._cmdPasswd = function(uid, p) {
-  var pw = websys.getHash('SHA-256', p, uid);
+  var pw = websys.getUserPwHash(uid, p);
   var param = {
     cmd: 'usermod',
     uid: uid,
@@ -483,6 +581,13 @@ websys.getHash = function(algorithm, src, salt) {
 };
 
 /**
+ * user password hash
+ */
+websys.getUserPwHash = function(uid, pw) {
+  return websys.getHash('SHA-256', pw, uid);
+};
+
+/**
  * user
  */
 websys.cmdUser = function(arg, tbl, echo) {
@@ -541,7 +646,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var privs = dbg.getOptVal(arg, 'privs');
   var admin = dbg.getOptVal(arg, 'admin');
   if (!p) p = '';
-  var pw = websys.getHash('SHA-256', p, uid);
+  var pw = websys.getUserPwHash(uid, p);
   var param = {
     cmd: 'useradd',
     uid: uid,
@@ -651,7 +756,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     param.local_name = nameL;
   }
   if (p) {
-    var pw = websys.getHash('SHA-256', p, uid);
+    var pw = websys.getUserPwHash(uid, p);
     param.pw = pw;
   }
   if (group) {
@@ -1091,6 +1196,17 @@ websys.isGuest = function() {
   }
 };
 
+websys.getUserStatus = function() {
+  var uid = null;
+  var userInfo = websys.getUserInfo();
+  var status = 0;
+  if (userInfo && userInfo.status) {
+    status = userInfo.status;
+  }
+  return status;
+};
+
+
 /**
  * Ctrl+C
  */
@@ -1181,15 +1297,15 @@ websys.onReady = function() {
 };
 
 websys.onInfoReady = function() {
-  if (websys.readyFn) {
-    websys.readyFn();
+  if (websys.onWebSysReady) {
+    websys.onWebSysReady();
   }
 };
 
-websys.readyFn = null;
-websys.init = function(path, readyFn) {
-  websys.basePath = path;
-  websys.readyFn = readyFn;
+websys.onWebSysReady = null;
+websys.init = function(basePath, readyFn) {
+  websys.basePath = basePath;
+  websys.onWebSysReady = readyFn;
   if (websys.initStatus == 1) {
     websys.onReady();
   } else {

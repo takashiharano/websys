@@ -113,7 +113,11 @@ def cmd_logout(context):
     if self_logout:
         headers = web.build_logout_cookies()
 
-    web.send_result_json(status, body=None, http_headers=headers)
+    cb_url = web.get_request_param('url')
+    res_body = {
+        'url': cb_url
+    }
+    web.send_result_json(status, body=res_body, http_headers=headers)
 
 # Logout by SID
 def logout_by_sid(context, current_sid, sid):
@@ -307,14 +311,10 @@ def cmd_useradd(context):
     if p_admin is not None:
         is_admin = p_admin == 'true'
 
-    if p_st is None:
-        p_st = '0'
-
     pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
-    u_status = p_st
 
     try:
-        userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, status=u_status)
+        userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, status=p_st)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
