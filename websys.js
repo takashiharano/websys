@@ -8,8 +8,8 @@ websys.ST_LOGIN_PW = 2;
 websys.ST_CHANGE_PW = 3;
 
 websys.U_ST_DISABLED = 1;
-websys.U_ST_LOCKED = 1 << 1;
-websys.U_ST_NEED_PW_CHANGE = 1 << 2;
+websys.U_ST_NEED_PW_CHANGE = 1 << 1;
+websys.U_ST_LOCKED = 1 << 2;
 
 websys.initStatus = 0;
 websys.status = 0;
