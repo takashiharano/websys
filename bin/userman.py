@@ -32,8 +32,8 @@ U_ST_NEED_PW_CHANGE = 1 << 2
 #     "privs": "PRIVILEGE1 PRIVILEGE2"
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
-#     "pw_changed_at": 1688806688.959123,
-#     "status": 0
+#     "status": 0,
+#     "pw_changed_at": 1688806688.959123
 #   },
 #   ...
 # }
@@ -49,9 +49,9 @@ U_ST_NEED_PW_CHANGE = 1 << 2
 #     "is_guest": true,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
-#     "pw_changed_at": 1688806688.959123,
-#     "expires_at": 1571476916.59936
+#     "expires_at": 1571476916.59936,
 #     "status": 0,
+#     "pw_changed_at": 1688806688.959123
 #   },
 #   ...
 # }
@@ -101,8 +101,8 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         'privs': privs,
         'created_at': now,
         'updated_at': now,
-        'pw_changed_at': now,
-        'status': u_status
+        'status': u_status,
+        'pw_changed_at': now
     }
 
     users[uid] = user
@@ -259,9 +259,9 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs=''):
         'is_guest': True,
         'created_at': now,
         'updated_at': now,
-        'pw_changed_at': now,
         'expires_at': expires_at,
-        'status': 0
+        'status': 0,
+        'pw_changed_at': now
     }
 
     guest_users[new_uid] = user
