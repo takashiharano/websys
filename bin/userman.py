@@ -31,6 +31,7 @@ U_ST_RESTRICTED = 1 << 1
 #     "privs": "PRIVILEGE1 PRIVILEGE2"
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
+#     "pw_changed_at": 1688806688.959123,
 #     "status": 0
 #   },
 #   ...
@@ -47,6 +48,7 @@ U_ST_RESTRICTED = 1 << 1
 #     "is_guest": true,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
+#     "pw_changed_at": 1688806688.959123,
 #     "expires_at": 1571476916.59936
 #     "status": 0,
 #   },
@@ -95,6 +97,7 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         'privs': privs,
         'created_at': now,
         'updated_at': now,
+        'pw_changed_at': now,
         'status': u_status
     }
 
@@ -105,6 +108,8 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
 
 # Modify a user
 def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, status=None):
+    now = util.get_timestamp()
+
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -113,48 +118,60 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
 
     user = users[uid]
 
+    updated = False
     if name is not None:
         user['name'] = name
+        updated = True
 
     if local_name is not None:
         user['local_name'] = local_name
+        updated = True
 
     if group is not None:
         user['group'] = group
+        updated = True
 
     if agroup is not None:
         user['group'] = _add_item_value(user['group'], agroup)
+        updated = True
 
     if rgroup is not None:
         user['group'] = _remove_item_value(user['group'], rgroup)
+        updated = True
 
     if privs is not None:
         user['privs'] = privs
+        updated = True
 
     if aprivs is not None:
         user['privs'] = _add_item_value(user['privs'], aprivs)
+        updated = True
 
     if rprivs is not None:
         user['privs'] = _remove_item_value(user['privs'], rprivs)
+        updated = True
 
     if is_admin is not None:
         user['is_admin'] = is_admin
+        updated = True
 
     if status is not None:
         try:
             u_status = int(status)
             user['status'] = u_status
+            updated = True
         except:
             pass
 
-    now = util.get_timestamp()
-    user['updated_at'] = now
+    if pw is not None:
+        save_user_password(uid, pw)
+        user['pw_changed_at'] = now
+
+    if updated:
+        user['updated_at'] = now
 
     users[uid] = user
     save_users(users)
-
-    if pw is not None:
-        save_user_password(uid, pw)
 
     return user
 
@@ -237,6 +254,7 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs=''):
         'is_guest': True,
         'created_at': now,
         'updated_at': now,
+        'pw_changed_at': now,
         'expires_at': expires_at,
         'status': 0
     }

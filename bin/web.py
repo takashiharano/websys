@@ -142,6 +142,7 @@ def get_session_id(context):
 #   "privs": "PRIVILEGE1 PRIVILEGE2"
 #   "created_at": 1667047612.967891,
 #   "updated_at": 1667047612.967891,
+#   "pw_changed_at": 1667047612.967891,
 #   "status": 0
 # }
 #
@@ -154,6 +155,7 @@ def get_session_id(context):
 #   "is_guest": true,
 #   "created_at": 1667047612.967891,
 #   "updated_at": 1667047612.967891,
+#   "pw_changed_at": 1667047612.967891,
 #   "expires_at": 1571476916.59936
 #   "status": 0
 # }
