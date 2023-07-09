@@ -26,7 +26,7 @@ sysman.itemList = [];
 sysman.editWindow = null;
 sysman.mode = null;
 
-$onReady = function() {
+sysman.onSysReady = function() {
   sysman.getUserList();
 };
 
