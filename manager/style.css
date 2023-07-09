@@ -1,0 +1,130 @@
+html, body {
+  width: 100%;
+  height: calc(100vh - 10px);
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-size: 16px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+a {
+  position:relative;
+  color:#0cf;
+  text-decoration:none;
+}
+
+a:after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  left: 0;
+  bottom: 0;
+  background-color: #08f;
+  visibility: hidden;
+  transform: scaleX(0);
+  transition: all 0.25s ease 0s;
+}
+
+a:hover:after {
+  visibility: visible;
+  transform: scaleX(1);
+}
+
+input[type="text"], input[type="password"] {
+  border: none;
+  border-bottom: solid 1px #ccc;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+  background: transparent;
+  color: #fff;
+  outline: none;
+}
+input[type="text"]:disabled, input[type="password"]:disabled {
+  color: #eee;
+}
+
+textarea {
+  background: #000;
+  color: #fff;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+pre {
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td,th {
+  padding: 2px 4px;
+}
+
+button, input[type="button"], input[type="submit"] {
+  min-width: 45px;
+  border: none;
+  border-radius: 2px;
+  outline: none;
+  color: #fff;
+  background: #06c;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+button:hover, input[type="button"]:hover, input[type="submit"]:hover {
+  cursor: pointer;
+  background: #0af;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
+  color: #aaa;
+  background: #444;
+}
+
+.item-list-header {
+  background: #06c;
+}
+
+td.item-list,th.item-list {
+  border: 1px solid #888;
+  white-space: nowrap;
+}
+
+tr.item-list:hover {
+  background: #004;
+}
+
+.edit-disabled {
+  border: none !important;
+  background: transparent;
+}
+
+.screen-button {
+  min-width: 7em;
+}
+
+.screen-button-active {
+  font-weight: bold;
+}
+
+.sort-button {
+  display: inline-block;
+  line-height: 1em;
+  color: #aaa;
+  font-size: 8px;
+}
+
+.sort-button:hover {
+  cursor: pointer;
+}
+
+.sort-active {
+  color: #fff;
+}
+
+#user-list {
+  font-size: 12px;
+}
+

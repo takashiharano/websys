@@ -277,6 +277,8 @@ def cmd_useradd(context):
     local_name = web.get_request_param('local_name')
     pw = web.get_request_param('pw')
     p_st = web.get_request_param('st')
+    if p_st == '':
+        p_st = None
 
     if uid is None:
         web.send_result_json('ERR_UID', body=None)
