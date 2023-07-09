@@ -12,7 +12,7 @@ import web
 
 #------------------------------------------------------------------------------
 def build_js(context):
-    js = ''
+    js = 'var sysman = sysman || {};'
     js += 'websys.init(\'' + ROOT_PATH + '\', sysman.onSysReady);'
     return js
 
