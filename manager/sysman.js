@@ -120,21 +120,21 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     var name = item.name.replace(/ /g, '&nbsp');
     var local_name = item.local_name.replace(/ /g, '&nbsp');
 
-    var createdDate = '---------- --:--:--';
+    var createdDate = '---------- --:--:--.---';
     if (item.created_at > 0) {
       var createdAt = item.created_at;
       if (util.isInteger(createdAt)) createdAt *= 1000;
       createdDate = util.getDateTimeString(createdAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
-    var updatedDate = '---------- --:--:--';
+    var updatedDate = '---------- --:--:--.---';
     if (item.updated_at > 0) {
       var updatedAt = item.updated_at;
       if (util.isInteger(updatedAt)) updatedAt *= 1000;
       updatedDate = util.getDateTimeString(updatedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
-    var pwChangedDate = '---------- --:--:--';
+    var pwChangedDate = '---------- --:--:--.---';
     if (item.pw_changed_at > 0) {
       var pwChangedAt = item.pw_changed_at;
       if (util.isInteger(pwChangedAt)) pwChangedAt *= 1000;
