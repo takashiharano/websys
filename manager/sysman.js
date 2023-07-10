@@ -122,17 +122,23 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
 
     var createdDate = '---------- --:--:--';
     if (item.created_at > 0) {
-      createdDate = util.getDateTimeString(item.created_at, '%YYYY-%MM-%DD %HH:%mm:%SS');
+      var createdAt = item.created_at;
+      if (util.isInteger(createdAt)) createdAt *= 1000;
+      createdDate = util.getDateTimeString(createdAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
     var updatedDate = '---------- --:--:--';
     if (item.updated_at > 0) {
-      updatedDate = util.getDateTimeString(item.updated_at, '%YYYY-%MM-%DD %HH:%mm:%SS');
+      var updatedAt = item.updated_at;
+      if (util.isInteger(updatedAt)) updatedAt *= 1000;
+      updatedDate = util.getDateTimeString(updatedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
     var pwChangedDate = '---------- --:--:--';
     if (item.pw_changed_at > 0) {
-      pwChangedDate = util.getDateTimeString(item.pw_changed_at, '%YYYY-%MM-%DD %HH:%mm:%SS');
+      var pwChangedAt = item.pw_changed_at;
+      if (util.isInteger(pwChangedAt)) pwChangedAt *= 1000;
+      pwChangedDate = util.getDateTimeString(pwChangedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
     htmlList += '<tr class="item-list">';
