@@ -9,7 +9,7 @@ sysman.LIST_COLUMNS = [
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
   {key: 'group', label: 'Groups', style: 'min-width:15em;'},
-  {key: 'privs', label: 'Privileges', style: 'min-width:20em;'},
+  {key: 'privs', label: 'Privileges', style: 'min-width:15em;'},
   {key: 'status', label: 'Status'},
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
