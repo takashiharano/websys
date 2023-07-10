@@ -26,11 +26,34 @@ sysman.itemList = [];
 sysman.editWindow = null;
 sysman.mode = null;
 
+$onReady = function() {
+  $el('#user-list').innerHTML = '<span class="progdot">Loading</span>';
+  sysman.drawGroupStatus('<span class="progdot">Loading</span>');
+};
+
 sysman.onSysReady = function() {
   sysman.getUserList();
+  sysman.getGroups();
 };
 
 sysman.callApi = function(act, params, cb) {
+  if (!params) params = {};
+  var data = {act: act};
+  if (params) {
+    for (var k in params) {
+      data[k] = params[k];
+    }
+  }
+  var req = {
+    url: 'api.cgi',
+    method: 'POST',
+    data: data,
+    responseType: 'json'
+  };
+  sysman.http(req, cb);
+};
+
+sysman.execCmd = function(act, params, cb) {
   if (!params) params = {};
   var data = {cmd: act};
   if (params) {
@@ -62,7 +85,7 @@ sysman.showInfotip = function(m, d) {
 };
 
 sysman.getUserList = function() {
-  sysman.callApi('users', null, sysman.getUserListCb);
+  sysman.execCmd('users', null, sysman.getUserListCb);
 };
 sysman.getUserListCb = function(xhr, res, req) {
   if (res.status != 'OK') {
@@ -217,7 +240,7 @@ sysman.editUser = function(uid) {
     var params = {
       uid: uid
     };
-    sysman.callApi('user', params, sysman.GetUserInfoCb);
+    sysman.execCmd('user', params, sysman.GetUserInfoCb);
   } else {
     $el('#uid').focus();
   }
@@ -427,7 +450,7 @@ sysman.addUser = function() {
     pw: pw
   };
 
-  sysman.callApi('useradd', params, sysman.updateUserCb);
+  sysman.execCmd('useradd', params, sysman.updateUserCb);
 };
 
 sysman.addUserCb = function(xhr, res) {
@@ -472,7 +495,7 @@ sysman.updateUser = function() {
     params.pw = websys.getUserPwHash(uid, pw);
   }
 
-  sysman.callApi('usermod', params, sysman.updateUserCb);
+  sysman.execCmd('usermod', params, sysman.updateUserCb);
 };
 
 sysman.updateUserCb = function(xhr, res) {
@@ -498,7 +521,7 @@ sysman._deleteUser = function(uid) {
   var params = {
     uid: uid,
   };
-  sysman.callApi('userdel', params, sysman.deleteUserCb);
+  sysman.execCmd('userdel', params, sysman.deleteUserCb);
 };
 
 sysman.deleteUserCb = function(xhr, res) {
@@ -615,9 +638,44 @@ sysman.cleansePrivileges = function(s) {
 };
 
 //-----------------------------------------------------------------------------
+sysman.drawGroupStatus = function(s) {
+  $el('#groups-status').innerHTML = s;
+};
+
+sysman.getGroups = function() {
+  sysman.callApi('get_groups', null, sysman.getGroupsCb);
+};
+sysman.getGroupsCb = function(xhr, res) {
+  sysman.drawGroupStatus('');
+  var s = util.decodeBase64(res.body.text);
+  $el('#groups').value = s;
+};
+
+sysman.confirmSaveGroups = function() {
+  util.confirm('Save?', sysman.saveGroups);
+};
+sysman.saveGroups = function() {
+  var s = $el('#groups').value;
+  var b64 = util.encodeBase64(s);
+  var params = {
+    text: b64
+  }
+  sysman.callApi('save_groups', params, sysman.saveGroupsCb);
+};
+sysman.saveGroupsCb = function(xhr, res) {
+  sysman.showInfotip('OK');
+};
+
+//-----------------------------------------------------------------------------
 sysman.onEditWindowClose = function() {
   sysman.editWindow = null;
   sysman.mode = null;
+};
+
+$onCtrlS = function(e) {
+  if ($el('#groups').hasFocus()) {
+    sysman.confirmSaveGroups();
+  }
 };
 
 $onBeforeUnload = function(e) {
