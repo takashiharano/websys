@@ -130,6 +130,6 @@ tr.item-list:hover {
 }
 
 #groups {
-  width: 600px;
+  width: calc(100% - 17px);
   height: 200px;
 }
