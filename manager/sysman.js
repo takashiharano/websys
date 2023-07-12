@@ -347,7 +347,6 @@ sysman.GetUserInfoCb = function(xhr, res) {
     return;
   }
   var info = res.body;
-log(res)
   sysman.setUserInfoToEditor(info);
 };
 
