@@ -140,9 +140,9 @@ def get_session_id(context):
 #   "is_admin": true,
 #   "group": "GROUP1 GROUP2",
 #   "privs": "PRIVILEGE1 PRIVILEGE2"
+#   "status": 0,
 #   "created_at": 1667047612.967891,
 #   "updated_at": 1667047612.967891,
-#   "status": 0,
 #   "pw_changed_at": 1667047612.967891
 # }
 #
@@ -153,11 +153,11 @@ def get_session_id(context):
 #   "group": "GROUP1",
 #   "privs": "",
 #   "is_guest": true,
+#   "status": 0,
 #   "created_at": 1667047612.967891,
 #   "updated_at": 1667047612.967891,
+#   "pw_changed_at": 1667047612.967891,
 #   "expires_at": 1571476916.59936
-#   "status": 0,
-#   "pw_changed_at": 1667047612.967891
 # }
 #
 # or None

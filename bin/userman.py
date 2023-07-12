@@ -30,9 +30,9 @@ U_ST_LOCKED = 1 << 2
 #     "is_admin": true,
 #     "group": "GROUP1 GROUP2",
 #     "privs": "PRIVILEGE1 PRIVILEGE2"
+#     "status": 0,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
-#     "status": 0,
 #     "pw_changed_at": 1688806688.959123
 #   },
 #   ...
@@ -47,11 +47,11 @@ U_ST_LOCKED = 1 << 2
 #     "group": "GROUP1",
 #     "privs": "",
 #     "is_guest": true,
+#     "status": 0,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
-#     "expires_at": 1571476916.59936,
-#     "status": 0,
-#     "pw_changed_at": 1688806688.959123
+#     "pw_changed_at": 1688806688.959123,
+#     "expires_at": 1571476916.59936
 #   },
 #   ...
 # }
@@ -99,9 +99,9 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         'is_admin': is_admin,
         'group': group,
         'privs': privs,
+        'status': u_status,
         'created_at': now,
         'updated_at': now,
-        'status': u_status,
         'pw_changed_at': now
     }
 
@@ -257,11 +257,11 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs=''):
         'group': group,
         'privs': privs,
         'is_guest': True,
+        'status': 0,
         'created_at': now,
         'updated_at': now,
-        'expires_at': expires_at,
-        'status': 0,
-        'pw_changed_at': now
+        'pw_changed_at': now,
+        'expires_at': expires_at
     }
 
     guest_users[new_uid] = user
