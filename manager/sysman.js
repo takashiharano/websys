@@ -654,14 +654,14 @@ sysman.getGroups = function() {
 sysman.getGroupsCb = function(xhr, res) {
   sysman.drawGroupStatus('');
   var s = util.decodeBase64(res.body.text);
-  $el('#groups').value = s;
+  $el('#groups-text').value = s;
 };
 
 sysman.confirmSaveGroups = function() {
   util.confirm('Save?', sysman.saveGroups);
 };
 sysman.saveGroups = function() {
-  var s = $el('#groups').value;
+  var s = $el('#groups-text').value;
   var b64 = util.encodeBase64(s);
   var params = {
     text: b64
@@ -679,7 +679,7 @@ sysman.onEditWindowClose = function() {
 };
 
 $onCtrlS = function(e) {
-  if ($el('#groups').hasFocus()) {
+  if ($el('#groups-text').hasFocus()) {
     sysman.confirmSaveGroups();
   }
 };

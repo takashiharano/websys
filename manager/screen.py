@@ -43,7 +43,7 @@ def build_main_screen(context):
 
 <div style="margin-top:20px;">
 Groups<button style="margin-left:8px;" onclick="sysman.confirmSaveGroups();">SAVE</button><span id="groups-status" style="margin-left:8px;"></span><br>
-<textarea id="groups"></textarea>
+<textarea id="groups-text"></textarea>
 </div>
 
 </div>

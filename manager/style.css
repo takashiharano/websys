@@ -129,7 +129,7 @@ tr.item-list:hover {
   font-size: 12px;
 }
 
-#groups {
+#groups-text {
   width: calc(100% - 17px);
   height: 200px;
 }
