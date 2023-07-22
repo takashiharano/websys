@@ -265,7 +265,7 @@ sysman.editUser = function(uid) {
 sysman.openUserInfoEditorWindow = function(mode) {
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
-  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:260px;text-align:left;">';
+  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:290px;text-align:left;">';
 
   html += '<table>';
   html += '  <tr>';
@@ -333,7 +333,7 @@ sysman.openUserInfoEditorWindow = function(mode) {
     pos: 'c',
     closeButton: true,
     width: 480,
-    height: 360,
+    height: 380,
     minWidth: 480,
     minHeight: 360,
     scale: 1,
