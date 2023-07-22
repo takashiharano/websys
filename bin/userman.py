@@ -29,7 +29,8 @@ U_ST_LOCKED = 1 << 2
 #     "local_name": "root_L",
 #     "is_admin": true,
 #     "group": "GROUP1 GROUP2",
-#     "privs": "PRIVILEGE1 PRIVILEGE2"
+#     "privs": "PRIVILEGE1 PRIVILEGE2",
+#     "desc": "Description",
 #     "status": 0,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
@@ -46,6 +47,7 @@ U_ST_LOCKED = 1 << 2
 #     "local_name": "GUEST_L",
 #     "group": "GROUP1",
 #     "privs": "",
+#     "desc": "Description",
 #     "is_guest": true,
 #     "status": 0,
 #     "created_at": 1667047612.967891,
@@ -79,7 +81,7 @@ def get_all_user_info():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', status=None):
+def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', desc='', status=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -99,6 +101,7 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         'is_admin': is_admin,
         'group': group,
         'privs': privs,
+        'desc': desc,
         'status': u_status,
         'created_at': now,
         'updated_at': now,
@@ -111,7 +114,7 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, status=None):
+def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, desc=None, status=None):
     now = util.get_timestamp()
 
     users = get_all_user_info()
@@ -129,6 +132,10 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
 
     if local_name is not None:
         user['local_name'] = local_name
+        updated = True
+
+    if is_admin is not None:
+        user['is_admin'] = is_admin
         updated = True
 
     if group is not None:
@@ -155,8 +162,8 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
         user['privs'] = _remove_item_value(user['privs'], rprivs)
         updated = True
 
-    if is_admin is not None:
-        user['is_admin'] = is_admin
+    if desc is not None:
+        user['desc'] = desc
         updated = True
 
     if status is not None:
@@ -223,7 +230,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs=''):
+def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -256,6 +263,7 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs=''):
         'local_name': local_name,
         'group': group,
         'privs': privs,
+        'desc': desc,
         'is_guest': True,
         'status': 0,
         'created_at': now,

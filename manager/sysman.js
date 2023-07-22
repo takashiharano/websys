@@ -10,6 +10,7 @@ sysman.LIST_COLUMNS = [
   {key: 'is_admin', label: 'Admin'},
   {key: 'group', label: 'Groups', style: 'min-width:15em;'},
   {key: 'privs', label: 'Privileges', style: 'min-width:15em;'},
+  {key: 'desc', label: 'Description', style: 'min-width:15em;'},
   {key: 'status', label: 'Status'},
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
@@ -141,6 +142,14 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
       pwChangedDate = util.getDateTimeString(pwChangedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
+    var desc = (item.desc ? item.desc : '');
+    var escDesc = util.escHtml(desc);
+    var dispDesc = '<span style="display:inline-block;width:100%;overflow:hidden;text-overflow:ellipsis;"';
+    if (util.lenW(desc) > 35) {
+      dispDesc += ' data-tooltip="' + escDesc + '"';
+    }
+    dispDesc += '>' + escDesc + '</span>';
+
     htmlList += '<tr class="item-list">';
     htmlList += '<td class="item-list">' + uid + '</td>';
     htmlList += '<td class="item-list">' + name + '</td>';
@@ -148,6 +157,7 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
     htmlList += '<td class="item-list">' + item.group + '</td>';
     htmlList += '<td class="item-list">' + item.privs + '</td>';
+    htmlList += '<td class="item-list" style="max-width:20em">' + dispDesc + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + item.status + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
@@ -286,6 +296,10 @@ sysman.openUserInfoEditorWindow = function(mode) {
   html += '    <td><input type="text" id="privs" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
+  html += '    <td>Description</td>';
+  html += '    <td><input type="text" id="desc" style="width:100%;"></td>';
+  html += '  </tr>';
+  html += '  <tr>';
   html += '    <td>Status</td>';
   html += '    <td><input type="text" id="status" style="width:1.5em;"></td>';
   html += '  </tr>';
@@ -365,6 +379,7 @@ sysman.setUserInfoToEditor = function(info) {
   $el('#isadmin').checked = info.is_admin;
   $el('#group').value = info.group;
   $el('#privs').value = info.privs;
+  $el('#desc').value = (info.desc ? info.desc : '');
   $el('#status').value = info.status;
 };
 
@@ -376,6 +391,7 @@ sysman.clearUserInfoEditor = function() {
     is_admin: false,
     group: '',
     privs: '',
+    desc: '',
     status: ''
   };
   sysman.setUserInfoToEditor(info);
@@ -397,6 +413,7 @@ sysman.addUser = function() {
   var isAdmin = ($el('#isadmin').checked ? 'true' : 'false');
   var group = $el('#group').value;
   var privs = $el('#privs').value;
+  var desc = $el('#desc').value;
   var status = $el('#status').value.trim();
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
@@ -451,6 +468,7 @@ sysman.addUser = function() {
     admin: isAdmin,
     group: group,
     privs: privs,
+    desc: desc,
     st: status,
     pw: pw
   };
@@ -475,6 +493,7 @@ sysman.updateUser = function() {
   var isAdmin = ($el('#isadmin').checked ? 'true' : 'false');
   var group = $el('#group').value;
   var privs = $el('#privs').value;
+  var desc = $el('#desc').value;
   var status = $el('#status').value;
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
@@ -493,6 +512,7 @@ sysman.updateUser = function() {
     admin: isAdmin,
     group: group,
     privs: privs,
+    desc: desc,
     st: status
   };
 
@@ -539,11 +559,11 @@ sysman.deleteUserCb = function(xhr, res) {
 };
 
 //-----------------------------------------------------------------------------
-sysman.sortList = function(itemList, sortKey, desc) {
+sysman.sortList = function(itemList, sortKey, isDesc) {
   var items = util.copyObject(itemList);
   var srcList = items;
   var asNum = true;
-  var sortedList = util.sortObject(srcList, sortKey, desc, asNum);
+  var sortedList = util.sortObject(srcList, sortKey, isDesc, asNum);
   return sortedList;
 };
 

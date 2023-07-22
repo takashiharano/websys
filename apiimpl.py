@@ -276,9 +276,11 @@ def cmd_useradd(context):
     name = web.get_request_param('name')
     local_name = web.get_request_param('local_name')
     pw = web.get_request_param('pw')
+    p_admin = web.get_request_param('admin')
+    p_group = web.get_request_param('group', '')
+    p_privs = web.get_request_param('privs')
+    desc = web.get_request_param('desc', '')
     p_st = web.get_request_param('st')
-    if p_st == '':
-        p_st = None
 
     if uid is None:
         web.send_result_json('ERR_UID', body=None)
@@ -287,6 +289,7 @@ def cmd_useradd(context):
     if pw is None:
         web.send_result_json('ERR_PW', body=None)
         return
+    pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     if name is None:
         name = uid
@@ -294,29 +297,27 @@ def cmd_useradd(context):
     if local_name is None:
         local_name = name
 
-    p_group = web.get_request_param('group', '')
+    is_admin = False
+    if p_admin is not None:
+        is_admin = p_admin == 'true'
+
     group = ''
     if p_group is not None:
         group = p_group
         group = util.replace(group, '\s{2,}', ' ')
         group = group.strip()
 
-    p_privs = web.get_request_param('privs')
     privs = ''
     if p_privs is not None:
         privs = p_privs
         privs = util.replace(privs, '\s{2,}', ' ')
         privs = privs.strip()
 
-    p_admin = web.get_request_param('admin')
-    is_admin = False
-    if p_admin is not None:
-        is_admin = p_admin == 'true'
-
-    pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
+    if p_st == '':
+        p_st = None
 
     try:
-        userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, status=p_st)
+        userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, desc=desc, status=p_st)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -361,6 +362,10 @@ def cmd_usermod(context):
     u_status = None
 
     if web.is_admin(context):
+        p_admin = web.get_request_param('admin')
+        if p_admin is not None:
+            is_admin = p_admin == 'true'
+
         p_group = web.get_request_param('group')
         if p_group is not None:
             group = p_group
@@ -379,16 +384,14 @@ def cmd_usermod(context):
         aprivs = _get_optional_param_by_list('aprivs')
         rprivs = _get_optional_param_by_list('rprivs')
 
-        p_admin = web.get_request_param('admin')
-        if p_admin is not None:
-            is_admin = p_admin == 'true'
+        desc = web.get_request_param('desc', '')
 
         p_st = web.get_request_param('st')
         if p_st is not None:
             u_status = p_st
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, status=u_status)
+        userman.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, status=u_status)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)

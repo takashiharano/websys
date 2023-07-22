@@ -139,7 +139,8 @@ def get_session_id(context):
 #   "local_name": "root_L",
 #   "is_admin": true,
 #   "group": "GROUP1 GROUP2",
-#   "privs": "PRIVILEGE1 PRIVILEGE2"
+#   "privs": "PRIVILEGE1 PRIVILEGE2",
+#   "desc": "Description",
 #   "status": 0,
 #   "created_at": 1667047612.967891,
 #   "updated_at": 1667047612.967891,
@@ -152,6 +153,7 @@ def get_session_id(context):
 #   "local_name": "GUEST_L",
 #   "group": "GROUP1",
 #   "privs": "",
+#   "desc": "Description",
 #   "is_guest": true,
 #   "status": 0,
 #   "created_at": 1667047612.967891,
@@ -265,6 +267,17 @@ def has_permission(context, priv_name):
             return True
 
     return False
+
+#----------------------------------------------------------
+# get_user_description
+# Returns: user description or ''
+#----------------------------------------------------------
+def get_user_description(context):
+    if 'user_info' in context:
+        user_info = context['user_info']
+        if user_info is not None and 'desc' in user_info:
+            return user_info['desc']
+    return ''
 
 #----------------------------------------------------------
 # is_guest

@@ -647,9 +647,11 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
   var nameL = dbg.getOptVal(arg, 'nlocal');
+  var admin = dbg.getOptVal(arg, 'admin');
   var group = dbg.getOptVal(arg, 'g');
   var privs = dbg.getOptVal(arg, 'privs');
-  var admin = dbg.getOptVal(arg, 'admin');
+  var desc = dbg.getOptVal(arg, 'desc');
+  var st = dbg.getOptVal(arg, 'st');
   if (!p) p = '';
   var pw = websys.getUserPwHash(uid, p);
   var param = {
@@ -696,7 +698,15 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     }
     param.privs = privs;
   }
-  var st = dbg.getOptVal(arg, 'st');
+  if (desc) {
+    try {
+      desc = eval(desc);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.desc = desc;
+  }
   if (st) {
     if (util.isInteger(st)) {
       param.st = st;
@@ -725,13 +735,14 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
   var nameL = dbg.getOptVal(arg, 'nlocal');
+  var admin = dbg.getOptVal(arg, 'admin');
   var group = dbg.getOptVal(arg, 'g');
   var agroup = dbg.getOptVal(arg, 'aG');
   var rgroup = dbg.getOptVal(arg, 'rG');
   var privs = dbg.getOptVal(arg, 'privs');
   var aprivs = dbg.getOptVal(arg, 'aPriv');
   var rprivs = dbg.getOptVal(arg, 'rPriv');
-  var admin = dbg.getOptVal(arg, 'admin');
+  var desc = dbg.getOptVal(arg, 'desc');
 
   if (!uid || (admin && (admin != 'true') && (admin != 'false'))) {
     dbg.printUsage(tbl.help);
@@ -763,6 +774,9 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   if (p) {
     var pw = websys.getUserPwHash(uid, p);
     param.pw = pw;
+  }
+  if (admin) {
+    param.admin = (admin == 'true' ? 'true' : 'false');
   }
   if (group) {
     try {
@@ -818,8 +832,14 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     }
     param.rprivs = rprivs;
   }
-  if (admin) {
-    param.admin = (admin == 'true' ? 'true' : 'false');
+  if (desc) {
+    try {
+      desc = eval(desc);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.desc = desc;
   }
   var st = dbg.getOptVal(arg, 'st');
   if (st) {
