@@ -94,6 +94,8 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
     else:
         u_status = parse_int(status)
 
+    desc = util.replace(desc, '\t|\r\n|\n', ' ')
+
     user = {
         'uid': uid,
         'name': name,
@@ -163,6 +165,7 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
         updated = True
 
     if desc is not None:
+        desc = util.replace(desc, '\t|\r\n|\n', ' ')
         user['desc'] = desc
         updated = True
 
@@ -254,6 +257,8 @@ def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc='')
     gid = len(guest_users) + 1
     name = 'GUEST' + str(gid)
     local_name = name
+
+    desc = util.replace(desc, '\t|\r\n|\n', ' ')
 
     now = util.get_timestamp()
     expires_at = now + valid_min * 60
