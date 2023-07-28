@@ -29,23 +29,178 @@ def set_root_path(path):
     global root_path
     root_path = path
 
+#-----------------
+# WebContext Class
+#-----------------
+class WebContext:
+    def __init__(self):
+        self.status = ''
+        self.session_info = None
+        self.user_info = None
+        self.authorized = False
+
+    def get_status(self):
+        return self.status
+
+    def set_status(self, status):
+        self.status = status
+
+    def is_authorized(self):
+        return self.authorized
+
+    def set_authorized(self, authorized):
+        self.authorized = authorized
+
+    def get_session_info(self):
+        return self.session_info
+
+    def set_session_info(self, session_info):
+        self.session_info = session_info
+
+    #------------------------------------------------------
+    # get_user_info
+    #
+    # Returns:
+    # user: {
+    #   "uid": "root",
+    #   "name": "root",
+    #   "local_name": "root_L",
+    #   "is_admin": true,
+    #   "group": "GROUP1 GROUP2",
+    #   "privs": "PRIVILEGE1 PRIVILEGE2",
+    #   "desc": "Description",
+    #   "status": 0,
+    #   "created_at": 1667047612.967891,
+    #   "updated_at": 1667047612.967891,
+    #   "pw_changed_at": 1667047612.967891
+    # }
+    #
+    # users_guest: {
+    #   "uid": "123456",
+    #   "name": "GUEST",
+    #   "local_name": "GUEST_L",
+    #   "group": "GROUP1",
+    #   "privs": "",
+    #   "desc": "Description",
+    #   "is_guest": true,
+    #   "status": 0,
+    #   "created_at": 1667047612.967891,
+    #   "updated_at": 1667047612.967891,
+    #   "pw_changed_at": 1667047612.967891,
+    #   "expires_at": 1571476916.59936
+    # }
+    #
+    # or None
+    #------------------------------------------------------
+    def get_user_info(self):
+        return self.user_info
+
+    def set_user_info(self, user_info):
+        self.user_info = user_info
+
+    def get_session_id(self):
+        session_info = self.session_info
+        if session_info is not None and 'sid' in session_info:
+            return session_info['sid']
+        return None
+
+    def get_user_id(self):
+        user_info = self.user_info
+        if user_info is not None and 'uid' in user_info:
+            return user_info['uid']
+        return None
+
+    def get_user_name(self):
+        user_info = self.user_info
+        if user_info is not None and 'name' in user_info:
+            return user_info['name']
+        return ''
+
+    def get_user_local_name(self):
+        user_info = self.user_info
+        if user_info is not None and 'local_name' in user_info:
+            return user_info['local_name']
+        return ''
+
+    def is_admin(self):
+        user_info = self.user_info
+        if user_info is not None:
+            if 'is_admin' in user_info and user_info['is_admin']:
+                return True
+        return False
+
+    # group_name: case-insensitive
+    def is_member_of(self, group_name):
+        user_info = self.user_info
+        if user_info is None:
+            return False
+        return userman.is_member_of(user_info, group_name)
+
+    def get_groups(self):
+        user_info = self.user_info
+        if user_info is None:
+            return []
+
+        if 'group' not in user_info:
+            return []
+
+        groups = user_info['group']
+        group_list = groups.split(' ')
+        return group_list
+
+    # priv_name: case-insensitive
+    def has_privilege(self, priv_name):
+        user_info = self.user_info
+        if user_info is None:
+            return False
+        return userman.has_privilege(user_info, priv_name)
+
+    # Returns if the user has privilege in privileges or groups
+    # priv_name: case-insensitive
+    def has_permission(self, priv_name):
+        if self.has_privilege(priv_name):
+            return True
+
+        groups = self.get_groups()
+        for i in range(len(groups)):
+            gid = groups[i]
+            if userman.has_privilege_in_group(gid, priv_name):
+                return True
+
+        return False
+
+    def get_user_description(self):
+        user_info = self.user_info
+        if user_info is not None and 'desc' in user_info:
+            return user_info['desc']
+        return ''
+
+    def is_guest(self):
+        session_info = self.session_info
+        if session_info is not None:
+            if 'is_guest' in session_info and session_info['is_guest']:
+                return True
+        return False
+
 #----------------------------------------------------------
 # on access
 #----------------------------------------------------------
 def on_access(allow_guest=True):
-    context = {
-        'status': '',
-        'session_info': None,
-        'user_info': None,
-        'authorized': False
-    }
+    #context = {
+    #    'status': '',
+    #    'session_info': None,
+    #    'user_info': None,
+    #    'authorized': False
+    #}
+
+    context = WebContext()
 
     if synchronize_start():
         context = _on_access(context, allow_guest)
-        context['status'] = 'OK'
+        context.set_status('OK')
         synchronize_end()
     else:
-        context['status'] = 'SYSTEM_BUSY'
+        context.set_status('SYSTEM_BUSY')
 
     return context
 
@@ -71,9 +226,11 @@ def _on_access(context, allow_guest):
     user_info = userman.get_user_info(uid)
 
     sessionman.set_current_session_info(session_info)
-    context['session_info'] = session_info
-    context['user_info'] = user_info # see userman.create_user() for object fields
-    context['authorized'] = authman.auth(allow_guest)
+    authorized = authman.auth(allow_guest)
+
+    context.set_session_info(session_info)
+    context.set_user_info(user_info) # see userman.create_user() for object fields
+    context.set_authorized(authorized)
 
     return context
 
@@ -107,188 +264,6 @@ def get_request_param(key=None, default=None):
 
 def get_raw_request_param(key=None, default=None):
     return get_request_param(key, default)
-
-#----------------------------------------------------------
-# get_session_info
-# Returns: session_info or None
-#----------------------------------------------------------
-def get_session_info(context):
-    session_info = None
-    if 'session_info' in context:
-        session_info = context['session_info']
-    return session_info
-
-#----------------------------------------------------------
-# get_session_id
-# Returns: session id or None
-#----------------------------------------------------------
-def get_session_id(context):
-    if 'session_info' in context:
-        session_info = context['session_info']
-        if session_info is not None and 'sid' in session_info:
-            return session_info['sid']
-    return None
-
-#----------------------------------------------------------
-# get_user_info
-#
-# Returns:
-# user: {
-#   "uid": "root",
-#   "name": "root",
-#   "local_name": "root_L",
-#   "is_admin": true,
-#   "group": "GROUP1 GROUP2",
-#   "privs": "PRIVILEGE1 PRIVILEGE2",
-#   "desc": "Description",
-#   "status": 0,
-#   "created_at": 1667047612.967891,
-#   "updated_at": 1667047612.967891,
-#   "pw_changed_at": 1667047612.967891
-# }
-#
-# users_guest: {
-#   "uid": "123456",
-#   "name": "GUEST",
-#   "local_name": "GUEST_L",
-#   "group": "GROUP1",
-#   "privs": "",
-#   "desc": "Description",
-#   "is_guest": true,
-#   "status": 0,
-#   "created_at": 1667047612.967891,
-#   "updated_at": 1667047612.967891,
-#   "pw_changed_at": 1667047612.967891,
-#   "expires_at": 1571476916.59936
-# }
-#
-# or None
-#----------------------------------------------------------
-def get_user_info(context):
-    user_info = None
-    if 'user_info' in context:
-        user_info = context['user_info']
-    return user_info
-
-#----------------------------------------------------------
-# get_user_id
-# Returns: user id or None
-#----------------------------------------------------------
-def get_user_id(context):
-    if 'user_info' in context:
-        user_info = context['user_info']
-        if user_info is not None and 'uid' in user_info:
-            return user_info['uid']
-    return None
-
-#----------------------------------------------------------
-# get_user_name
-# Returns: user name or ''
-#----------------------------------------------------------
-def get_user_name(context):
-    if 'user_info' in context:
-        user_info = context['user_info']
-        if user_info is not None and 'name' in user_info:
-            return user_info['name']
-    return ''
-
-#----------------------------------------------------------
-# get_user_local_name
-# Returns: user local name or ''
-#----------------------------------------------------------
-def get_user_local_name(context):
-    if 'user_info' in context:
-        user_info = context['user_info']
-        if user_info is not None and 'local_name' in user_info:
-            return user_info['local_name']
-    return ''
-
-#----------------------------------------------------------
-# is_admin
-#----------------------------------------------------------
-def is_admin(context):
-    if 'user_info' in context:
-        user_info = context['user_info']
-        if user_info is not None:
-            if 'is_admin' in user_info and user_info['is_admin']:
-                return True
-    return False
-
-#----------------------------------------------------------
-# is_member_of
-# group_name: case-insensitive
-#----------------------------------------------------------
-def is_member_of(context, group_name):
-    if 'user_info' in context:
-        user_info = context['user_info']
-        return userman.is_member_of(user_info, group_name)
-
-    return False
-
-#----------------------------------------------------------
-# get groups
-#----------------------------------------------------------
-def get_groups(context):
-    user_info = get_user_info(context)
-    if user_info is None:
-        return []
-
-    if 'group' not in user_info:
-        return []
-
-    groups = user_info['group']
-    group_list = groups.split(' ')
-    return group_list
-
-#----------------------------------------------------------
-# has_privilege
-# priv_name: case-insensitive
-#----------------------------------------------------------
-def has_privilege(context, priv_name):
-    if 'user_info' in context:
-        user_info = context['user_info']
-        return userman.has_privilege(user_info, priv_name)
-
-    return False
-
-#----------------------------------------------------------
-# has_permission
-# Returns if the user has privilege in privileges or groups
-# priv_name: case-insensitive
-#----------------------------------------------------------
-def has_permission(context, priv_name):
-    if has_privilege(context, priv_name):
-        return True
-
-    groups = get_groups(context)
-    for i in range(len(groups)):
-        gid = groups[i]
-        if userman.has_privilege_in_group(gid, priv_name):
-            return True
-
-    return False
-
-#----------------------------------------------------------
-# get_user_description
-# Returns: user description or ''
-#----------------------------------------------------------
-def get_user_description(context):
-    if 'user_info' in context:
-        user_info = context['user_info']
-        if user_info is not None and 'desc' in user_info:
-            return user_info['desc']
-    return ''
-
-#----------------------------------------------------------
-# is_guest
-#----------------------------------------------------------
-def is_guest(context):
-    if 'session_info' in context:
-        session_info = context['session_info']
-        if session_info is not None:
-            if 'is_guest' in session_info and session_info['is_guest']:
-                return True
-    return False
 
 #----------------------------------------------------------
 # build logout cookies

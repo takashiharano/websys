@@ -26,7 +26,7 @@ def main(root_path, target_path, auth_required, upload=False):
         form = util.get_field_storage()
 
     context = web.on_access()
-    if not context['authorized']:
+    if not context.is_authorized():
         upload = False
 
     if form is None:

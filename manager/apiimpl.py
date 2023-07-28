@@ -15,7 +15,6 @@ util.append_system_path(__file__, '../')
 util.append_system_path(__file__, ROOT_PATH + 'websys/bin')
 import websysconf
 import web
-import sysmanage
 
 DATA_DIR = util.get_relative_path(__file__, '../../../private/websys/')
 GROUPS_DATA_FILE_PATH = DATA_DIR + 'groups.json'
@@ -69,8 +68,8 @@ def proc_api(context, act):
 def main():
     context = web.on_access()
     act = get_request_param('act')
-    if sysmanage.is_authorized(context):
-        if sysmanage.has_permission(context, 'sysmanage'):
+    if context.is_authorized():
+        if context.has_permission('sysmanage'):
             proc_api(context, act)
             return
     proc_on_forbidden()

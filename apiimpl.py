@@ -28,7 +28,7 @@ def cmd_login(context):
     userman.delete_expired_guest()
 
     if not ext_auth:
-        current_sid = web.get_session_id(context)
+        current_sid = context.get_session_id()
         if current_sid is not None:
             authman.logout(current_sid)
 
@@ -56,7 +56,7 @@ def cmd_login(context):
 #----------------------------------------------------------
 def cmd_loginlog(context):
     status = 'OK'
-    if web.is_admin(context):
+    if context.is_admin():
         p_n = web.get_request_param('n')
         n = 30
         if p_n is not None:
@@ -85,7 +85,7 @@ def cmd_logout(context):
         p_uid = None
 
     status = 'OK'
-    current_sid = web.get_session_id(context)
+    current_sid = context.get_session_id()
 
     target_sid = None
     if p_sid is None and p_uid is None:
@@ -122,8 +122,8 @@ def cmd_logout(context):
 # Logout by SID
 def logout_by_sid(context, current_sid, sid):
     self_logout = False
-    if not web.is_admin(context):
-        current_uid = web.get_user_id(context)
+    if not context.is_admin():
+        current_uid = context.get_user_id()
         target_session_info = sessionman.get_session_info(sid)
         if target_session_info is None:
             return False
@@ -141,11 +141,11 @@ def logout_by_sid(context, current_sid, sid):
 # Logout by UID
 def logout_by_uid(context, uid):
     self_logout = False
-    current_uid = web.get_user_id(context)
+    current_uid = context.get_user_id()
     if uid == current_uid:
         self_logout = True
     else:
-        if not web.is_admin(context):
+        if not context.is_admin():
             raise Exception('FORBIDDEN')
 
     i = sessionman.clear_user_sessions(uid)
@@ -156,7 +156,7 @@ def logout_by_uid(context, uid):
 
 # ALL Logout
 def all_logout(context, current_sid, self_logout=False):
-    if not web.is_admin(context):
+    if not context.is_admin():
         raise Exception('FORBIDDEN')
 
     sessions = sessionman.get_all_sessions_info()
@@ -180,11 +180,11 @@ def cmd_auth(context):
 #----------------------------------------------------------
 def cmd_session(context):
     status = 'OK'
-    session_info = web.get_session_info(context)
+    session_info = context.get_session_info()
     p_userinfo = web.get_request_param('userinfo')
 
     if session_info is not None and p_userinfo == 'true':
-        user_info = web.get_user_info(context)
+        user_info = context.get_user_info()
         session_info['userinfo'] = user_info
 
     web.send_result_json(status, body=session_info)
@@ -198,7 +198,7 @@ def cmd_sessions(context):
     if all is None:
         session_list = get_session_list_from_session(context)
     else:
-        if web.is_admin(context):
+        if context.is_admin():
             session_list = []
             sessions = sessionman.get_all_sessions_info()
             for sid in sessions:
@@ -217,20 +217,20 @@ def cmd_user(context):
     uid = web.get_request_param('uid')
 
     if uid is None:
-        sid = web.get_session_id(context)
+        sid = context.get_session_id()
         if sid is None:
             status = 'NOT_LOGGED_IN'
         else:
-            user_info = web.get_user_info(context)
+            user_info = context.get_user_info()
     else:
-      current_uid = web.get_user_id(context)
+      current_uid = context.get_user_id()
       if current_uid is None:
           status = 'FORBIDDEN'
       else:
           if uid == current_uid:
               user_info = userman.get_user_info(uid)
           else:
-              if web.is_admin(context):
+              if context.is_admin():
                   user_info = userman.get_user_info(uid)
                   if user_info is None:
                       status = 'NG'
@@ -247,7 +247,7 @@ def cmd_users(context):
         on_auth_error()
         return
 
-    if web.is_admin(context):
+    if context.is_admin():
         status = 'OK'
         user_list = userman.get_all_user_info()
         guest_user_list = userman.get_all_guest_user_info()
@@ -268,7 +268,7 @@ def cmd_useradd(context):
         return
 
     status = 'ERROR'
-    if not web.is_admin(context):
+    if not context.is_admin():
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -334,8 +334,8 @@ def cmd_usermod(context):
 
     uid = web.get_request_param('uid')
 
-    if not web.is_admin(context):
-        user_info = web.get_user_info(context)
+    if not context.is_admin():
+        user_info = context.get_user_info()
         if uid != user_info['uid']:
             web.send_result_json('FORBIDDEN', body=None)
             return
@@ -361,7 +361,7 @@ def cmd_usermod(context):
     is_admin = None
     u_status = None
 
-    if web.is_admin(context):
+    if context.is_admin():
         p_admin = web.get_request_param('admin')
         if p_admin is not None:
             is_admin = p_admin == 'true'
@@ -419,7 +419,7 @@ def cmd_gencode(context):
         return
 
     uid = None
-    if not web.is_admin(context):
+    if not context.is_admin():
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -468,7 +468,7 @@ def cmd_userdel(context):
         return
 
     status = 'ERROR'
-    if web.is_admin(context):
+    if context.is_admin():
         uid = web.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
@@ -507,7 +507,7 @@ def cmd_guests(context):
         on_auth_error()
         return
 
-    if web.is_admin(context):
+    if context.is_admin():
         status = 'OK'
         guest_user_list = userman.get_all_guest_user_info()
 
@@ -532,7 +532,7 @@ def cmd_hello(context):
             on_auth_error()
             return
 
-        if web.is_admin(context):
+        if context.is_admin():
             msg= 'Hello, ' + q
         else:
             msg = 'Hi!'
@@ -551,7 +551,7 @@ def on_auth_error():
 # get user info
 #----------------------------------------------------------
 def get_session_list_from_session(context):
-    uid = web.get_user_id(context)
+    uid = context.get_user_id()
     session_list = sessionman.get_session_info_list_from_uid(uid)
     return session_list
 

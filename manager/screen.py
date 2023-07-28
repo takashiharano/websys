@@ -14,7 +14,6 @@ util.append_system_path(__file__, ROOT_PATH)
 util.append_system_path(__file__, '../bin')
 import web
 import js
-import sysmanage
 
 #------------------------------------------------------------------------------
 def build_main_screen(context):
@@ -99,8 +98,8 @@ def main():
         js.main()
         return
 
-    if sysmanage.is_authorized(context):
-        if sysmanage.has_permission(context, 'sysmanage'):
+    if context.is_authorized():
+        if context.has_permission('sysmanage'):
             html = build_main_screen(context)
         else:
             html = build_forbidden_screen(context)
