@@ -331,11 +331,13 @@ def _send_response(result, type, headers=None, encoding=None):
 
     util.send_response(content, type, headers=headers)
 
+#----------------------------------------------------------
 def send_result_json(status, body=None, headers=None, http_headers=None):
     result = util.build_result_object(status, body, headers)
     content = util.to_json(result)
     send_response(content, 'application/json', headers=http_headers)
 
+#----------------------------------------------------------
 # Blue Screen
 def blue_screen(msg=None):
     if msg is None:
@@ -361,6 +363,7 @@ body, pre {
 </html>'''
     send_response(html, 'text/html')
 
+#----------------------------------------------------------
 # Auth Redirection
 def redirect_auth_screen():
     global root_path
@@ -384,6 +387,25 @@ def redirect_auth_screen():
 </body>
 </html>'''
     send_response(html, 'text/html')
+
+#----------------------------------------------------------
+def get_user_name(uid, default=None):
+    user_name = default
+    if default is None:
+        user_name = uid
+    user_info = userman.get_user_info(uid)
+    if user_info is not None and 'name' in user_info:
+        user_name = user_info['name']
+    return user_name
+
+def get_user_local_name(uid, default=None):
+    user_local_name = default
+    if default is None:
+        user_local_name = uid
+    user_info = userman.get_user_info(uid)
+    if user_info is not None and 'local_name' in user_info:
+        user_local_name = user_info['local_name']
+    return user_local_name
 
 #----------------------------------------------------------
 def synchronize_start():
