@@ -23,6 +23,7 @@ sysman.listStatus = {
 };
 
 sysman.itemList = [];
+sysman.sessions = {};
 
 sysman.editWindow = null;
 sysman.mode = null;
@@ -86,24 +87,27 @@ sysman.showInfotip = function(m, d) {
 };
 
 sysman.getUserList = function() {
-  sysman.execCmd('users', null, sysman.getUserListCb);
+  sysman.callApi('get_user_list', null, sysman.getUserListCb);
 };
 sysman.getUserListCb = function(xhr, res, req) {
   if (res.status != 'OK') {
     sysman.showInfotip(res.status);
     return;
   }
-  var users = res.body;
+  var result = res.body;
+  var users = result.user_list;
+  var sessions = result.sessions;
   var infoList = [];
   for (var k in users) {
     var user = users[k];
     infoList.push(user);
   }
   sysman.itemList = infoList;
-  sysman.drawList(infoList, 0, 1);
+  sysman.sessions = sessions;
+  sysman.drawList(infoList, sessions, 0, 1);
 };
 
-sysman.drawList = function(items, sortIdx, sortOrder) {
+sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
       var srtDef = sysman.LIST_COLUMNS[sortIdx];
@@ -142,6 +146,8 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
       pwChangedDate = util.getDateTimeString(pwChangedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
+    var sessionInfo = sysman.buildSessionInfoHtml(sessions[uid]);
+
     var desc = (item.desc ? item.desc : '');
     var escDesc = util.escHtml(desc);
     var dispDesc = '<span style="display:inline-block;width:100%;overflow:hidden;text-overflow:ellipsis;"';
@@ -162,6 +168,7 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
+    htmlList += '<td class="item-list"><pre>' + sessionInfo + '</pre></td>';
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (uid == currentUid) {
       htmlList += '&nbsp;';
@@ -177,6 +184,24 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
   var html = htmlHead + htmlList; 
 
   sysman.drawListContent(html);
+};
+
+sysman.buildSessionInfoHtml = function(sessionList) {
+  if (!sessionList) return '';
+  var html = '';
+  for (var i = 0; i < sessionList.length; i++) {
+    if (i > 0) html += '\n';
+    var session = sessionList[i];
+    var la = session.last_accessed;
+    var time = util.getDateTimeString(la['time'], '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
+    var sid = util.clipString(session['sid'], 7, 7);
+    var addr = la['addr'];
+    var brws = util.getBrowserInfo(la['ua']);
+    var ua = brws.name + ' ' + brws.version;
+    html += time + '\t' + addr + '\t' + ua + '\t' + sid;
+  }
+  var html = util.alignFields(html, '\t', 2);
+  return html;
 };
 
 sysman.drawListContent = function(html) {
@@ -225,6 +250,7 @@ sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
     }
     html += '><span>' + label + '</span> ' + sortButton + '</th>';
   }
+  html += '<th class="item-list">Sessions</th>';
   html += '<th class="item-list">&nbsp;</th>';
   html += '</tr>';
   return html;
@@ -236,7 +262,7 @@ sysman.sortItemList = function(sortIdx, sortOrder) {
   }
   sysman.listStatus.sortIdx = sortIdx;
   sysman.listStatus.sortOrder = sortOrder;
-  sysman.drawList(sysman.itemList, sortIdx, sortOrder);
+  sysman.drawList(sysman.itemList, sysman.sessions, sortIdx, sortOrder);
 };
 
 //-----------------------------------------------------------------------------

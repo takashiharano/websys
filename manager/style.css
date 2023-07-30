@@ -52,6 +52,8 @@ textarea {
 }
 
 pre {
+  margin: 0;
+  padding: 0;
   font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
 }
 
@@ -61,6 +63,10 @@ table {
 
 td,th {
   padding: 2px 4px;
+}
+
+td {
+  vertical-align: top;
 }
 
 button, input[type="button"], input[type="submit"] {

@@ -14,6 +14,8 @@ util.append_system_path(__file__, ROOT_PATH)
 util.append_system_path(__file__, '../')
 util.append_system_path(__file__, ROOT_PATH + 'websys/bin')
 import websysconf
+import userman
+import sessionman
 import web
 
 DATA_DIR = util.get_relative_path(__file__, '../../../private/websys/')
@@ -33,6 +35,77 @@ def send_error_text(msg):
 
 def proc_on_forbidden():
     send_error_text('ERROR')
+
+#------------------------------------------------------------------------------
+def proc_get_user_list(context):
+    if not context.has_permission('sysmanage'):
+        web.send_result_json('FORBIDDEN', body=None)
+        return
+
+    user_list = userman.get_all_user_info()
+    guest_user_list = userman.get_all_guest_user_info()
+    if guest_user_list is not None:
+        user_list.update(guest_user_list)
+
+    user_sessions = get_user_sessions()
+    result = {
+        'user_list': user_list,
+        'sessions': user_sessions
+    }
+
+    web.send_result_json('OK', body=result)
+
+# uid: {
+#   [
+#     {
+#      "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef": {
+#       "sid": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+#       "uid": "root",
+#       "time": 1234567890.123456,
+#       "tz": "+0900",
+#       "addr": "::1",
+#       "host": "hostname",
+#       "ua": "Mozilla/5.0",
+#       "is_guest": False,
+#       "last_accessed": {
+#        "time": 1234567890.123456,
+#        "tz": "+0900",
+#        "addr": "::1",
+#        "host": "hostname",
+#        "ua": "Mozilla/5.0"
+#       }
+#      }
+#     }
+#   ]
+# }
+def get_user_sessions():
+    sessions = sessionman.get_all_sessions_info()
+    user_sessions = {}
+    last_accessed_times = {}
+    for sid in sessions:
+        session = sessions[sid]
+        uid = session['uid']
+        if uid not in user_sessions:
+            user_sessions[uid] = []
+            last_accessed_times[uid] = []
+        user_sessions[uid].append(session)
+        last_accessed_times[uid].append(session['last_accessed']['time'])
+
+    # sort by last_accessed time
+    for uid in user_sessions:
+        sessions = user_sessions[uid]
+        last_accessed_time_list = last_accessed_times[uid]
+        last_accessed_time_list.sort()
+        new_list = []
+        for i in range(len(last_accessed_time_list)):
+            time = last_accessed_time_list[i]
+            for j in range(len(last_accessed_time_list)):
+                session = sessions[j]
+                if session['last_accessed']['time'] == time:
+                    new_list.append(session)
+        user_sessions[uid] = new_list
+
+    return user_sessions
 
 #------------------------------------------------------------------------------
 def proc_get_groups(context):

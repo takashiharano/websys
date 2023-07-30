@@ -402,9 +402,7 @@ websys.loginlog.cb = function(xhr, res) {
     var brws = util.getBrowserInfo(ua);
     ua = brws.name + ' ' + brws.version;
     time = time.replace(/T/, ' ');
-    if (sid.length >= 16) {
-      sid = sid.substr(0, 7) + '..' + sid.substr(sid.length - 7, 7);
-    }
+    sid = clipString(sid, 7, 7);
     s += time + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\n';
   }
   var r = util.alignFields(s, '\t', 2);
