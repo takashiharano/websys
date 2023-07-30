@@ -168,7 +168,7 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
-    htmlList += '<td class="item-list"><pre>' + sessionInfo + '</pre></td>';
+    htmlList += '<td class="item-list" style="padding-right:16px;"><pre>' + sessionInfo + '</pre></td>';
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (uid == currentUid) {
       htmlList += '&nbsp;';
@@ -188,17 +188,35 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
 
 sysman.buildSessionInfoHtml = function(sessionList) {
   if (!sessionList) return '';
+  var now = util.now();
+  var mn = util.getTimestampOfMidnight(now);
   var html = '';
   for (var i = 0; i < sessionList.length; i++) {
     if (i > 0) html += '\n';
     var session = sessionList[i];
     var la = session.last_accessed;
-    var time = util.getDateTimeString(la['time'], '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
+    var t = la['time'];
+    var tMs = t * 1000;
+    var time = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
     var sid = util.clipString(session['sid'], 7, 7);
     var addr = la['addr'];
     var brws = util.getBrowserInfo(la['ua']);
     var ua = brws.name + ' ' + brws.version;
-    html += time + '\t' + addr + '\t' + ua + '\t' + sid;
+
+    var elapsed = now - tMs;
+    var ledColor = '#888';
+    if (elapsed <= 10 * util.MINUTE) {
+      ledColor = '#0f0';
+    } else if (elapsed <= 30 * util.MINUTE) {
+      ledColor = '#0a0';
+    } else if (elapsed <= 6 * util.HOUR) {
+      ledColor = '#080';
+    } else if (tMs >= mn) {
+      ledColor = '#262';
+    }
+
+    var led = '<span class="led" style="margin-right:4px;color:' + ledColor + '"></span>'
+    html += led + time + '\t' + addr + '\t' + ua + '\t' + sid;
   }
   var html = util.alignFields(html, '\t', 2);
   return html;
