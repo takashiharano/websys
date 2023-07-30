@@ -151,7 +151,7 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     dispDesc += '>' + escDesc + '</span>';
 
     htmlList += '<tr class="item-list">';
-    htmlList += '<td class="item-list">' + uid + '</td>';
+    htmlList += '<td class="item-list"><span class="pseudo-link" style="color:#c0f0ff;text-align:center;" onclick="sysman.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span></td>';
     htmlList += '<td class="item-list">' + name + '</td>';
     htmlList += '<td class="item-list">' + local_name + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
@@ -162,7 +162,6 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
-    htmlList += '<td class="item-list"><span class="pseudo-link" style="color:#0cf;text-align:center;" onclick="sysman.editUser(\'' + uid + '\');">EDIT</span></td>';
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (uid == currentUid) {
       htmlList += '&nbsp;';
@@ -226,7 +225,6 @@ sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
     }
     html += '><span>' + label + '</span> ' + sortButton + '</th>';
   }
-  html += '<th class="item-list">&nbsp;</th>';
   html += '<th class="item-list">&nbsp;</th>';
   html += '</tr>';
   return html;
