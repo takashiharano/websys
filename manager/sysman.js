@@ -203,6 +203,7 @@ sysman.buildSessionInfoHtml = function(sessionList) {
     var time = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
     var sid = session['sid'];
     var ssid = util.clipString(sid, 7, 7, '..');
+    var sid7 = util.clipString(sid, 7, 0, '');
     var addr = la['addr'];
     var brws = util.getBrowserInfo(la['ua']);
     var ua = brws.name + ' ' + brws.version;
@@ -219,11 +220,15 @@ sysman.buildSessionInfoHtml = function(sessionList) {
       ledColor = '#262';
     }
 
-    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + sid + '\');" data-tooltip="Logout">' + ssid + '</span>';
     var led = '<span class="led" style="margin-right:4px;color:' + ledColor + '"></span>'
-    html += led + time + '\t' + addr + '\t' + ua + '\t' + ssidLink;
+    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + sid + '\');" data-tooltip="Logout">' + ssid + '</span>';
+    var timeId = 'tm-' + sid7;
+    var tmspan = '<span id="' + timeId + '" style="text-align:right;"></span>'
+    html += led + time + '\t' + addr + '\t' + ua + '\t' + ssidLink + '\t' + tmspan;
+
+    util.timecounter.start('#' + timeId, tMs);
   }
-  var html = util.alignFields(html, '\t', 2);
+  html = util.alignFields(html, '\t', 2);
   return html;
 };
 
