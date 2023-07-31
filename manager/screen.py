@@ -37,6 +37,7 @@ def build_main_screen(context):
 
 <div style="margin-bottom:4px;">
 <button onclick="sysman.newUser();">+</button>
+<button onclick="sysman.getUserList();">RELOAD</button>
 </div>
 <div id="user-list"></div>
 
