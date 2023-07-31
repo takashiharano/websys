@@ -90,7 +90,10 @@ sysman.getUserList = function() {
   sysman.callApi('get_user_list', null, sysman.getUserListCb);
 };
 sysman.getUserListCb = function(xhr, res, req) {
-  if (res.status != 'OK') {
+  if (res.status == 'FORBIDDEN') {
+    location.href = location.href;
+    return;
+  } else if (res.status != 'OK') {
     sysman.showInfotip(res.status);
     return;
   }
@@ -198,7 +201,8 @@ sysman.buildSessionInfoHtml = function(sessionList) {
     var t = la['time'];
     var tMs = t * 1000;
     var time = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
-    var sid = util.clipString(session['sid'], 7, 7);
+    var sid = session['sid'];
+    var ssid = util.clipString(sid, 7, 7, '..');
     var addr = la['addr'];
     var brws = util.getBrowserInfo(la['ua']);
     var ua = brws.name + ' ' + brws.version;
@@ -215,8 +219,9 @@ sysman.buildSessionInfoHtml = function(sessionList) {
       ledColor = '#262';
     }
 
+    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + sid + '\');" data-tooltip="Logout">' + ssid + '</span>';
     var led = '<span class="led" style="margin-right:4px;color:' + ledColor + '"></span>'
-    html += led + time + '\t' + addr + '\t' + ua + '\t' + sid;
+    html += led + time + '\t' + addr + '\t' + ua + '\t' + ssidLink;
   }
   var html = util.alignFields(html, '\t', 2);
   return html;
@@ -281,6 +286,29 @@ sysman.sortItemList = function(sortIdx, sortOrder) {
   sysman.listStatus.sortIdx = sortIdx;
   sysman.listStatus.sortOrder = sortOrder;
   sysman.drawList(sysman.itemList, sysman.sessions, sortIdx, sortOrder);
+};
+
+sysman.confirmLogoutSession = function(sid) {
+  var cSid = websys.getSessionId();
+  var ssid = util.clipString(sid, 7, 7, '..');
+  var m = 'Logout sid ' + ssid + ' ?';
+  if (sid == cSid) {
+    m += '\n\n<span style="color:#f44;font-weight:bold;">[CURRENT SESSION]</span>';
+  }
+  util.confirm(m, sysman.logoutSession, {data: sid});
+};
+sysman.logoutSession = function(sid) {
+  var params = {
+    sid: sid
+  };
+  sysman.execCmd('logout', params, sysman.logoutSessionCb);
+};
+sysman.logoutSessionCb = function(xhr, res) {
+  sysman.showInfotip(res.status);
+  if (res.status != 'OK') {
+    return;
+  }
+  sysman.getUserList();
 };
 
 //-----------------------------------------------------------------------------

@@ -34,7 +34,7 @@ def send_error_text(msg):
     util.send_binary(b, filename='error.txt')
 
 def proc_on_forbidden():
-    send_error_text('ERROR')
+    send_result_json('FORBIDDEN')
 
 #------------------------------------------------------------------------------
 def proc_get_user_list(context):

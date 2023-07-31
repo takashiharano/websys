@@ -1167,6 +1167,10 @@ websys.getSessionInfo = function() {
   return websys.sessionInfo;
 };
 
+websys.getSessionId = function() {
+  return (websys.sessionInfo ? websys.sessionInfo.sid : null);
+};
+
 websys.getUserInfo = function() {
   var info = null;
   if (websys.sessionInfo && websys.sessionInfo.userinfo) {
