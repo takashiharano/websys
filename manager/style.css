@@ -116,6 +116,10 @@ tr.item-list:hover {
   font-weight: bold;
 }
 
+.link-button {
+  color: #c0f0ff;
+}
+
 .sort-button {
   display: inline-block;
   line-height: 1em;

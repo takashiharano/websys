@@ -160,7 +160,7 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
     dispDesc += '>' + escDesc + '</span>';
 
     htmlList += '<tr class="item-list">';
-    htmlList += '<td class="item-list"><span class="pseudo-link" style="color:#c0f0ff;text-align:center;" onclick="sysman.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span></td>';
+    htmlList += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysman.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span></td>';
     htmlList += '<td class="item-list">' + name + '</td>';
     htmlList += '<td class="item-list">' + local_name + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
@@ -223,8 +223,8 @@ sysman.buildSessionInfoHtml = function(sessionList) {
     var led = '<span class="led" style="margin-right:4px;color:' + ledColor + '"></span>'
     var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + sid + '\');" data-tooltip="Logout">' + ssid + '</span>';
     var timeId = 'tm-' + sid7;
-    var tmspan = '<span id="' + timeId + '" style="text-align:right;"></span>'
-    html += led + time + '\t' + addr + '\t' + ua + '\t' + ssidLink + '\t' + tmspan;
+    var tmspan = '<div id="' + timeId + '" style="display:inline-block;min-width:90px;text-align:right;"></div>'
+    html += led + time + '\t' + tmspan + '\t' + addr + '\t' + ua + '\t' + ssidLink;
 
     util.timecounter.start('#' + timeId, tMs);
   }
