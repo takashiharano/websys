@@ -110,6 +110,61 @@ sysman.getUserListCb = function(xhr, res, req) {
   sysman.drawList(infoList, sessions, 0, 1);
 };
 
+sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
+  var html = '<table>';
+  html += '<tr class="item-list-header">';
+  html += '<th class="item-list">&nbsp;</th>';
+
+  for (var i = 0; i < columns.length; i++) {
+    var column = columns[i];
+    var label = column['label'];
+
+    var sortAscClz = '';
+    var sortDescClz = '';
+    var nextSortType = 1;
+    if (i == sortIdx) {
+      if (sortOrder == 1) {
+        sortAscClz = 'sort-active';
+      } else if (sortOrder == 2) {
+        sortDescClz = 'sort-active';
+      }
+      nextSortType = sortOrder + 1;
+    }
+
+    var sortButton = '<span class="sort-button" ';
+    sortButton += ' onclick="sysman.sortItemList(' + i + ', ' + nextSortType + ');"';
+    sortButton += '>';
+    sortButton += '<span';
+    if (sortAscClz) {
+       sortButton += ' class="' + sortAscClz + '"';
+    }
+    sortButton += '>▲</span>';
+    sortButton += '<br>';
+    sortButton += '<span';
+    if (sortDescClz) {
+       sortButton += ' class="' + sortDescClz + '"';
+    }
+    sortButton += '>▼</span>';
+    sortButton += '</span>';
+
+    html += '<th class="item-list"';
+    if (column.style) {
+      html += ' style="' + column.style + '"';
+    }
+    html += '><span>' + label + '</span> ' + sortButton + '</th>';
+  }
+
+  html += '<th class="item-list">Logged in</th>';
+  html += '<th class="item-list">Last Accessed</th>';
+  html += '<th class="item-list">Elapsed</th>';
+  html += '<th class="item-list">Addr</th>';
+  html += '<th class="item-list">User-Agent</th>';
+  html += '<th class="item-list">Session</th>';
+  html += '<th class="item-list">&nbsp;</th>';
+  html += '</tr>';
+  return html;
+};
+
 sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
@@ -160,6 +215,8 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
     dispDesc += '>' + escDesc + '</span>';
 
     htmlList += '<tr class="item-list">';
+    htmlList += '<td class="item-list" style="text-align:center;"><pre>' + sessionInfo.led + '</pre></td>';
+
     htmlList += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysman.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span></td>';
     htmlList += '<td class="item-list">' + name + '</td>';
     htmlList += '<td class="item-list">' + local_name + '</td>';
@@ -171,7 +228,13 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
-    htmlList += '<td class="item-list" style="padding-right:16px;"><pre>' + sessionInfo + '</pre></td>';
+
+    htmlList += '<td class="item-list"><pre>' + sessionInfo.loginTime + '</pre></td>';
+    htmlList += '<td class="item-list"><pre>' + sessionInfo.laTime + '</pre></td>';
+    htmlList += '<td class="item-list" style="textalign:right;"><pre>' + sessionInfo.tmspan + '</pre></td>';
+    htmlList += '<td class="item-list"><pre>' + sessionInfo.addr + '</pre></td>';
+    htmlList += '<td class="item-list"><pre>' + sessionInfo.ua + '</pre></td>';
+    htmlList += '<td class="item-list" style="padding-right:16px;"><pre>' + sessionInfo.ssidLink + '</pre></td>';
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (uid == currentUid) {
       htmlList += '&nbsp;';
@@ -190,17 +253,26 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
 };
 
 sysman.buildSessionInfoHtml = function(sessionList) {
-  if (!sessionList) return '';
+  var htmls = {
+    led: '',
+    loginTime: '',
+    laTime: '',
+    tmspan: '',
+    addr: '',
+    ua: '',
+    ssidLink: ''
+  };
+  if (!sessionList) return htmls;
   var now = util.now();
   var mn = util.getTimestampOfMidnight(now);
-  var html = '';
   for (var i = 0; i < sessionList.length; i++) {
-    if (i > 0) html += '\n';
     var session = sessionList[i];
+    var loginT = session.created_time;
     var la = session.last_accessed;
     var t = la['time'];
     var tMs = t * 1000;
-    var time = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
+    var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
+    var laTime = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
     var sid = session['sid'];
     var ssid = util.clipString(sid, 7, 7, '..');
     var sid7 = util.clipString(sid, 7, 0, '');
@@ -220,68 +292,37 @@ sysman.buildSessionInfoHtml = function(sessionList) {
       ledColor = '#262';
     }
 
-    var led = '<span class="led" style="margin-right:4px;color:' + ledColor + '"></span>'
-    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + sid + '\');" data-tooltip="Logout">' + ssid + '</span>';
+    var led = '<span class="led" style="color:' + ledColor + '" data-tooltip="Last-accessed: ' + laTime + '"></span>'
+    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
     var timeId = 'tm-' + sid7;
     var tmspan = '<div id="' + timeId + '" style="display:inline-block;min-width:90px;text-align:right;"></div>'
-    html += led + time + '\t' + tmspan + '\t' + addr + '\t' + ua + '\t' + ssidLink;
+
+    if (i > 0) {
+      htmls.led += '\n';
+      htmls.loginTime += '\n';
+      htmls.laTime += '\n';
+      htmls.tmspan += '\n';
+      htmls.addr += '\n';
+      htmls.ua += '\n';
+      htmls.ssidLink += '\n';
+    }
+
+    htmls.led += led;
+    htmls.loginTime += loginTime;
+    htmls.laTime += laTime;
+    htmls.tmspan += tmspan;
+    htmls.addr += addr;
+    htmls.ua += ua;
+    htmls.ssidLink += ssidLink;
 
     util.timecounter.start('#' + timeId, tMs);
   }
-  html = util.alignFields(html, '\t', 2);
-  return html;
+
+  return htmls;
 };
 
 sysman.drawListContent = function(html) {
   $el('#user-list').innerHTML = html;
-};
-
-sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
-  var html = '<table>';
-  html += '<tr class="item-list-header">';
-
-  for (var i = 0; i < columns.length; i++) {
-    var column = columns[i];
-    var label = column['label'];
-
-    var sortAscClz = '';
-    var sortDescClz = '';
-    var nextSortType = 1;
-    if (i == sortIdx) {
-      if (sortOrder == 1) {
-        sortAscClz = 'sort-active';
-      } else if (sortOrder == 2) {
-        sortDescClz = 'sort-active';
-      }
-      nextSortType = sortOrder + 1;
-    }
-
-    var sortButton = '<span class="sort-button" ';
-    sortButton += ' onclick="sysman.sortItemList(' + i + ', ' + nextSortType + ');"';
-    sortButton += '>';
-    sortButton += '<span';
-    if (sortAscClz) {
-       sortButton += ' class="' + sortAscClz + '"';
-    }
-    sortButton += '>▲</span>';
-    sortButton += '<br>';
-    sortButton += '<span';
-    if (sortDescClz) {
-       sortButton += ' class="' + sortDescClz + '"';
-    }
-    sortButton += '>▼</span>';
-    sortButton += '</span>';
-
-    html += '<th class="item-list"';
-    if (column.style) {
-      html += ' style="' + column.style + '"';
-    }
-    html += '><span>' + label + '</span> ' + sortButton + '</th>';
-  }
-  html += '<th class="item-list">Sessions</th>';
-  html += '<th class="item-list">&nbsp;</th>';
-  html += '</tr>';
-  return html;
 };
 
 sysman.sortItemList = function(sortIdx, sortOrder) {
@@ -296,7 +337,7 @@ sysman.sortItemList = function(sortIdx, sortOrder) {
 sysman.confirmLogoutSession = function(sid) {
   var cSid = websys.getSessionId();
   var ssid = util.clipString(sid, 7, 7, '..');
-  var m = 'Logout sid ' + ssid + ' ?';
+  var m = 'Logout?\n\nsid: ' + sid;
   if (sid == cSid) {
     m += '\n\n<span style="color:#f44;font-weight:bold;">[CURRENT SESSION]</span>';
   }
