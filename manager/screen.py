@@ -103,7 +103,7 @@ def main():
         return
 
     if context.is_authorized():
-        if context.has_permission('sysmanage'):
+        if context.has_permission('sysadmin'):
             html = build_main_screen(context)
         else:
             html = build_forbidden_screen(context)

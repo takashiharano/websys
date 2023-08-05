@@ -38,7 +38,7 @@ def proc_on_forbidden():
 
 #------------------------------------------------------------------------------
 def proc_get_user_list(context):
-    if not context.has_permission('sysmanage'):
+    if not context.has_permission('sysadmin'):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -51,7 +51,7 @@ def proc_get_user_list(context):
 
 #------------------------------------------------------------------------------
 def proc_get_session_list(context):
-    if not context.has_permission('sysmanage'):
+    if not context.has_permission('sysadmin'):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -152,7 +152,7 @@ def main():
     context = web.on_access()
     act = get_request_param('act')
     if context.is_authorized():
-        if context.has_permission('sysmanage'):
+        if context.has_permission('sysadmin'):
             proc_api(context, act)
             return
     proc_on_forbidden()
