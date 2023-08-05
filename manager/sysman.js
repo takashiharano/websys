@@ -23,10 +23,11 @@ sysman.listStatus = {
 };
 
 sysman.itemList = [];
-sysman.sessions = {};
-
+sysman.sessions = null;
 sysman.editWindow = null;
 sysman.mode = null;
+sysman.tmrId = 0;
+sysman.interval = 0;
 
 $onReady = function() {
   $el('#user-list').innerHTML = '<span class="progdot">Loading</span>';
@@ -34,8 +35,23 @@ $onReady = function() {
 };
 
 sysman.onSysReady = function() {
+  sysman.reload();
+  sysman.queueNextUpdateSessionInfo();
+};
+
+sysman.reload = function() {
   sysman.getUserList();
+  sysman.getSessionList();
   sysman.getGroups();
+};
+
+sysman.queueNextUpdateSessionInfo = function() {
+  sysman.tmrId = setTimeout(sysman.updateSessionInfo, 60000);
+};
+
+sysman.updateSessionInfo = function() {
+  sysman.interval = 1;
+  sysman.getSessionList();
 };
 
 sysman.callApi = function(act, params, cb) {
@@ -97,23 +113,19 @@ sysman.getUserListCb = function(xhr, res, req) {
     sysman.showInfotip(res.status);
     return;
   }
-  var result = res.body;
-  var users = result.user_list;
-  var sessions = result.sessions;
+  var users = res.body;
   var infoList = [];
   for (var k in users) {
     var user = users[k];
     infoList.push(user);
   }
   sysman.itemList = infoList;
-  sysman.sessions = sessions;
-  sysman.drawList(infoList, sessions, 0, 1);
+  sysman.drawList(infoList, 0, 1);
 };
 
 sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
   var html = '<table>';
   html += '<tr class="item-list-header">';
-  html += '<th class="item-list">&nbsp;</th>';
 
   for (var i = 0; i < columns.length; i++) {
     var column = columns[i];
@@ -154,18 +166,12 @@ sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
     html += '><span>' + label + '</span> ' + sortButton + '</th>';
   }
 
-  html += '<th class="item-list">Logged in</th>';
-  html += '<th class="item-list">Last Accessed</th>';
-  html += '<th class="item-list">Elapsed</th>';
-  html += '<th class="item-list">Addr</th>';
-  html += '<th class="item-list">User-Agent</th>';
-  html += '<th class="item-list">Session</th>';
   html += '<th class="item-list">&nbsp;</th>';
   html += '</tr>';
   return html;
 };
 
-sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
+sysman.drawList = function(items, sortIdx, sortOrder) {
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
       var srtDef = sysman.LIST_COLUMNS[sortIdx];
@@ -204,8 +210,6 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
       pwChangedDate = util.getDateTimeString(pwChangedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
     }
 
-    var sessionInfo = sysman.buildSessionInfoHtml(sessions[uid]);
-
     var desc = (item.desc ? item.desc : '');
     var escDesc = util.escHtml(desc);
     var dispDesc = '<span style="display:inline-block;width:100%;overflow:hidden;text-overflow:ellipsis;"';
@@ -215,7 +219,6 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
     dispDesc += '>' + escDesc + '</span>';
 
     htmlList += '<tr class="item-list">';
-    htmlList += '<td class="item-list" style="text-align:center;"><pre>' + sessionInfo.led + '</pre></td>';
 
     htmlList += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysman.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span></td>';
     htmlList += '<td class="item-list">' + name + '</td>';
@@ -229,12 +232,6 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
 
-    htmlList += '<td class="item-list"><pre>' + sessionInfo.loginTime + '</pre></td>';
-    htmlList += '<td class="item-list"><pre>' + sessionInfo.laTime + '</pre></td>';
-    htmlList += '<td class="item-list" style="textalign:right;"><pre>' + sessionInfo.tmspan + '</pre></td>';
-    htmlList += '<td class="item-list"><pre>' + sessionInfo.addr + '</pre></td>';
-    htmlList += '<td class="item-list"><pre>' + sessionInfo.ua + '</pre></td>';
-    htmlList += '<td class="item-list" style="padding-right:16px;"><pre>' + sessionInfo.ssidLink + '</pre></td>';
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (uid == currentUid) {
       htmlList += '&nbsp;';
@@ -252,21 +249,76 @@ sysman.drawList = function(items, sessions, sortIdx, sortOrder) {
   sysman.drawListContent(html);
 };
 
-sysman.buildSessionInfoHtml = function(sessionList) {
-  var htmls = {
-    led: '',
-    loginTime: '',
-    laTime: '',
-    tmspan: '',
-    addr: '',
-    ua: '',
-    ssidLink: ''
+sysman.getSessionList = function() {
+  if (sysman.tmrId > 0) {
+    clearTimeout(sysman.tmrId);
+    sysman.tmrId = 0;
+    sysman.interval = 1;
+  }
+  sysman.callApi('get_session_list', null, sysman.getSessionListCb);
+};
+sysman.getSessionListCb = function(xhr, res, req) {
+  if (res.status == 'FORBIDDEN') {
+    location.href = location.href;
+    return;
+  } else if (res.status != 'OK') {
+    sysman.showInfotip(res.status);
+    return;
+  }
+  var sessions = res.body;
+  sysman.sessions = sessions;
+  sysman.drawSessionList(sessions);
+
+  if (sysman.interval) {
+    sysman.interval = 0;
+    sysman.queueNextUpdateSessionInfo();
+  }
+};
+
+sysman.drawSessionList = function(sessions) {
+  var html = '<table>';
+  html += '<tr>';
+  html += '<td></td>';
+  html += '<td>UID</td>';
+  html += '<td>Name</td>';
+  html += '<td>Logged in</td>';
+  html += '<td>Last Accessed</td>';
+  html += '<td>Elapsed</td>';
+  html += '<td>Addr</td>';
+  html += '<td>User-Agent</td>';
+  html += '<td>Session</td>';
+  html += '<td>0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   </td>';
+  html += '</tr>';
+
+  var lastAccTimes = [];
+
+  for (var uid in sessions) {
+    var userSessionInfoList = sessions[uid];
+    var latestSession = userSessionInfoList[0];
+    var la = latestSession.last_accessed;
+    var t = la['time'];
+    var w = {uid: uid, t: t};
+    lastAccTimes.push(w);
   };
-  if (!sessionList) return htmls;
+  lastAccTimes = util.sortObject(lastAccTimes, 't', true, true);
+
+  for (var i = 0; i < lastAccTimes.length; i++) {
+    var uid = lastAccTimes[i].uid;
+    userSessionInfoList = sessions[uid];
+    html += sysman.buildSessionInfoHtml(uid, userSessionInfoList);
+  };
+  html += '</table>';
+  $el('#session-list').innerHTML = html;
+};
+
+sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
+  var html = '';
+  if (!userSessionInfoList) return html;
   var now = util.now();
   var mn = util.getTimestampOfMidnight(now);
-  for (var i = 0; i < sessionList.length; i++) {
-    var session = sessionList[i];
+  for (var i = 0; i < userSessionInfoList.length; i++) {
+    var session = userSessionInfoList[i];
+    var name = session.user_name;
     var loginT = session.created_time;
     var la = session.last_accessed;
     var t = la['time'];
@@ -292,33 +344,74 @@ sysman.buildSessionInfoHtml = function(sessionList) {
       ledColor = '#262';
     }
 
-    var led = '<span class="led" style="color:' + ledColor + '" data-tooltip="Last-accessed: ' + laTime + '"></span>'
-    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
+    var led = '<span class="led" style="color:' + ledColor + '"></span>'
+    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
     var timeId = 'tm-' + sid7;
-    var tmspan = '<div id="' + timeId + '" style="display:inline-block;min-width:90px;text-align:right;"></div>'
+    var tmspan = '<span id="' + timeId + '"></span>'
+    var timeline = sysman.buildTimeLine(now, laTime);
 
-    if (i > 0) {
-      htmls.led += '\n';
-      htmls.loginTime += '\n';
-      htmls.laTime += '\n';
-      htmls.tmspan += '\n';
-      htmls.addr += '\n';
-      htmls.ua += '\n';
-      htmls.ssidLink += '\n';
-    }
-
-    htmls.led += led;
-    htmls.loginTime += loginTime;
-    htmls.laTime += laTime;
-    htmls.tmspan += tmspan;
-    htmls.addr += addr;
-    htmls.ua += ua;
-    htmls.ssidLink += ssidLink;
+    html += '<tr class="item-list">';
+    html += '<td style="padding-right:4px;">' + led + '</td>';
+    html += '<td style="padding-right:10px;">' + uid + '</td>';
+    html += '<td style="padding-right:10px;">' + name + '</td>';
+    html += '<td style="padding-right:10px;">' + loginTime + '</td>';
+    html += '<td style="padding-right:10px;">' + laTime + '</td>';
+    html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
+    html += '<td style="padding-right:10px;">' + addr + '</td>';
+    html += '<td style="padding-right:10px;">' + ua + '</td>';
+    html += '<td style="padding-right:10px;">' + ssidLink + '</td>';
+    html += '<td>' + timeline + '</td>';
+    html += '</tr>';
 
     util.timecounter.start('#' + timeId, tMs);
   }
 
-  return htmls;
+  return html;
+};
+sysman.buildTimeLine = function(now, lastAccessedTime) {
+  var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
+  var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
+  var tmp = nowHHMM.split(':');
+  var nowHH = tmp[0];
+  var nowMM = tmp[1];
+  var accYYYYMMDD = util.getDateTimeString(lastAccessedTime, '%YYYY%MM%DD');
+  var accHHMM = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
+  tmp = accHHMM.split(':');
+  var accHH = tmp[0];
+  var accMM = tmp[1];
+
+  var future = false;
+  var html = '<span style="color:#888;"><span style="color:#fff;">';
+  for (var i = 0; i <= 23; i++) {
+    html += '|';
+    for (var j = 0; j < 4; j++) {
+      var s = '-';
+      if ((accYYYYMMDD == nowYYYYMMDD) && (sysman.inTheTimeSlot(i, j, accHH, accMM))) {
+        s = '<span class="blink1" style="color:#0f0;">*</span>';
+      }
+      html += s;
+      if (sysman.inTheTimeSlot(i, j, nowHH, nowMM)) {
+        html += '</span>';
+      }
+    }
+  }
+  html += '</span>';
+  return html;
+};
+
+sysman.inTheTimeSlot = function(h, qM, hh, mm) {
+  if (hh == h) {
+    if ((qM == 0) && (mm < 15)) {
+      return true;
+    } else if ((qM == 1) && (mm >= 15) && (mm < 30)) {
+      return true;
+    } else if ((qM == 2) && (mm >= 30) && (mm < 45)) {
+      return true;
+    } else if ((qM == 3) && (mm >= 45)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 sysman.drawListContent = function(html) {
@@ -331,16 +424,20 @@ sysman.sortItemList = function(sortIdx, sortOrder) {
   }
   sysman.listStatus.sortIdx = sortIdx;
   sysman.listStatus.sortOrder = sortOrder;
-  sysman.drawList(sysman.itemList, sysman.sessions, sortIdx, sortOrder);
+  sysman.drawList(sysman.itemList,sortIdx, sortOrder);
 };
 
-sysman.confirmLogoutSession = function(sid) {
+sysman.confirmLogoutSession = function(uid, sid) {
   var cSid = websys.getSessionId();
   var ssid = util.clipString(sid, 7, 7, '..');
-  var m = 'Logout?\n\nsid: ' + sid;
+  var m = 'Logout?\n\n';
   if (sid == cSid) {
-    m += '\n\n<span style="color:#f44;font-weight:bold;">[CURRENT SESSION]</span>';
+    m += '<span style="color:#f44;font-weight:bold;">[CURRENT SESSION]</span>\n';
   }
+  m += '<div style="text-align:left;">';
+  m += 'uid: ' + uid + '\n';
+  m += 'sid: ' + sid;
+  m += '</div>';
   util.confirm(m, sysman.logoutSession, {data: sid});
 };
 sysman.logoutSession = function(sid) {
@@ -354,7 +451,7 @@ sysman.logoutSessionCb = function(xhr, res) {
   if (res.status != 'OK') {
     return;
   }
-  sysman.getUserList();
+  sysman.getSessionList();
 };
 
 //-----------------------------------------------------------------------------

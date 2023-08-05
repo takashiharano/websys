@@ -37,11 +37,14 @@ def build_main_screen(context):
 
 <div style="margin-bottom:4px;">
 <button onclick="sysman.newUser();">+</button>
-<button onclick="sysman.getUserList();">RELOAD</button>
+<button onclick="sysman.reload();">RELOAD</button>
 </div>
 <div id="user-list"></div>
 
-<div style="margin-top:20px;">
+<pre style="margin-top:20px;">Sessions
+<div id="session-list"></div></pre>
+
+<div style="margin-top:40px;">
 Groups<button style="margin-left:8px;" onclick="sysman.confirmSaveGroups();">SAVE</button><span id="groups-status" style="margin-left:8px;"></span><br>
 <textarea id="groups-text"></textarea>
 </div>

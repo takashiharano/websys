@@ -42,18 +42,21 @@ def proc_get_user_list(context):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
-    user_list = userman.get_all_user_info()
-    guest_user_list = userman.get_all_guest_user_info()
-    if guest_user_list is not None:
-        user_list.update(guest_user_list)
+    user_dict = userman.get_all_user_info()
+    guest_user_dict = userman.get_all_guest_user_info()
+    if guest_user_dict is not None:
+        user_dict.update(guest_user_dict)
 
-    user_sessions = get_user_sessions()
-    result = {
-        'user_list': user_list,
-        'sessions': user_sessions
-    }
+    web.send_result_json('OK', body=user_dict)
 
-    web.send_result_json('OK', body=result)
+#------------------------------------------------------------------------------
+def proc_get_session_list(context):
+    if not context.has_permission('sysmanage'):
+        web.send_result_json('FORBIDDEN', body=None)
+        return
+
+    sessions = get_user_sessions()
+    web.send_result_json('OK', body=sessions)
 
 # uid: {
 #   [
@@ -79,6 +82,7 @@ def proc_get_user_list(context):
 #   ]
 # }
 def get_user_sessions():
+    users = userman.get_all_user_info()
     sessions = sessionman.get_all_sessions_info()
     user_sessions = {}
     last_accessed_times = {}
@@ -93,15 +97,21 @@ def get_user_sessions():
 
     # sort by last_accessed time
     for uid in user_sessions:
+        user_name = ''
+        if uid in users:
+            user = users[uid]
+            user_name = user['name']
         sessions = user_sessions[uid]
         last_accessed_time_list = last_accessed_times[uid]
-        last_accessed_time_list.sort()
+        last_accessed_time_list.sort(reverse=True)
         new_list = []
         for i in range(len(last_accessed_time_list)):
             time = last_accessed_time_list[i]
             for j in range(len(last_accessed_time_list)):
                 session = sessions[j]
                 if session['last_accessed']['time'] == time:
+
+                    session['user_name'] = user_name
                     new_list.append(session)
         user_sessions[uid] = new_list
 
