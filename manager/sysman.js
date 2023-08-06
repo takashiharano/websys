@@ -3,6 +3,7 @@
  */
 var sysman = {};
 
+sysman.INTERVAL = 3 * 60 * 1000;
 sysman.LIST_COLUMNS = [
   {key: 'uid', label: 'UID', style: 'min-width:min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:13em;'},
@@ -46,7 +47,7 @@ sysman.reload = function() {
 };
 
 sysman.queueNextUpdateSessionInfo = function() {
-  sysman.tmrId = setTimeout(sysman.updateSessionInfo, 60000);
+  sysman.tmrId = setTimeout(sysman.updateSessionInfo, sysman.INTERVAL);
 };
 
 sysman.updateSessionInfo = function() {
@@ -277,17 +278,17 @@ sysman.getSessionListCb = function(xhr, res, req) {
 
 sysman.drawSessionList = function(sessions) {
   var html = '<table>';
-  html += '<tr>';
+  html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
   html += '<td>UID</td>';
   html += '<td>Name</td>';
-  html += '<td>Logged in</td>';
+  html += '<td>Session</td>';
   html += '<td>Last Accessed</td>';
   html += '<td>Elapsed</td>';
+  html += '<td style="font-weight:normal;">0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   </td>';
   html += '<td>Addr</td>';
   html += '<td>User-Agent</td>';
-  html += '<td>Session</td>';
-  html += '<td>0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   </td>';
+  html += '<td>Logged in</td>';
   html += '</tr>';
 
   var lastAccTimes = [];
@@ -326,7 +327,7 @@ sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
     var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
     var laTime = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
     var sid = session['sid'];
-    var ssid = util.clipString(sid, 7, 7, '..');
+    var ssid = util.clipString(sid, 7, 2, '..');
     var sid7 = util.clipString(sid, 7, 0, '');
     var addr = la['addr'];
     var brws = util.getBrowserInfo(la['ua']);
@@ -354,13 +355,13 @@ sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
     html += '<td style="padding-right:4px;">' + led + '</td>';
     html += '<td style="padding-right:10px;">' + uid + '</td>';
     html += '<td style="padding-right:10px;">' + name + '</td>';
-    html += '<td style="padding-right:10px;">' + loginTime + '</td>';
+    html += '<td style="padding-right:10px;">' + ssidLink + '</td>';
     html += '<td style="padding-right:10px;">' + laTime + '</td>';
     html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
+    html += '<td>' + timeline + '</td>';
     html += '<td style="padding-right:10px;">' + addr + '</td>';
     html += '<td style="padding-right:10px;">' + ua + '</td>';
-    html += '<td style="padding-right:10px;">' + ssidLink + '</td>';
-    html += '<td>' + timeline + '</td>';
+    html += '<td style="padding-right:10px;">' + loginTime + '</td>';
     html += '</tr>';
 
     util.timecounter.start('#' + timeId, tMs);
