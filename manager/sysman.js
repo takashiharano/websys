@@ -3,7 +3,7 @@
  */
 var sysman = {};
 
-sysman.INTERVAL = 3 * 60 * 1000;
+sysman.INTERVAL = 2 * 60 * 1000;
 sysman.LIST_COLUMNS = [
   {key: 'uid', label: 'UID', style: 'min-width:min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:13em;'},
@@ -327,8 +327,8 @@ sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
     var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
     var laTime = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
     var sid = session['sid'];
-    var ssid = util.clipString(sid, 7, 2, '..');
-    var sid7 = util.clipString(sid, 7, 0, '');
+    var ssid = util.snip(sid, 7, 2, '..');
+    var sid7 = util.snip(sid, 7, 0, '');
     var addr = la['addr'];
     var brws = util.getBrowserInfo(la['ua']);
     var ua = brws.name + ' ' + brws.version;
@@ -430,7 +430,7 @@ sysman.sortItemList = function(sortIdx, sortOrder) {
 
 sysman.confirmLogoutSession = function(uid, sid) {
   var cSid = websys.getSessionId();
-  var ssid = util.clipString(sid, 7, 7, '..');
+  var ssid = util.snip(sid, 7, 7, '..');
   var m = 'Logout?\n\n';
   if (sid == cSid) {
     m += '<span style="color:#f44;font-weight:bold;">[CURRENT SESSION]</span>\n';

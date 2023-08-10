@@ -110,7 +110,6 @@ def get_user_sessions():
             for j in range(len(last_accessed_time_list)):
                 session = sessions[j]
                 if session['last_accessed']['time'] == time:
-
                     session['user_name'] = user_name
                     new_list.append(session)
         user_sessions[uid] = new_list
