@@ -352,13 +352,14 @@ def cmd_usermod(context):
     if pw is not None:
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
+    is_admin = None
     group = None
     agroup = None
     rgroup = None
     privs = None
     aprivs = None
     rprivs = None
-    is_admin = None
+    desc = None
     u_status = None
 
     if context.is_admin():
