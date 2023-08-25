@@ -10,6 +10,8 @@ import websysconf
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
+
+import logger
 import userman
 import web
 
@@ -223,6 +225,7 @@ def clear_session(sid):
 
     if sessions is not None:
         session = sessions.pop(sid, None)
+        write_logout_log(session)
         save_sessions_info(sessions)
 
     if get_current_session_id() == sid:
@@ -231,12 +234,38 @@ def clear_session(sid):
     return session
 
 #----------------------------------------------------------
+def write_logout_log(session, expire=False):
+    now = util.get_timestamp()
+    date_time = util.get_datetime_str(now, fmt='%Y-%m-%dT%H:%M:%S.%f')
+
+    la_info = session['last_accessed']
+
+    data = date_time
+    data += '\t'
+    data += str(now)
+    data += '\t'
+    data += 'LOGOUT'
+    data += '\t'
+    data += session['uid']
+    data += '\t'
+    if expire:
+        data += 'EXPIRED'
+    else:
+        data += 'OK'
+    data += '\t'
+    data += la_info['addr']
+    data += '\t'
+    data += la_info['host']
+    data += '\t'
+    data += la_info['ua']
+    data += '\t'
+    data += session['sid'] 
+    logger.write_log(data)
+
+#----------------------------------------------------------
 # Clear expired sessions
 #----------------------------------------------------------
 def clear_expired_sessions(sessions, save=False):
-  if sessions is None:
-      return
-
   now = util.get_timestamp()
   new_sessions = {}
   try:
@@ -245,6 +274,8 @@ def clear_expired_sessions(sessions, save=False):
           last_access_time = session['last_accessed']['time']
           if round(now - last_access_time) <= SESSION_TIMEOUT_SEC:
               new_sessions[sid] = session
+          else:
+              write_logout_log(session, True)
   except:
       pass
 

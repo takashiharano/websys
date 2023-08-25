@@ -14,6 +14,6 @@ PASSWORD_LIST_FILE_PATH = DATA_DIR + 'userspw.txt'
 GROUPS_FILE_PATH = DATA_DIR + 'groups.json'
 SESSION_LIST_FILE_PATH = DATA_DIR + 'sessions.json'
 ALGOTRITHM = 'SHA-256'
-LOGIN_LOG_PATH = DATA_DIR + 'logs/login.log'
+LOG_FILE_PATH = DATA_DIR + 'logs/websys.log'
 
 USE_HOSTNAME = True

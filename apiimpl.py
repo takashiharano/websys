@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../libs'))
 import util
 
 util.append_system_path(__file__, './bin')
+import logger
 import websysconf
 import userman
 import sessionman
@@ -65,7 +66,7 @@ def cmd_loginlog(context):
             except:
                 pass
         n = n * (-1)
-        login_log = authman.get_login_log()[n:]
+        login_log = logger.get_login_log()[n:]
     else:
         status = 'NO_PRIVILEGE'
         login_log = None

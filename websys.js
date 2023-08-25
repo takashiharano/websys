@@ -393,17 +393,18 @@ websys.loginlog.cb = function(xhr, res) {
     var v = logs[i];
     var a = v.split('\t');
     var time = a[0];
-    var st = a[2];
+    var type = a[2];
     var nm = a[3];
-    var addr = a[4];
-    var host = a[5];
-    var ua = a[6];
-    var sid = a[7];
+    var st = a[4];
+    var addr = a[5];
+    var host = a[6];
+    var ua = a[7];
+    var sid = a[8];
     var brws = util.getBrowserInfo(ua);
     ua = brws.name + ' ' + brws.version;
     time = time.replace(/T/, ' ');
     sid = util.snip(sid, 7, 7);
-    s += time + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\n';
+    s += time + '\t' + type + '\t' + nm + '\t' + st + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\n';
   }
   var r = util.alignFields(s, '\t', 2);
   log.mlt(r);

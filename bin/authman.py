@@ -11,12 +11,12 @@ import websysconf
 sys.path.append(websysconf.UTIL_PATH)
 import util
 
+import logger
 import sessionman
 import userman
 import web
 
 ALGOTRITHM = websysconf.ALGOTRITHM
-LOGIN_LOG_PATH = websysconf.LOGIN_LOG_PATH
 
 #----------------------------------------------------------
 # login
@@ -40,17 +40,16 @@ def do_login(uid, pw, ext_auth=False):
     except Exception as e:
         status = str(e)
         if status == 'NO_SUCH_USER':
-            write_log(status, '')
+            write_login_log(status, '')
             status = 'NG'
         else:
-            write_log(status, uid)
+            write_login_log(status, uid)
         raise Exception(status)
 
     session_info = login_info['session_info']
     sessionman.set_current_session_info(session_info)
 
-    sid = login_info['session_info']['sid']
-    write_log('OK', uid, sid)
+    write_login_log('OK', uid, session_info)
     return login_info
 
 def _login(uid, pw, ext_auth=False):
@@ -97,38 +96,6 @@ def _guest_login(uid, ext_auth=False):
     }
 
     return login_info
-
-# Write Log
-def write_log(status, id, sid=''):
-    now = util.get_timestamp()
-    date_time = util.get_datetime_str(now, fmt='%Y-%m-%dT%H:%M:%S.%f')
-    addr = web.get_ip_addr()
-    host = web.get_host_name()
-    ua = util.get_user_agent()
-
-    data = date_time
-    data += '\t'
-    data += str(now)
-    data += '\t'
-    data += status
-    data += '\t'
-    data += id
-    data += '\t'
-    data += addr
-    data += '\t'
-    data += host
-    data += '\t'
-    data += ua
-    data += '\t'
-    data += sid
-
-    util.append_line_to_text_file(LOGIN_LOG_PATH, data, max=1000)
-
-#----------------------------------------------------------
-# Read login log
-#---------------------------------------------------------
-def get_login_log():
-    return util.read_text_file_as_list(LOGIN_LOG_PATH)
 
 #----------------------------------------------------------
 # logout
@@ -184,3 +151,36 @@ def _auth(allow_guest):
 
     # OK
     return 'OK'
+
+#----------------------------------------------------------
+# Write Login Log
+#----------------------------------------------------------
+def write_login_log(status, id, session_info=None):
+    sid = ''
+    if session_info is not None:
+        sid = session_info['sid']
+
+    now = util.get_timestamp()
+    date_time = util.get_datetime_str(now, fmt='%Y-%m-%dT%H:%M:%S.%f')
+    addr = web.get_ip_addr()
+    host = web.get_host_name()
+    ua = util.get_user_agent()
+
+    data = date_time
+    data += '\t'
+    data += str(now)
+    data += '\t'
+    data += 'LOGIN'
+    data += '\t'
+    data += id
+    data += '\t'
+    data += status
+    data += '\t'
+    data += addr
+    data += '\t'
+    data += host
+    data += '\t'
+    data += ua
+    data += '\t'
+    data += sid
+    logger.write_log(data)
