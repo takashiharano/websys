@@ -325,9 +325,6 @@ sysman.buildTimeLineHeader = function(now) {
   var html = '';
   for (var i = 0; i <= 23; i++) {
     var ts = sysman.getTimeSlot(i, nowHH, nowMM);
-    if (ts == 0) {
-      html += '<span class="blink1" style="color:#0cf;">v</span>';
-    }
     var v = false;
     if (i < 10) {
       if (ts == 0) {
