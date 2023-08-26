@@ -316,6 +316,8 @@ sysman.drawSessionList = function(sessions) {
 };
 
 sysman.buildTimeLineHeader = function(now) {
+  var currentInd = '<span class="blink1" style="color:#0cf;">v</span>';
+
   var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
   var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
   var tmp = nowHHMM.split(':');
@@ -328,13 +330,13 @@ sysman.buildTimeLineHeader = function(now) {
     var v = false;
     if (i < 10) {
       if (ts == 0) {
-        html += '<span class="blink1" style="color:#0cf;">v</span>';
+        html += currentInd;
       }
     } else {
       if (ts == 0) {
-        html += '<span class="blink1" style="color:#0cf;">v</span> ';
+        html += currentInd + ' ';
       } else if (ts == 1) {
-        html += ' <span class="blink1" style="color:#0cf;">v</span>';
+        html += ' ' + currentInd;
       }
     }
 
@@ -345,7 +347,7 @@ sysman.buildTimeLineHeader = function(now) {
     var st = ((i < 10) ? 1 : 2);
     for (var j = st; j <= 4; j++) {
       if (ts == j) {
-        html += '<span class="blink1" style="color:#0cf;">v</span>';
+        html += currentInd;
       } else {
         html += ' ';
       }
