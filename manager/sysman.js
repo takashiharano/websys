@@ -277,6 +277,8 @@ sysman.getSessionListCb = function(xhr, res, req) {
 };
 
 sysman.drawSessionList = function(sessions) {
+  var now = util.now();
+
   var html = '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
@@ -285,7 +287,7 @@ sysman.drawSessionList = function(sessions) {
   html += '<td>Session</td>';
   html += '<td>Last Accessed</td>';
   html += '<td>Elapsed</td>';
-  html += '<td style="font-weight:normal;">0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   23   </td>';
+  html += '<td style="font-weight:normal;">' + sysman.buildTimeLineHeader(now) + '</td>';
   html += '<td>Addr</td>';
   html += '<td>User-Agent</td>';
   html += '<td>Logged in</td>';
@@ -312,11 +314,53 @@ sysman.drawSessionList = function(sessions) {
   $el('#session-list').innerHTML = html;
 };
 
+sysman.buildTimeLineHeader = function(now) {
+  var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
+  var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
+  var tmp = nowHHMM.split(':');
+  var nowHH = tmp[0];
+  var nowMM = tmp[1];
+
+  var html = '';
+  for (var i = 0; i <= 23; i++) {
+    var ts = sysman.getTimeSlot(i, nowHH, nowMM);
+    if (ts == 0) {
+      html += '<span class="blink1" style="color:#0cf;">v</span>';
+    }
+    var v = false;
+    if (i < 10) {
+      if (ts == 0) {
+        html += '<span class="blink1" style="color:#0cf;">v</span>';
+      }
+    } else {
+      if (ts == 0) {
+        html += '<span class="blink1" style="color:#0cf;">v</span> ';
+      } else if (ts == 1) {
+        html += ' <span class="blink1" style="color:#0cf;">v</span>';
+      }
+    }
+
+    if (!((ts == 0) || ((i >= 10) && (ts == 1)))) {
+      html += i;
+    }
+
+    var st = ((i < 10) ? 1 : 2);
+    for (var j = st; j <= 4; j++) {
+      if (ts == j) {
+        html += '<span class="blink1" style="color:#0cf;">v</span>';
+      } else {
+        html += ' ';
+      }
+    }
+  }
+  return html;
+};
+
 sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
   var html = '';
   if (!userSessionInfoList) return html;
   var now = util.now();
-  var mn = util.getTimestampOfMidnight(now);
+  var mn = util.getMidnightTimestamp(now);
   for (var i = 0; i < userSessionInfoList.length; i++) {
     var session = userSessionInfoList[i];
     var name = session.user_name;
@@ -349,7 +393,8 @@ sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
     var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
     var timeId = 'tm-' + sid7;
     var tmspan = '<span id="' + timeId + '"></span>'
-    var timeline = sysman.buildTimeLine(now, laTime);
+    var laTimeMs = Math.floor(t * 1000);
+    var timeline = sysman.buildTimeLine(now, laTimeMs);
 
     html += '<tr class="item-list">';
     html += '<td style="padding-right:4px;">' + led + '</td>';
@@ -370,6 +415,7 @@ sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
   return html;
 };
 sysman.buildTimeLine = function(now, lastAccessedTime) {
+  var mn = util.getMidnightTimestamp(now);
   var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
   var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
   var tmp = nowHHMM.split(':');
@@ -381,21 +427,27 @@ sysman.buildTimeLine = function(now, lastAccessedTime) {
   var accHH = tmp[0];
   var accMM = tmp[1];
 
-  var future = false;
-  var html = '<span style="color:#888;"><span style="color:#fff;">';
+  var html = '<span style="">';
+  var f = false;
   for (var i = 0; i <= 23; i++) {
-    html += '|';
+    if ((i == 0) && (lastAccessedTime < mn)) {
+      html += '<span style="color:#d66;">&lt;</span>';
+    } else {
+      html += '|';
+    }
     for (var j = 0; j < 4; j++) {
       var s = '-';
       if ((accYYYYMMDD == nowYYYYMMDD) && (sysman.inTheTimeSlot(i, j, accHH, accMM))) {
-        s = '<span class="blink1" style="color:#0f0;">*</span>';
+        s = '<span style="color:#0f0;">*</span>';
       }
       html += s;
       if (sysman.inTheTimeSlot(i, j, nowHH, nowMM)) {
-        html += '</span>';
+        html += '<span style="opacity:0.5;">';
+        f = true;
       }
     }
   }
+  if (f) html += '</span>';
   html += '</span>';
   return html;
 };
@@ -413,6 +465,22 @@ sysman.inTheTimeSlot = function(h, qM, hh, mm) {
     }
   }
   return false;
+};
+sysman.getTimeSlot = function(h, hh, mm) {
+  if (h == hh) {
+    if (mm == 0) {
+      return 0;
+    } else if (mm < 15) {
+      return 1;
+    } else if ((mm >= 15) && (mm < 30)) {
+      return 2;
+    } else if ((mm >= 30) && (mm < 45)) {
+      return 3;
+    } else if (mm >= 45) {
+      return 4;
+    }
+  }
+  return -1;
 };
 
 sysman.drawListContent = function(html) {
