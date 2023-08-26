@@ -412,6 +412,39 @@ def _get_optional_param_by_list(key):
     return param_list
 
 #----------------------------------------------------------
+# Change password
+#----------------------------------------------------------
+def cmd_passwd(context):
+    if not authman.auth():
+        on_auth_error()
+        return
+
+    uid = web.get_request_param('uid')
+
+    if not context.is_admin():
+        user_info = context.get_user_info()
+        if uid != user_info['uid']:
+            web.send_result_json('FORBIDDEN', body=None)
+            return
+
+    if uid is None:
+        web.send_result_json('ERR_UID', body=None)
+        return
+
+    pw = web.get_request_param('pw')
+    pw_hash = None
+    if pw is not None:
+        pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
+
+    try:
+        userman.modify_user(uid, pw_hash)
+        status = 'OK'
+    except Exception as e:
+        status = 'ERR_' + str(e)
+
+    web.send_result_json(status, body=None)
+
+#----------------------------------------------------------
 # gencode
 # ?validsec=1800
 #----------------------------------------------------------

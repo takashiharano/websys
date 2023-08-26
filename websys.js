@@ -457,7 +457,7 @@ websys.cmdPasswd.cancel = function() {
 websys._cmdPasswd = function(uid, p) {
   var pw = websys.getUserPwHash(uid, p);
   var param = {
-    cmd: 'usermod',
+    cmd: 'passwd',
     uid: uid,
     pw: pw
   };
