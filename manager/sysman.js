@@ -31,6 +31,7 @@ sysman.tmrId = 0;
 sysman.interval = 0;
 
 $onReady = function() {
+  util.clock('#clock');
   $el('#user-list').innerHTML = '<span class="progdot">Loading</span>';
   sysman.drawGroupStatus('<span class="progdot">Loading</span>');
 };

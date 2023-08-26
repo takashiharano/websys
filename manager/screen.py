@@ -35,6 +35,10 @@ def build_main_screen(context):
 <body>
 <div id="body1">
 
+<div style="margin-top:2px;margin-bottom:8px;">
+<span id="clock"></span>
+</div>
+
 <div style="margin-bottom:4px;">
 <button onclick="sysman.newUser();">+</button>
 <button onclick="sysman.reload();">RELOAD</button>
