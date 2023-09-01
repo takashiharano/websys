@@ -239,7 +239,7 @@ def _on_access(context, allow_guest):
 #----------------------------------------------------------
 def get_request_param(key=None, default=None):
     q = util.get_query()
-    if q is None:
+    if q is None or util.typename(q) == 'FieldStorage':
         return default
 
     if encryption:
