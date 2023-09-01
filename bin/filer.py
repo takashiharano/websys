@@ -20,12 +20,13 @@ import web
 def main(root_path, target_path, auth_required, upload=False):
     web.set_root_path(root_path)
 
+    context = web.on_access()
+
     form = None
     content_type = os.environ.get('CONTENT_TYPE', '')
     if content_type.startswith('multipart/form-data'):
         form = util.get_field_storage()
 
-    context = web.on_access()
     if not context.is_authorized():
         upload = False
 
@@ -51,6 +52,8 @@ def save_file(form, save_dir):
         content = item.file
         filename = item.filename
         if content and filename:
+            if filename.endswith('.cgi'):
+                filename += '.txt'
             filepath = save_dir + filename
             try:
                 util.write_file(filepath, content)
