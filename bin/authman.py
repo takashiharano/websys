@@ -39,7 +39,7 @@ def do_login(uid, pw, ext_auth=False):
         login_info = _login(uid, pw, ext_auth)
     except Exception as e:
         status = str(e)
-        if status == 'NO_SUCH_USER':
+        if status == 'USER_NOT_FOUND':
             write_login_log(status, '')
             status = 'NG'
         else:
@@ -80,7 +80,7 @@ def _login(uid, pw, ext_auth=False):
 def _guest_login(uid, ext_auth=False):
     user_info = userman.get_guest_user_info(uid)
     if user_info is None:
-        raise Exception('NO_SUCH_USER')
+        raise Exception('USER_NOT_FOUND')
 
     if 'expires_at' in user_info:
         now = util.get_timestamp()
@@ -149,38 +149,18 @@ def _auth(allow_guest):
         if not util.match(req_uri, pattern):
             return 'FORBIDDEN_PATH'
 
-    # OK
     return 'OK'
 
 #----------------------------------------------------------
 # Write Login Log
 #----------------------------------------------------------
-def write_login_log(status, id, session_info=None):
+def write_login_log(status, uid, session_info=None):
     sid = ''
     if session_info is not None:
         sid = session_info['sid']
 
-    now = util.get_timestamp()
-    date_time = util.get_datetime_str(now, fmt='%Y-%m-%dT%H:%M:%S.%f')
     addr = web.get_ip_addr()
     host = web.get_host_name()
     ua = util.get_user_agent()
 
-    data = date_time
-    data += '\t'
-    data += str(now)
-    data += '\t'
-    data += 'LOGIN'
-    data += '\t'
-    data += id
-    data += '\t'
-    data += status
-    data += '\t'
-    data += addr
-    data += '\t'
-    data += host
-    data += '\t'
-    data += ua
-    data += '\t'
-    data += sid
-    logger.write_log(data)
+    logger.write_status_log('LOGIN', uid, status, addr, host, ua, sid)

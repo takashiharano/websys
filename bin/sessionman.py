@@ -235,32 +235,16 @@ def clear_session(sid):
 
 #----------------------------------------------------------
 def write_logout_log(session, expire=False):
-    now = util.get_timestamp()
-    date_time = util.get_datetime_str(now, fmt='%Y-%m-%dT%H:%M:%S.%f')
-
     la_info = session['last_accessed']
-
-    data = date_time
-    data += '\t'
-    data += str(now)
-    data += '\t'
-    data += 'LOGOUT'
-    data += '\t'
-    data += session['uid']
-    data += '\t'
+    uid = session['uid']
+    status = 'OK'
     if expire:
-        data += 'EXPIRED'
-    else:
-        data += 'OK'
-    data += '\t'
-    data += la_info['addr']
-    data += '\t'
-    data += la_info['host']
-    data += '\t'
-    data += la_info['ua']
-    data += '\t'
-    data += session['sid'] 
-    logger.write_log(data)
+        status = 'EXPIRED'
+    addr = la_info['addr']
+    host = la_info['host']
+    ua = la_info['ua']
+    sid = session['sid']
+    logger.write_status_log('LOGOUT', session['uid'], status, addr, host, ua, sid)
 
 #----------------------------------------------------------
 # Clear expired sessions

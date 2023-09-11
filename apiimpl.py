@@ -66,7 +66,7 @@ def cmd_loginlog(context):
             except:
                 pass
         n = n * (-1)
-        login_log = logger.get_login_log()[n:]
+        login_log = logger.get_system_log()[n:]
     else:
         status = 'NO_PRIVILEGE'
         login_log = None
