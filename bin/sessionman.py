@@ -134,7 +134,7 @@ def create_session_info(uid, is_guest=False):
     now = util.get_timestamp()
     addr = web.get_ip_addr()
     host = web.get_host_name()
-    useragent = util.get_user_agent()
+    useragent = web.get_user_agent()
     tz = web.get_request_param('_tz')
 
     sid = create_session_id(uid)
@@ -184,7 +184,7 @@ def update_last_accessed_info(sessions, sid):
     now = util.get_timestamp()
     addr = web.get_ip_addr()
     host = web.get_host_name()
-    useragent = util.get_user_agent()
+    useragent = web.get_user_agent()
     tz = web.get_request_param('_tz')
     update_session_info(sessions, sid, now, addr, host, useragent, tz)
 
@@ -235,16 +235,16 @@ def clear_session(sid):
 
 #----------------------------------------------------------
 def write_logout_log(session, expire=False):
-    la_info = session['last_accessed']
-    uid = session['uid']
     status = 'OK'
+    uid = session['uid']
     if expire:
         status = 'EXPIRED'
+    la_info = session['last_accessed']
     addr = la_info['addr']
     host = la_info['host']
     ua = la_info['ua']
     sid = session['sid']
-    logger.write_status_log('LOGOUT', session['uid'], status, addr, host, ua, sid)
+    logger.write_status_log('LOGOUT', status, uid, addr, host, ua, sid)
 
 #----------------------------------------------------------
 # Clear expired sessions

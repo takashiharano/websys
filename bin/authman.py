@@ -161,6 +161,6 @@ def write_login_log(status, uid, session_info=None):
 
     addr = web.get_ip_addr()
     host = web.get_host_name()
-    ua = util.get_user_agent()
+    ua = web.get_user_agent()
 
-    logger.write_status_log('LOGIN', uid, status, addr, host, ua, sid)
+    logger.write_status_log('LOGIN', status, uid, addr, host, ua, sid)

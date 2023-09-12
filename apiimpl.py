@@ -53,9 +53,9 @@ def cmd_login(context):
     web.send_result_json(status, body=body)
 
 #----------------------------------------------------------
-# loginlog
+# syslog
 #----------------------------------------------------------
-def cmd_loginlog(context):
+def cmd_syslog(context):
     status = 'OK'
     if context.is_admin():
         p_n = web.get_request_param('n')
@@ -319,6 +319,7 @@ def cmd_useradd(context):
 
     try:
         userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, desc=desc, status=p_st)
+        logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -394,6 +395,7 @@ def cmd_usermod(context):
 
     try:
         userman.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, status=u_status)
+        logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
         status = 'ERR_' + str(e)
@@ -439,6 +441,7 @@ def cmd_passwd(context):
     try:
         userman.modify_user(uid, pw_hash)
         status = 'OK'
+        logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + uid)
     except Exception as e:
         status = 'ERR_' + str(e)
 
@@ -518,6 +521,7 @@ def cmd_userdel(context):
                 else:
                     deleted = userman.delete_user(uid)
                     if deleted:
+                        logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
                         status = 'OK'
 
     else:

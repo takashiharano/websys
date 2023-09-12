@@ -359,21 +359,21 @@ websys.logoutCmdCb = function(xhr, res) {
   websys.updateUserInfo();
 };
 
-websys.loginlog = function(arg) {
+websys.syslog = function(arg) {
   var n = arg.trim();
   var param = {
-    cmd: 'loginlog',
+    cmd: 'syslog',
     n: n
   };
   var req = {
     url: websys.basePath + 'websys/api.cgi',
     method: 'POST',
     data: param,
-    cb: websys.loginlog.cb
+    cb: websys.syslog.cb
   };
   websys.http(req);
 };
-websys.loginlog.cb = function(xhr, res) {
+websys.syslog.cb = function(xhr, res) {
   var statusMsg = xhr.status + ' ' + xhr.statusText;
   if (xhr.status == 200) {
     res = util.fromJSON(res);
@@ -394,17 +394,19 @@ websys.loginlog.cb = function(xhr, res) {
     var a = v.split('\t');
     var time = a[0];
     var type = a[2];
-    var nm = a[3];
-    var st = a[4];
+    var st = a[3];
+    var nm = a[4];
     var addr = a[5];
     var host = a[6];
     var ua = a[7];
     var sid = a[8];
+    var info = a[9];
+    if (!info) info = '';
     var brws = util.getBrowserInfo(ua);
     ua = brws.name + ' ' + brws.version;
     time = time.replace(/T/, ' ');
-    sid = util.snip(sid, 7, 7);
-    s += time + '\t' + type + '\t' + nm + '\t' + st + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\n';
+    sid = util.snip(sid, 7, 2);
+    s += time + '\t' + type + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\t' + info + '\n';
   }
   var r = util.alignFields(s, '\t', 2);
   log.mlt(r);
@@ -1346,11 +1348,11 @@ websys.CMD_TBL = [
   {cmd: 'guests', fn: websys.guests, desc: 'Show all guest user info'},
   {cmd: 'hello', fn: websys.hello, desc: 'Hello'},
   {cmd: 'login', fn: websys.login, desc: 'Login'},
-  {cmd: 'loginlog', fn: websys.loginlog, desc: 'Show Login Log'},
   {cmd: 'logout', fn: websys.cmdLogout, desc: 'Logout', help: 'logout [-sid sid]|[-u uid]'},
   {cmd: 'passwd', fn: websys.cmdPasswd, desc: 'Change user\'s password', help: 'passwd [-u UID] [-p PW]'},
   {cmd: 'session', fn: websys.cmdSession, desc: 'Show current session info'},
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},
+  {cmd: 'syslog', fn: websys.syslog, desc: 'Show sysyem log'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
   {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},

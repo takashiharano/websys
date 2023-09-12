@@ -307,6 +307,12 @@ def get_host_name():
     return host
 
 #----------------------------------------------------------
+# get user agent
+#----------------------------------------------------------
+def get_user_agent():
+    return util.get_user_agent()
+
+#----------------------------------------------------------
 # send response
 #----------------------------------------------------------
 def send_response(result, type, headers=None, encoding=None):
