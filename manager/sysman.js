@@ -293,24 +293,7 @@ sysman.drawSessionList = function(sessions) {
   html += '<td>User-Agent</td>';
   html += '<td>Logged in</td>';
   html += '</tr>';
-
-  var lastAccTimes = [];
-
-  for (var uid in sessions) {
-    var userSessionInfoList = sessions[uid];
-    var latestSession = userSessionInfoList[0];
-    var la = latestSession.last_accessed;
-    var t = la['time'];
-    var w = {uid: uid, t: t};
-    lastAccTimes.push(w);
-  };
-  lastAccTimes = util.sortObject(lastAccTimes, 't', true, true);
-
-  for (var i = 0; i < lastAccTimes.length; i++) {
-    var uid = lastAccTimes[i].uid;
-    userSessionInfoList = sessions[uid];
-    html += sysman.buildSessionInfoHtml(uid, userSessionInfoList);
-  };
+  html += sysman.buildSessionInfoHtml(sessions, now);
   html += '</table>';
   $el('#session-list').innerHTML = html;
 };
@@ -356,62 +339,66 @@ sysman.buildTimeLineHeader = function(now) {
   return html;
 };
 
-sysman.buildSessionInfoHtml = function(uid, userSessionInfoList) {
+sysman.buildSessionInfoHtml = function(sessions, now) {
   var html = '';
-  if (!userSessionInfoList) return html;
-  var now = util.now();
+  if (!sessions) return html;
   var mn = util.getMidnightTimestamp(now);
-  for (var i = 0; i < userSessionInfoList.length; i++) {
-    var session = userSessionInfoList[i];
-    var name = session.user_name;
-    var loginT = session.created_time;
-    var la = session.last_accessed;
-    var t = la['time'];
-    var tMs = t * 1000;
-    var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
-    var laTime = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
-    var sid = session['sid'];
-    var ssid = util.snip(sid, 7, 2, '..');
-    var sid7 = util.snip(sid, 7, 0, '');
-    var addr = la['addr'];
-    var brws = util.getBrowserInfo(la['ua']);
-    var ua = brws.name + ' ' + brws.version;
+  for (var i = 0; i < sessions.length; i++) {
+    var session = sessions[i];
+    html += sysman.buildSessionInfoOne(session, now, mn);
+  }
+  return html;
+};
+sysman.buildSessionInfoOne = function(session, now, mn) {
+  var uid = session.uid;
+  var name = session.user_name;
+  var loginT = session.created_time;
+  var la = session.last_accessed;
+  var t = la['time'];
+  var tMs = t * 1000;
+  var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
+  var laTime = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
+  var sid = session['sid'];
+  var ssid = util.snip(sid, 7, 2, '..');
+  var sid7 = util.snip(sid, 7, 0, '');
+  var addr = la['addr'];
+  var brws = util.getBrowserInfo(la['ua']);
+  var ua = brws.name + ' ' + brws.version;
 
-    var elapsed = now - tMs;
-    var ledColor = '#888';
-    if (elapsed <= 10 * util.MINUTE) {
-      ledColor = '#0f0';
-    } else if (elapsed <= 30 * util.MINUTE) {
-      ledColor = '#0a0';
-    } else if (elapsed <= 6 * util.HOUR) {
-      ledColor = '#080';
-    } else if (tMs >= mn) {
-      ledColor = '#262';
-    }
-
-    var led = '<span class="led" style="color:' + ledColor + '"></span>'
-    var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
-    var timeId = 'tm-' + sid7;
-    var tmspan = '<span id="' + timeId + '"></span>'
-    var laTimeMs = Math.floor(t * 1000);
-    var timeline = sysman.buildTimeLine(now, laTimeMs);
-
-    html += '<tr class="item-list">';
-    html += '<td style="padding-right:4px;">' + led + '</td>';
-    html += '<td style="padding-right:10px;">' + uid + '</td>';
-    html += '<td style="padding-right:10px;">' + name + '</td>';
-    html += '<td style="padding-right:10px;">' + ssidLink + '</td>';
-    html += '<td style="padding-right:10px;">' + laTime + '</td>';
-    html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
-    html += '<td>' + timeline + '</td>';
-    html += '<td style="padding-right:10px;">' + addr + '</td>';
-    html += '<td style="padding-right:10px;">' + ua + '</td>';
-    html += '<td style="padding-right:10px;">' + loginTime + '</td>';
-    html += '</tr>';
-
-    util.timecounter.start('#' + timeId, tMs);
+  var elapsed = now - tMs;
+  var ledColor = '#888';
+  if (elapsed <= 10 * util.MINUTE) {
+    ledColor = '#0f0';
+  } else if (elapsed <= 30 * util.MINUTE) {
+    ledColor = '#0a0';
+  } else if (elapsed <= 6 * util.HOUR) {
+    ledColor = '#080';
+  } else if (tMs >= mn) {
+    ledColor = '#262';
   }
 
+  var led = '<span class="led" style="color:' + ledColor + '"></span>'
+  var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
+  var timeId = 'tm-' + sid7;
+  var tmspan = '<span id="' + timeId + '"></span>'
+  var laTimeMs = Math.floor(t * 1000);
+  var timeline = sysman.buildTimeLine(now, laTimeMs);
+
+  var html = '';
+  html += '<tr class="item-list">';
+  html += '<td style="padding-right:4px;">' + led + '</td>';
+  html += '<td style="padding-right:10px;">' + uid + '</td>';
+  html += '<td style="padding-right:10px;">' + name + '</td>';
+  html += '<td style="padding-right:10px;">' + ssidLink + '</td>';
+  html += '<td style="padding-right:10px;">' + laTime + '</td>';
+  html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
+  html += '<td>' + timeline + '</td>';
+  html += '<td style="padding-right:10px;">' + addr + '</td>';
+  html += '<td style="padding-right:10px;">' + ua + '</td>';
+  html += '<td style="padding-right:10px;">' + loginTime + '</td>';
+  html += '</tr>';
+
+  util.timecounter.start('#' + timeId, tMs);
   return html;
 };
 sysman.buildTimeLine = function(now, lastAccessedTime) {

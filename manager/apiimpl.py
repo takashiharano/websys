@@ -55,66 +55,57 @@ def proc_get_session_list(context):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
-    sessions = get_user_sessions()
+    sessions = get_sorted_session_list()
     web.send_result_json('OK', body=sessions)
 
-# uid: {
-#   [
-#     {
-#      "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef": {
-#       "sid": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-#       "uid": "root",
-#       "time": 1234567890.123456,
-#       "tz": "+0900",
-#       "addr": "::1",
-#       "host": "hostname",
-#       "ua": "Mozilla/5.0",
-#       "is_guest": False,
-#       "last_accessed": {
-#        "time": 1234567890.123456,
-#        "tz": "+0900",
-#        "addr": "::1",
-#        "host": "hostname",
-#        "ua": "Mozilla/5.0"
-#       }
-#      }
-#     }
-#   ]
-# }
-def get_user_sessions():
-    users = userman.get_all_user_info()
+# [
+#  {
+#   "sid": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+#   "uid": "root",
+#   "time": 1234567890.123456,
+#   "tz": "+0900",
+#   "addr": "::1",
+#   "host": "hostname",
+#   "ua": "Mozilla/5.0",
+#   "is_guest": False,
+#   "last_accessed": {
+#    "time": 1234567890.123456,
+#    "tz": "+0900",
+#    "addr": "::1",
+#    "host": "hostname",
+#    "ua": "Mozilla/5.0",
+#    "user_name": "John Doe"
+#   }
+#  }
+# ]
+def get_sorted_session_list():
     sessions = sessionman.get_all_sessions_info()
-    user_sessions = {}
-    last_accessed_times = {}
+    users = userman.get_all_user_info()
+
+    last_accessed_time_list = []
     for sid in sessions:
         session = sessions[sid]
-        uid = session['uid']
-        if uid not in user_sessions:
-            user_sessions[uid] = []
-            last_accessed_times[uid] = []
-        user_sessions[uid].append(session)
-        last_accessed_times[uid].append(session['last_accessed']['time'])
+        last_accessed_time_list.append(session['last_accessed']['time'])
 
-    # sort by last_accessed time
-    for uid in user_sessions:
-        user_name = ''
-        if uid in users:
-            user = users[uid]
-            user_name = user['name']
-        sessions = user_sessions[uid]
-        last_accessed_time_list = last_accessed_times[uid]
-        last_accessed_time_list.sort(reverse=True)
-        new_list = []
-        for i in range(len(last_accessed_time_list)):
-            time = last_accessed_time_list[i]
-            for j in range(len(last_accessed_time_list)):
-                session = sessions[j]
-                if session['last_accessed']['time'] == time:
-                    session['user_name'] = user_name
-                    new_list.append(session)
-        user_sessions[uid] = new_list
+    last_accessed_time_list.sort(reverse=True)
+    new_list = []
+    for i in range(len(last_accessed_time_list)):
+        time = last_accessed_time_list[i]
+        for sid in sessions:
+            session = sessions[sid]
+            if session['last_accessed']['time'] == time:
+                uid = session['uid']
+                user_name = _get_user_fullname(users, uid)
+                session['user_name'] = user_name
+                new_list.append(session)
 
-    return user_sessions
+    return new_list
+
+def _get_user_fullname(users, uid):
+    if uid in users:
+        user = users[uid]
+        return user['name']
+    return ''
 
 #------------------------------------------------------------------------------
 def proc_get_groups(context):
