@@ -12,7 +12,6 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 import web
 
-ALGOTRITHM = websysconf.ALGOTRITHM
 LOG_FILE_PATH = websysconf.LOG_FILE_PATH
 
 #----------------------------------------------------------
