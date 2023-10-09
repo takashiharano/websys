@@ -66,12 +66,12 @@ def cmd_syslog(context):
             except:
                 pass
         n = n * (-1)
-        login_log = logger.get_system_log()[n:]
+        log_list = logger.get_system_log()[n:]
     else:
         status = 'NO_PRIVILEGE'
-        login_log = None
+        log_list = None
 
-    web.send_result_json(status, body=login_log)
+    web.send_result_json(status, body=log_list)
 
 #----------------------------------------------------------
 # logout
