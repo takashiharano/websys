@@ -144,8 +144,8 @@ def _auth(allow_guest):
     if 'path' in user_info and user_info['path'] is not None:
         req_uri = util.get_request_uri()
         pattern = '^' + user_info['path']
-        pattern = util.replace(pattern, '\.', '\\.')
-        pattern = util.replace(pattern, '\?', '\\?')
+        pattern = util.replace(pattern, '\\.', '\\\\.')
+        pattern = util.replace(pattern, '\\?', '\\\\?')
         if not util.match(req_uri, pattern):
             return 'FORBIDDEN_PATH'
 
