@@ -28,7 +28,9 @@ def is_text_file(filename):
 def output_text_file(root_path, path):
     n = 7
     content = util.read_file(path, 't')
-    enc_content = bsb64.encode_string(content, n)
+    enc_content = ''
+    if content is not None:
+        enc_content = bsb64.encode_string(content, n)
     html = '<html><head><meta charset="utf-8">'
     html += '<script src="' + root_path + 'libs/util.js"></script>'
     html += '<style>body,pre{font-size:13px;font-family:Consolas,Monaco,Menlo,monospace,sans-serif;}</style>'
