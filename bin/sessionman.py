@@ -25,7 +25,7 @@ current_session_info = None
 # Get all sessions info
 #----------------------------------------------------------
 def get_all_sessions_info():
-    return load_sessions_info()
+    return load_sessions_info_from_file()
 
 #----------------------------------------------------------
 # Get session info
@@ -62,14 +62,14 @@ def get_session_info(sid):
 #----------------------------------------------------------
 # Get current session info
 #----------------------------------------------------------
-def get_current_session_info():
+def get_current_session_info_from_global():
     global current_session_info
     return current_session_info
 
 #----------------------------------------------------------
 # Set current session info
 #----------------------------------------------------------
-def set_current_session_info(info):
+def set_current_session_info_to_global(info):
     global current_session_info
     current_session_info = info
 
@@ -79,7 +79,7 @@ def set_current_session_info(info):
 #----------------------------------------------------------
 def get_current_session_id():
     session_id = None
-    session_info = get_current_session_info()
+    session_info = get_current_session_info_from_global()
     if session_info is not None:
         session_id = session_info['sid']
     return session_id
@@ -100,7 +100,7 @@ def get_user_info_from_sid(sid):
 #----------------------------------------------------------
 # Get session info list for the user
 #----------------------------------------------------------
-def get_session_info_list_from_uid(uid):
+def get_session_info_list_for_uid(uid):
     session_list = []
     sessions = get_all_sessions_info()
     if sessions is not None:
@@ -124,7 +124,7 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
     if ext_auth:
         new_session_info['ext_auth'] = True
     sid = new_session_info['sid']
-    register_session_info(sid, new_session_info)
+    append_session_info_to_session_file(sid, new_session_info)
     return new_session_info
 
 #----------------------------------------------------------
@@ -137,7 +137,7 @@ def create_session_info(uid, is_guest=False):
     useragent = web.get_user_agent()
     tz = web.get_request_param('_tz')
 
-    sid = create_session_id(uid)
+    sid = generate_session_id(uid)
     new_session = {
         'sid': sid,
         'uid': uid,
@@ -158,21 +158,21 @@ def create_session_info(uid, is_guest=False):
     return new_session
 
 #----------------------------------------------------------
-# Register session info
+# Append session info to session file
 #----------------------------------------------------------
-def register_session_info(sid, session_info):
+def append_session_info_to_session_file(sid, session_info):
     sessions = get_all_sessions_info()
 
     if sessions is None:
         sessions = {}
 
     sessions[sid] = session_info
-    save_sessions_info(sessions)
+    save_sessions_info_to_file(sessions)
 
 #----------------------------------------------------------
-# Create session id
+# Generate session id
 #----------------------------------------------------------
-def create_session_id(uid):
+def generate_session_id(uid):
     input = util.get_datetime_str() + uid
     sid = util.hash(input, ALGOTRITHM)
     return sid
@@ -186,12 +186,12 @@ def update_last_accessed_info(sessions, sid):
     host = web.get_host_name()
     useragent = web.get_user_agent()
     tz = web.get_request_param('_tz')
-    update_session_info(sessions, sid, now, addr, host, useragent, tz)
+    update_session_info_in_session_file(sessions, sid, now, addr, host, useragent, tz)
 
 #----------------------------------------------------------
 # Update session info
 #----------------------------------------------------------
-def update_session_info(sessions, sid, time=None, addr=None, host=None, ua=None, tz=None):
+def update_session_info_in_session_file(sessions, sid, time=None, addr=None, host=None, ua=None, tz=None):
     if sessions is None:
         return
 
@@ -211,7 +211,7 @@ def update_session_info(sessions, sid, time=None, addr=None, host=None, ua=None,
     if ua is not None:
         last_accessed['ua'] = ua
 
-    save_sessions_info(sessions)
+    save_sessions_info_to_file(sessions)
 
 #----------------------------------------------------------
 # Clear session
@@ -226,10 +226,10 @@ def clear_session(sid):
     if sessions is not None:
         session = sessions.pop(sid, None)
         write_logout_log(session)
-        save_sessions_info(sessions)
+        save_sessions_info_to_file(sessions)
 
     if get_current_session_id() == sid:
-        set_current_session_info(None)
+        set_current_session_info_to_global(None)
 
     return session
 
@@ -264,7 +264,7 @@ def clear_expired_sessions(sessions, save=False):
       pass
 
   if save:
-      save_sessions_info(new_sessions)
+      save_sessions_info_to_file(new_sessions)
 
   return new_sessions
 
@@ -272,7 +272,7 @@ def clear_expired_sessions(sessions, save=False):
 # Clear user sessions
 #----------------------------------------------------------
 def clear_user_sessions(uid):
-    user_sessions = get_session_info_list_from_uid(uid)
+    user_sessions = get_session_info_list_for_uid(uid)
     i = 0
     for session in user_sessions:
         sid = session['sid']
@@ -283,7 +283,7 @@ def clear_user_sessions(uid):
 #----------------------------------------------------------
 # Load sessions info
 #----------------------------------------------------------
-def load_sessions_info():
+def load_sessions_info_from_file():
     try:
         info = util.load_dict(SESSION_LIST_FILE_PATH)
     except:
@@ -293,5 +293,5 @@ def load_sessions_info():
 #----------------------------------------------------------
 # Save sessions info
 #----------------------------------------------------------
-def save_sessions_info(sessions):
+def save_sessions_info_to_file(sessions):
     util.save_dict(SESSION_LIST_FILE_PATH, sessions)

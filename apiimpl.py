@@ -591,7 +591,7 @@ def on_auth_error():
 #----------------------------------------------------------
 def get_session_list_from_session(context):
     uid = context.get_user_id()
-    session_list = sessionman.get_session_info_list_from_uid(uid)
+    session_list = sessionman.get_session_info_list_for_uid(uid)
     return session_list
 
 #----------------------------------------------------------

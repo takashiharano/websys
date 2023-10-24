@@ -47,7 +47,7 @@ def do_login(uid, pw, ext_auth=False):
         raise Exception(status)
 
     session_info = login_info['session_info']
-    sessionman.set_current_session_info(session_info)
+    sessionman.set_current_session_info_to_global(session_info)
 
     write_login_log('OK', uid, session_info)
     return login_info
@@ -118,7 +118,7 @@ def auth(allow_guest=True):
     return False
 
 def _auth(allow_guest):
-    session_info = sessionman.get_current_session_info()
+    session_info = sessionman.get_current_session_info_from_global()
     if session_info is None:
         return 'SESSION_INFO_NOT_FOUND'
 

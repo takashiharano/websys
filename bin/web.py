@@ -225,7 +225,7 @@ def _on_access(context, allow_guest):
     uid = session_info['uid']
     user_info = userman.get_user_info(uid)
 
-    sessionman.set_current_session_info(session_info)
+    sessionman.set_current_session_info_to_global(session_info)
     authorized = authman.auth(allow_guest)
 
     context.set_session_info(session_info)
@@ -317,7 +317,7 @@ def get_user_agent():
 #----------------------------------------------------------
 def send_response(result, type, headers=None, encoding=None):
     if headers is None:
-        session_info = sessionman.get_current_session_info()
+        session_info = sessionman.get_current_session_info_from_global()
         cookies = build_session_cookie(session_info)
         headers = cookies
     _send_response(result, type, headers, encoding)
@@ -415,9 +415,7 @@ def get_user_local_name(uid, default=None):
 
 #----------------------------------------------------------
 def synchronize_start():
-    if util.file_lock(LOCK_FILE_PATH, 25, 0.2):
-        return True
-    return False
+    return util.file_lock(LOCK_FILE_PATH, 25, 0.2)
 
 def synchronize_end():
     util.file_unlock(LOCK_FILE_PATH)
