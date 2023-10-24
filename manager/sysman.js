@@ -941,9 +941,11 @@ sysman.getGroups = function() {
   sysman.callApi('get_groups', null, sysman.getGroupsCb);
 };
 sysman.getGroupsCb = function(xhr, res) {
-  sysman.drawGroupStatus('');
-  var s = util.decodeBase64(res.body.text);
-  $el('#groups-text').value = s;
+  if (res.status == 'OK') {
+    sysman.drawGroupStatus('');
+    var s = util.decodeBase64(res.body.text);
+    $el('#groups-text').value = s;
+  }
 };
 
 sysman.confirmSaveGroups = function() {
