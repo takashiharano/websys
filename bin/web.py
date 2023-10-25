@@ -262,6 +262,18 @@ def get_request_param(key=None, default=None):
 
     return q
 
+def get_request_param_as_int(key=None, default=0):
+    p = get_request_param(key)
+    try:
+        v = int(p)
+    except:
+        v = default
+    return v
+
+def get_request_param_as_bool(key=None, as_true='true'):
+    p = get_request_param(key)
+    return p == as_true
+
 def get_raw_request_param(key=None, default=None):
     return get_request_param(key, default)
 
