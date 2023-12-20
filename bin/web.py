@@ -253,7 +253,7 @@ def get_request_param(key=None, default=None):
         if q == '':
             q = None
         else:
-            q = util.get_query_value(q, key)
+            q = util.get_request_param(key, q=q)
 
     if q is None:
         q = default
