@@ -533,9 +533,11 @@ sysman.editUser = function(uid) {
 };
 
 sysman.openUserInfoEditorWindow = function(mode, uid) {
+  var currentUid = websys.getUserId();
+
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
-  if (uid) {
+  if (uid && (uid != currentUid)) {
     html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="sysman.deleteUser(\'' + uid + '\');">DEL</button></div>';
   }
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:290px;text-align:left;">';
