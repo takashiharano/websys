@@ -90,6 +90,13 @@ button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
   background: #444;
 }
 
+.button-red {
+  background: #a00;
+}
+.button-red:hover {
+  background: #d55;
+}
+
 .item-list-header {
   background: #06c;
 }

@@ -519,7 +519,7 @@ sysman.newUser = function() {
 sysman.editUser = function(uid) {
   sysman.mode = (uid ? 'edit' : 'new');
   if (!sysman.editWindow) {
-    sysman.editWindow = sysman.openUserInfoEditorWindow(sysman.mode);
+    sysman.editWindow = sysman.openUserInfoEditorWindow(sysman.mode, uid);
   }
   sysman.clearUserInfoEditor();
   if (uid) {
@@ -532,9 +532,12 @@ sysman.editUser = function(uid) {
   }
 };
 
-sysman.openUserInfoEditorWindow = function(mode) {
+sysman.openUserInfoEditorWindow = function(mode, uid) {
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
+  if (uid) {
+    html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="sysman.deleteUser(\'' + uid + '\');">DEL</button></div>';
+  }
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:290px;text-align:left;">';
 
   html += '<table>';
@@ -812,6 +815,9 @@ sysman.deleteUser = function(uid) {
 sysman._deleteUser = function(uid) {
   if (!uid) {
     return;
+  }
+  if (sysman.editWindow) {
+    sysman.editWindow.close();
   }
   var params = {
     uid: uid,
