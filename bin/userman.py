@@ -16,6 +16,7 @@ import sessionman
 USER_LIST_FILE_PATH = websysconf.USER_LIST_FILE_PATH
 GUEST_USER_LIST_FILE_PATH = websysconf.GUEST_USER_LIST_FILE_PATH
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
+USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 
 U_ST_NEED_PW_CHANGE = 1
 U_ST_DISABLED = 1 << 1
@@ -209,11 +210,16 @@ def delete_user(uid):
     users.pop(uid)
     save_users(users)
     delete_user_password(uid)
+    delete_user_dir(uid)
     return True
 
 # Save Users
 def save_users(users):
     util.save_dict(USER_LIST_FILE_PATH, users, indent=2)
+
+def delete_user_dir(uid):
+    path = USER_ROOT_PATH + '/' + uid
+    util.rmdir(path, True)
 
 #------------------------------------------------------------------------------
 # Guest user

@@ -15,7 +15,7 @@ import logger
 import userman
 import web
 
-SESSION_LIST_FILE_PATH = websysconf.SESSION_LIST_FILE_PATH
+USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 SESSION_TIMEOUT_SEC = websysconf.SESSION_TIMEOUT_SEC
 ALGOTRITHM = websysconf.ALGOTRITHM
 
@@ -25,7 +25,16 @@ current_session_info = None
 # Get all sessions info
 #----------------------------------------------------------
 def get_all_sessions_info():
-    return load_sessions_info_from_file()
+    return load_all_session_info_from_file()
+
+def get_user_sessions(uid):
+    session_file_path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
+    try:
+        session_list = util.load_dict(session_file_path)
+    except:
+        session_list = None
+
+    return session_list
 
 #----------------------------------------------------------
 # Get session info
@@ -53,10 +62,19 @@ def get_all_sessions_info():
 # Returns None id the session does not exist.
 def get_session_info(sid):
     session = None
-    sessions = get_all_sessions_info()
-    if sessions is not None:
-        if sid in sessions:
-            session = sessions[sid]
+
+    user_dirs = util.list_dirs(USER_ROOT_PATH)
+    for i in range(len(user_dirs)):
+        uid = user_dirs[i]
+        try:
+            user_sessions = get_user_sessions(uid)
+            if user_sessions is not None:
+                if sid in user_sessions:
+                    session = user_sessions[sid]
+                    break
+        except:
+            pass
+
     return session
 
 #----------------------------------------------------------
@@ -98,19 +116,6 @@ def get_user_info_from_sid(sid):
     return user_info
 
 #----------------------------------------------------------
-# Get session info list for the user
-#----------------------------------------------------------
-def get_session_info_list_for_uid(uid):
-    session_list = []
-    sessions = get_all_sessions_info()
-    if sessions is not None:
-        for sid in sessions:
-            session = sessions[sid]
-            if session['uid'] == uid:
-                session_list.append(session)
-    return session_list
-
-#----------------------------------------------------------
 # Get session timeout value
 #----------------------------------------------------------
 def get_session_timeout_value():
@@ -124,7 +129,7 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
     if ext_auth:
         new_session_info['ext_auth'] = True
     sid = new_session_info['sid']
-    append_session_info_to_session_file(sid, new_session_info)
+    append_session_info_to_session_file(uid, sid, new_session_info)
     return new_session_info
 
 #----------------------------------------------------------
@@ -160,14 +165,14 @@ def create_session_info(uid, is_guest=False):
 #----------------------------------------------------------
 # Append session info to session file
 #----------------------------------------------------------
-def append_session_info_to_session_file(sid, session_info):
-    sessions = get_all_sessions_info()
+def append_session_info_to_session_file(uid, sid, session_info):
+    user_sessions = get_user_sessions(uid)
 
-    if sessions is None:
-        sessions = {}
+    if user_sessions is None:
+        user_sessions = {}
 
-    sessions[sid] = session_info
-    save_sessions_info_to_file(sessions)
+    user_sessions[sid] = session_info
+    save_user_sessions_to_file(uid, user_sessions)
 
 #----------------------------------------------------------
 # Generate session id
@@ -180,25 +185,29 @@ def generate_session_id(uid):
 #----------------------------------------------------------
 # Update last accessed info
 #----------------------------------------------------------
-def update_last_accessed_info(sessions, sid):
+def update_last_accessed_info(uid, sid):
     now = util.get_timestamp()
     addr = web.get_ip_addr()
     host = web.get_host_name()
     useragent = web.get_user_agent()
     tz = web.get_request_param('_tz')
-    update_session_info_in_session_file(sessions, sid, now, addr, host, useragent, tz)
+    session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz)
+    return session
 
 #----------------------------------------------------------
 # Update session info
 #----------------------------------------------------------
-def update_session_info_in_session_file(sessions, sid, time=None, addr=None, host=None, ua=None, tz=None):
+def update_session_info_in_session_file(uid, sid, time=None, addr=None, host=None, ua=None, tz=None):
+    sessions = get_user_sessions(uid)
+
     if sessions is None:
-        return
+        return None
 
     if not sid in sessions:
-        return
+        return None
 
     session = sessions[sid]
+    uid = session['uid']
     last_accessed = session['last_accessed']
     if time is not None:
         last_accessed['time'] = time
@@ -211,22 +220,25 @@ def update_session_info_in_session_file(sessions, sid, time=None, addr=None, hos
     if ua is not None:
         last_accessed['ua'] = ua
 
-    save_sessions_info_to_file(sessions)
+    save_user_sessions_to_file(uid, sessions)
+    return session
 
 #----------------------------------------------------------
 # Clear session
 #----------------------------------------------------------
 def clear_session(sid):
-    if sid is None:
+    session = get_session_info(sid)
+    if session is None:
         return None
 
-    session = None
-    sessions = get_all_sessions_info()
+    uid = session['uid']
 
-    if sessions is not None:
-        session = sessions.pop(sid, None)
+    user_sessions = get_user_sessions(uid)
+
+    if user_sessions is not None:
+        session = user_sessions.pop(sid, None)
         write_logout_log(session)
-        save_sessions_info_to_file(sessions)
+        save_user_sessions_to_file(uid, user_sessions)
 
     if get_current_session_id() == sid:
         set_current_session_info_to_global(None)
@@ -249,49 +261,74 @@ def write_logout_log(session, expire=False):
 #----------------------------------------------------------
 # Clear expired sessions
 #----------------------------------------------------------
-def clear_expired_sessions(sessions, save=False):
-  now = util.get_timestamp()
-  new_sessions = {}
-  try:
-      for sid in sessions:
-          session = sessions[sid]
-          last_access_time = session['last_accessed']['time']
-          if round(now - last_access_time) <= SESSION_TIMEOUT_SEC:
-              new_sessions[sid] = session
-          else:
-              write_logout_log(session, True)
-  except:
-      pass
+def clear_all_expired_sessions():
+    now = util.get_timestamp()
+    user_dirs = util.list_dirs(USER_ROOT_PATH)
+    for i in range(len(user_dirs)):
+        uid = user_dirs[i]
+        try:
+            user_sessions = get_user_sessions(uid)
+            clear_expired_sessions(uid, user_sessions, now)
+        except:
+            pass
 
-  if save:
-      save_sessions_info_to_file(new_sessions)
+def clear_expired_sessions(uid, sessions, now):
+    if sessions is None:
+        return
 
-  return new_sessions
+    new_sessions = {}
+    cleared = False
+
+    for sid in sessions:
+        session = sessions[sid]
+        try:
+            last_access_time = session['last_accessed']['time']
+            if round(now - last_access_time) <= SESSION_TIMEOUT_SEC:
+                new_sessions[sid] = session
+            else:
+                cleared = True
+                write_logout_log(session, True)
+        except:
+            pass
+
+    if cleared:
+        save_user_sessions_to_file(uid, new_sessions)
 
 #----------------------------------------------------------
 # Clear user sessions
 #----------------------------------------------------------
 def clear_user_sessions(uid):
-    user_sessions = get_session_info_list_for_uid(uid)
+    user_sessions = get_user_sessions(uid)
+    if user_sessions is None:
+        return 0
+
     i = 0
-    for session in user_sessions:
-        sid = session['sid']
-        clear_session(sid)
+    for sid in user_sessions:
         i = i + 1
+
+    save_user_sessions_to_file(uid, {})
     return i
 
 #----------------------------------------------------------
 # Load sessions info
 #----------------------------------------------------------
-def load_sessions_info_from_file():
-    try:
-        info = util.load_dict(SESSION_LIST_FILE_PATH)
-    except:
-        info = None
-    return info
+def load_all_session_info_from_file():
+    user_dirs = util.list_dirs(USER_ROOT_PATH)
+    sessions = {}
+    for i in range(len(user_dirs)):
+        uid = user_dirs[i]
+        try:
+            user_sessions = get_user_sessions(uid)
+            for sid in user_sessions:
+                session = user_sessions[sid]
+                sessions[sid] = session
+        except:
+            pass
+    return sessions
 
 #----------------------------------------------------------
 # Save sessions info
 #----------------------------------------------------------
-def save_sessions_info_to_file(sessions):
-    util.save_dict(SESSION_LIST_FILE_PATH, sessions)
+def save_user_sessions_to_file(uid, sessions):
+    path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
+    util.save_dict(path, sessions)

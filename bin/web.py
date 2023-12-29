@@ -209,12 +209,11 @@ def _on_access(context, allow_guest):
     session_info = None
     user_info = None
 
+    sessionman.clear_all_expired_sessions()
+
     sessions = sessionman.get_all_sessions_info()
     if sessions is None:
         return context
-
-    sessions = sessionman.clear_expired_sessions(sessions)
-    sessionman.update_last_accessed_info(sessions, sid)
 
     if sid in sessions:
         session_info = sessions[sid]
@@ -225,6 +224,7 @@ def _on_access(context, allow_guest):
     uid = session_info['uid']
     user_info = userman.get_user_info(uid)
 
+    session_info = sessionman.update_last_accessed_info(uid, sid)
     sessionman.set_current_session_info_to_global(session_info)
     authorized = authman.auth(allow_guest)
 
