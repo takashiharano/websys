@@ -13,6 +13,7 @@ sysman.LIST_COLUMNS = [
   {key: 'privs', label: 'Privileges', style: 'min-width:15em;'},
   {key: 'desc', label: 'Description', style: 'min-width:15em;'},
   {key: 'status', label: 'Status'},
+  {key: 'fail', label: 'Fail', sort: false},
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
   {key: 'pw_changed_at', label: 'PwChanged'}
@@ -132,6 +133,7 @@ sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
   for (var i = 0; i < columns.length; i++) {
     var column = columns[i];
     var label = column['label'];
+    var sortable = (column['sort'] === false ? false : true);
 
     var sortAscClz = '';
     var sortDescClz = '';
@@ -165,10 +167,13 @@ sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
     if (column.style) {
       html += ' style="' + column.style + '"';
     }
-    html += '><span>' + label + '</span> ' + sortButton + '</th>';
+    html += '><span>' + label + '</span>';
+    if (sortable) {
+      html += ' ' + sortButton;
+    }
+    html += '</th>';
   }
 
-  html += '<th class="item-list">&nbsp;</th>';
   html += '</tr>';
   return html;
 };
@@ -182,14 +187,15 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     }
   }
 
-  var currentUid = websys.getUserId();
-
   var htmlList = '';
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
     var uid = item.uid;
     var name = item.name.replace(/ /g, '&nbsp');
     var local_name = item.local_name.replace(/ /g, '&nbsp');
+    var loginFailedInfo = item.login_failed_info;
+    var loginFailedCount = loginFailedInfo['count'];
+    var loginFailedTime = util.getDateTimeString(loginFailedInfo['time']);
 
     var createdDate = '---------- --:--:--.---';
     if (item.created_at > 0) {
@@ -230,17 +236,22 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list">' + item.privs + '</td>';
     htmlList += '<td class="item-list" style="max-width:20em">' + dispDesc + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + item.status + '</td>';
+
+    htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
+    if (loginFailedCount > 0) {
+      var clz = 'pseudo-link';
+      if (loginFailedCount >= sysman.websysconf.LOGIN_FAILURE_MAX) {
+        clz += ' text-red';
+      }
+      htmlList += '<span class="' + clz + '" data-tooltip="' + loginFailedTime + '" onclick="sysman.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
+    } else {
+      htmlList += '';
+    }
+    htmlList += '</td>';
+
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
-
-    htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
-    if (uid == currentUid) {
-      htmlList += '&nbsp;';
-    } else {
-      htmlList += '<span class="pseudo-link" style="color:#f88;" onclick="sysman.deleteUser(\'' + uid + '\');">X</span>';
-    }
-    htmlList += '</td>';
     htmlList += '</tr>';
   }
   htmlList += '</table>';
@@ -822,12 +833,38 @@ sysman._deleteUser = function(uid) {
     sysman.editWindow.close();
   }
   var params = {
-    uid: uid,
+    uid: uid
   };
   sysman.execCmd('userdel', params, sysman.deleteUserCb);
 };
 
 sysman.deleteUserCb = function(xhr, res) {
+  if (res.status != 'OK') {
+    sysman.showInfotip(res.status);
+    return;
+  }
+  sysman.showInfotip('OK');
+  sysman.getUserList();
+};
+
+//-----------------------------------------------------------------------------
+sysman.confirmClearLoginFailedCount = function(uid) {
+  var opt = {
+    data: uid
+  };
+  util.confirm('Clear failure count for ' + uid + ' ?', sysman.clearLoginFailedCount, opt);
+};
+sysman.clearLoginFailedCount = function(uid) {
+  if (!uid) {
+    return;
+  }
+  var params = {
+    uid: uid
+  };
+  sysman.execCmd('unlockuser', params, sysman.clearLoginFailedCountCb);
+};
+
+sysman.clearLoginFailedCountCb = function(xhr, res) {
   if (res.status != 'OK') {
     sysman.showInfotip(res.status);
     return;

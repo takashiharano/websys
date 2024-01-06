@@ -97,6 +97,10 @@ button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
   background: #d55;
 }
 
+.text-red {
+  color: #f88;
+}
+
 .item-list-header {
   background: #06c;
 }

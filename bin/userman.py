@@ -20,7 +20,6 @@ USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 
 U_ST_NEED_PW_CHANGE = 1
 U_ST_DISABLED = 1 << 1
-U_ST_LOCKED = 1 << 2
 
 # users.json
 # {
@@ -76,8 +75,14 @@ def get_user_info(uid, guest=True):
     return user
 
 # get all user info
-def get_all_user_info():
+def get_all_user_info(extra_info=False):
     users = util.load_dict(USER_LIST_FILE_PATH)
+
+    if extra_info:
+        for uid in users:
+            login_failed_info = load_login_failed_info(uid)
+            users[uid]['login_failed_info'] = login_failed_info
+
     return users
 
 # Create a user
@@ -484,6 +489,24 @@ def parse_int(s):
     except:
         pass
     return v
+
+#------------------------------------------------------------------------------
+# Login failure counter and time
+#------------------------------------------------------------------------------
+DEFAULT_LOGIN_FAILED_INFO = {'count': 0, 'time': 0}
+def load_login_failed_info(uid):
+    path = USER_ROOT_PATH + '/' + uid + '/login_failed.txt'
+    info = util.load_dict(path, default=DEFAULT_LOGIN_FAILED_INFO)
+    return info
+
+def write_login_failed(uid, info):
+    path = USER_ROOT_PATH + '/' + uid + '/login_failed.txt'
+    util.save_dict(path, info, indent=None)
+
+def clear_login_failed(uid):
+    path = USER_ROOT_PATH + '/' + uid + '/login_failed.txt'
+    util.delete_file(path)
+    return DEFAULT_LOGIN_FAILED_INFO
 
 #------------------------------------------------------------------------------
 # Groups

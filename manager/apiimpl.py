@@ -42,7 +42,7 @@ def proc_get_user_list(context):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
-    user_dict = userman.get_all_user_info()
+    user_dict = userman.get_all_user_info(True)
     guest_user_dict = userman.get_all_guest_user_info()
     if guest_user_dict is not None:
         user_dict.update(guest_user_dict)

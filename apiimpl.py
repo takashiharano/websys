@@ -530,11 +530,35 @@ def cmd_userdel(context):
     web.send_result_json(status, body=None)
 
 def _is_prohibited_uid(uid):
-    PROHIBITED_UIDs = ['root']
-    for puid in PROHIBITED_UIDs:
+    PROHIBITED_UIDS = ['root']
+    for puid in PROHIBITED_UIDS:
         if uid == puid:
             return True
     return False
+
+#----------------------------------------------------------
+# unlockuser
+#----------------------------------------------------------
+# ?uid=UID
+#----------------------------------------------------------
+def cmd_unlockuser(context):
+    if not authman.auth():
+        on_auth_error()
+        return
+
+    status = 'ERROR'
+    if context.is_admin():
+        uid = web.get_request_param('uid')
+        if uid is None:
+            status = 'ERR_NO_UID'
+        else:
+            userman.clear_login_failed(uid)
+            logger.write_event_log(context, 'UNLOCK_USER', 'OK', 'target=' + uid)
+            status = 'OK'
+    else:
+        status = 'FORBIDDEN'
+
+    web.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # guests

@@ -16,6 +16,7 @@ import sessionman
 import userman
 import web
 
+USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 ALGOTRITHM = websysconf.ALGOTRITHM
 
 #----------------------------------------------------------
@@ -50,6 +51,7 @@ def do_login(uid, pw, ext_auth=False):
     sessionman.set_current_session_info_to_global(session_info)
 
     write_login_log('OK', uid, session_info)
+    userman.clear_login_failed(uid)
     return login_info
 
 def _login(uid, pw, ext_auth=False):
@@ -63,9 +65,24 @@ def _login(uid, pw, ext_auth=False):
     if userman.is_disabled(user_info):
         raise Exception('DISABLED')
 
+    LOGIN_FAILURE_MAX = websysconf.LOGIN_FAILURE_MAX
+    LOGIN_LOCK_PERIOD_SEC = websysconf.LOGIN_LOCK_PERIOD_SEC
+    now = util.get_timestamp()
+
+    login_failed_info = userman.load_login_failed_info(uid)
+    if LOGIN_FAILURE_MAX > 0 and login_failed_info['count'] >= LOGIN_FAILURE_MAX:
+        diff_t = now - login_failed_info['time']
+        if LOGIN_LOCK_PERIOD_SEC == 0 or diff_t <= LOGIN_LOCK_PERIOD_SEC:
+            raise Exception('LOCKED')
+        else:
+            login_failed_info = userman.clear_login_failed(uid)
+
     user_pw = userman.get_user_password(uid)
     pw2 = util.hash(pw, ALGOTRITHM)
     if pw2 != user_pw:
+        login_failed_info['count'] += 1
+        login_failed_info['time'] = now
+        userman.write_login_failed(uid, login_failed_info)
         raise Exception('NG')
 
     new_session_info = sessionman.create_and_register_session_info(uid, is_guest=False, ext_auth=ext_auth)
