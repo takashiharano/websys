@@ -889,6 +889,31 @@ websys.userdel.cb = function(xhr, res) {
 };
 
 /**
+ * unlockuser
+ */
+websys.unlockuser = function(arg, tbl, echo) {
+  var uid = dbg.splitCmdLine(arg)[0];
+  if (!uid) {
+    dbg.printUsage(tbl.help);
+    return;
+  }
+  var param = {
+    cmd: 'unlockuser',
+    uid: uid
+  };
+  var req = {
+    url: websys.basePath + 'websys/api.cgi',
+    method: 'POST',
+    data: param,
+    cb: websys.unlockuser.cb
+  };
+  websys.http(req);
+};
+websys.unlockuser.cb = function(xhr, res) {
+  websys.onResponseReceived(xhr, res);
+};
+
+/**
  * users
  */
 websys.cmdUsers = function(arg, tbl, echo) {
@@ -1352,6 +1377,7 @@ websys.CMD_TBL = [
   {cmd: 'session', fn: websys.cmdSession, desc: 'Show current session info'},
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},
   {cmd: 'syslog', fn: websys.syslog, desc: 'Show sysyem log'},
+  {cmd: 'unlockuser', fn: websys.unlockuser, desc: 'Unlock user login', help: 'unlockuser uid'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
   {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
