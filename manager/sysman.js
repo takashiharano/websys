@@ -240,7 +240,7 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (loginFailedCount > 0) {
       var clz = 'pseudo-link';
-      if (loginFailedCount >= sysman.websysconf.LOGIN_FAILURE_MAX) {
+      if ((sysman.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= sysman.websysconf.LOGIN_FAILURE_MAX)) {
         clz += ' text-red';
       }
       htmlList += '<span class="' + clz + '" data-tooltip="' + loginFailedTime + '" onclick="sysman.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
