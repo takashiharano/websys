@@ -941,6 +941,135 @@ websys.cmdWhoAmI = function(arg, tbl, echo) {
 };
 
 //-----------------------------------------------------------------------------
+/**
+ * addgroup
+ */
+websys.cmdAddGroup = function(arg, tbl, echo) {
+  var gid = dbg.getOptVal(arg, '')[0];
+  if (!gid) {
+    dbg.printUsage(tbl.help);
+    return;
+  }
+  var privs = dbg.getOptVal(arg, 'privs');
+  var param = {
+    cmd: 'addgroup',
+    gid: gid
+  };
+  if (privs) {
+    try {
+      privs = eval(privs);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.privs = privs;
+  }
+  var req = {
+    url: websys.basePath + 'websys/api.cgi',
+    method: 'POST',
+    data: param,
+    cb: websys.cmdAddGroup.cb
+  };
+  websys.http(req);
+};
+websys.cmdAddGroup.cb = function(xhr, res) {
+  websys.onResponseReceived(xhr, res);
+};
+
+/**
+ * modgroup
+ */
+websys.cmdModGroup = function(arg, tbl, echo) {
+  var gid = dbg.getOptVal(arg, '')[0];
+  var privs = dbg.getOptVal(arg, 'privs');
+  var aprivs = dbg.getOptVal(arg, 'aPriv');
+  var rprivs = dbg.getOptVal(arg, 'rPriv');
+  var desc = dbg.getOptVal(arg, 'desc');
+
+  if (!gid) {
+    dbg.printUsage(tbl.help);
+    return;
+  }
+
+  var param = {
+    cmd: 'modgroup',
+    gid: gid
+  };
+  if (privs) {
+    try {
+      privs = eval(privs);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.privs = privs;
+  }
+  if (aprivs) {
+    try {
+      aprivs = eval(aprivs);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.aprivs = aprivs;
+  }
+  if (rprivs) {
+    try {
+      rprivs = eval(rprivs);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.rprivs = rprivs;
+  }
+  if (desc) {
+    try {
+      desc = eval(desc);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.desc = desc;
+  }
+
+  var req = {
+    url: websys.basePath + 'websys/api.cgi',
+    method: 'POST',
+    data: param,
+    cb: websys.cmdModGroup.cb
+  };
+  websys.http(req);
+};
+websys.cmdModGroup.cb = function(xhr, res) {
+  websys.onResponseReceived(xhr, res);
+};
+
+/**
+ * delgroup
+ */
+websys.delgroup = function(arg, tbl, echo) {
+  var gid = dbg.splitCmdLine(arg)[0];
+  if (!gid) {
+    dbg.printUsage(tbl.help);
+    return;
+  }
+  var param = {
+    cmd: 'delgroup',
+    gid: gid
+  };
+  var req = {
+    url: websys.basePath + 'websys/api.cgi',
+    method: 'POST',
+    data: param,
+    cb: websys.delgroup.cb
+  };
+  websys.http(req);
+};
+websys.delgroup.cb = function(xhr, res) {
+  websys.onResponseReceived(xhr, res);
+};
+
+//-----------------------------------------------------------------------------
 websys.auth = function(userCb) {
   var param = {
     cmd: 'auth'
@@ -1368,11 +1497,14 @@ websys.init = function(basePath, readyFn) {
 };
 
 websys.CMD_TBL = [
+  {cmd: 'addgroup', fn: websys.cmdAddGroup, desc: 'Add a group', help: 'addgroup GID [-privs "PRIVILEGE1 PRIVILEGE2"]'},
+  {cmd: 'delgroup', fn: websys.delgroup, desc: 'Delete a group', help: 'delgroup gid'},
   {cmd: 'gencode', fn: websys.gencode, desc: 'Make a guest user', help: 'gencode [ID(A-Za-z0-9_-)] [-valid MIN] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"]'},
   {cmd: 'guests', fn: websys.guests, desc: 'Show all guest user info'},
   {cmd: 'hello', fn: websys.hello, desc: 'Hello'},
   {cmd: 'login', fn: websys.login, desc: 'Login'},
   {cmd: 'logout', fn: websys.cmdLogout, desc: 'Logout', help: 'logout [-sid sid]|[-u uid]'},
+  {cmd: 'modgroup', fn: websys.cmdModGroup, desc: 'Mod a group', help: 'modgroup GID [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"]'},
   {cmd: 'passwd', fn: websys.cmdPasswd, desc: 'Change user\'s password', help: 'passwd [-u UID] [-p PW]'},
   {cmd: 'session', fn: websys.cmdSession, desc: 'Show current session info'},
   {cmd: 'sessions', fn: websys.cmdSessions, desc: 'Show session list'},

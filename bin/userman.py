@@ -11,6 +11,7 @@ import websysconf
 sys.path.append(websysconf.UTIL_PATH)
 import util
 
+import common
 import sessionman
 
 USER_LIST_FILE_PATH = websysconf.USER_LIST_FILE_PATH
@@ -151,11 +152,11 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
         updated = True
 
     if agroup is not None:
-        user['group'] = _add_item_value(user['group'], agroup)
+        user['group'] = common.add_item_value(user['group'], agroup)
         updated = True
 
     if rgroup is not None:
-        user['group'] = _remove_item_value(user['group'], rgroup)
+        user['group'] = common.remove_item_value(user['group'], rgroup)
         updated = True
 
     if privs is not None:
@@ -163,11 +164,11 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
         updated = True
 
     if aprivs is not None:
-        user['privs'] = _add_item_value(user['privs'], aprivs)
+        user['privs'] = common.add_item_value(user['privs'], aprivs)
         updated = True
 
     if rprivs is not None:
-        user['privs'] = _remove_item_value(user['privs'], rprivs)
+        user['privs'] = common.remove_item_value(user['privs'], rprivs)
         updated = True
 
     if desc is not None:
@@ -195,16 +196,6 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
     save_users(users)
 
     return user
-
-def _add_item_value(items, aitems):
-    for item in aitems:
-        items = util.add_item_value(items, item, separator=' ')
-    return items
-
-def _remove_item_value(items, ritems):
-    for item in ritems:
-        items = util.remove_item_value(items, item, separator=' ')
-    return items
 
 # Delete a user
 def delete_user(uid):
@@ -244,7 +235,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def create_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
+def add_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -343,7 +334,7 @@ def is_member_of(user_info, group_name):
     if is_admin(user_info):
         return True
 
-    return _has_item(user_info, 'group', group_name)
+    return common.has_item(user_info, 'group', group_name)
 
 #----------------------------------------------------------
 # has_privilege
@@ -356,54 +347,7 @@ def has_privilege(user_info, priv_name):
     if is_admin(user_info):
         return True
 
-    return _has_item(user_info, 'privs', priv_name)
-
-#----------------------------------------------------------
-def _has_item(obj, key, value):
-    if obj is None:
-        return False
-
-    if key not in obj:
-        return False
-
-    items = obj[key]
-    items = items.split(' ')
-    if value in items:
-        return True
-
-    last_index = value.rfind('.')
-    if last_index == -1:
-        if _has_any_item_for_domain(items, value):
-            return True
-    else:
-        if _has_item_by_domain(items, value):
-            return True
-
-    return False
-
-def _has_any_item_for_domain(item_list, domain_name):
-    for value in item_list:
-        if value == domain_name:
-            return True
-        last_index = value.rfind('.')
-        if last_index != -1:
-            domain = value[:last_index]
-            if domain == domain_name:
-                return True
-    return False
-
-def _has_item_by_domain(item_list, value):
-    for item in item_list:
-        if item == value:
-            return True
-
-        last_index = value.rfind('.')
-        if last_index != -1:
-            domain = value[:last_index]
-            if item == domain:
-                return True
-
-    return False
+    return common.has_item(user_info, 'privs', priv_name)
 
 #------------------------------------------------------------------------------
 # Password
@@ -511,30 +455,6 @@ def clear_login_failed(uid):
 #------------------------------------------------------------------------------
 # Groups
 #------------------------------------------------------------------------------
-def get_all_group_info():
-    groups = util.load_dict(GROUPS_FILE_PATH)
-    return groups
-
-def get_group_info(gid):
-    groups = get_all_group_info()
-    group = None
-    if groups is not None:
-        if gid in groups:
-            group = groups[gid]
-    return group
-
-def get_group_privileges(gid):
-    privs = None
-    group = get_group_info(gid)
-    if group is not None:
-        if 'privs' in group:
-            privs = group['privs']
-    return privs
-
-def has_privilege_in_group(gid, priv_name):
-    group = get_group_info(gid)
-    return _has_item(group, 'privs', priv_name)
-
 def get_groups_for_user(uid):
     user_info = get_user_info(uid)
     if user_info is None:

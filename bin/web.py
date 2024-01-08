@@ -13,6 +13,7 @@ import util
 import bsb64
 
 import userman
+import groupman
 import sessionman
 import authman
 
@@ -164,7 +165,7 @@ class WebContext:
         groups = self.get_groups()
         for i in range(len(groups)):
             gid = groups[i]
-            if userman.has_privilege_in_group(gid, priv_name):
+            if groupman.has_privilege_in_group(gid, priv_name):
                 return True
 
         return False

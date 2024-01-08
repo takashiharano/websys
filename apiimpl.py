@@ -12,6 +12,7 @@ util.append_system_path(__file__, './bin')
 import logger
 import websysconf
 import userman
+import groupman
 import sessionman
 import authman
 import web
@@ -322,7 +323,7 @@ def cmd_useradd(context):
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
-        status = 'ERR_' + str(e)
+        status = 'ERR:' + str(e)
 
     web.send_result_json(status, body=None)
 
@@ -398,7 +399,7 @@ def cmd_usermod(context):
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
-        status = 'ERR_' + str(e)
+        status = 'ERR:' + str(e)
 
     web.send_result_json(status, body=None)
 
@@ -579,6 +580,118 @@ def cmd_guests(context):
         guest_user_list = None
 
     web.send_result_json(status, body=guest_user_list)
+
+#----------------------------------------------------------
+# add a group
+#----------------------------------------------------------
+def cmd_addgroup(context):
+    if not authman.auth():
+        on_auth_error()
+        return
+
+    status = 'ERROR'
+    if not context.is_admin():
+        web.send_result_json('FORBIDDEN', body=None)
+        return
+
+    gid = web.get_request_param('gid')
+    p_privs = web.get_request_param('privs')
+    desc = web.get_request_param('desc', '')
+
+    if gid is None:
+        web.send_result_json('ERR_GID', body=None)
+        return
+
+    privs = ''
+    if p_privs is not None:
+        privs = p_privs
+        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = privs.strip()
+
+    try:
+        groupman.add_group(gid, privs=privs, desc=desc)
+        logger.write_event_log(context, 'ADD_GROUP', 'OK', 'gid=' + gid)
+        status = 'OK'
+    except Exception as e:
+        status = 'ERR:' + str(e)
+
+    web.send_result_json(status, body=None)
+
+#----------------------------------------------------------
+# mod a group
+#----------------------------------------------------------
+def cmd_modgroup(context):
+    if not authman.auth():
+        on_auth_error()
+        return
+
+    gid = web.get_request_param('gid')
+
+    if not context.is_admin():
+        web.send_result_json('FORBIDDEN', body=None)
+        return
+
+    if gid is None:
+        web.send_result_json('ERR_NO_GID', body=None)
+        return
+
+    name = web.get_request_param('name')
+    local_name = web.get_request_param('local_name')
+
+    pw = web.get_request_param('pw')
+    pw_hash = None
+    if pw is not None:
+        pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
+
+    privs = None
+    aprivs = None
+    rprivs = None
+    desc = None
+
+    p_privs = web.get_request_param('privs')
+    if p_privs is not None:
+        privs = p_privs
+        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = privs.strip()
+
+    aprivs = _get_optional_param_by_list('aprivs')
+    rprivs = _get_optional_param_by_list('rprivs')
+
+    desc = web.get_request_param('desc', '')
+
+    try:
+        groupman.modify_group(gid, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc)
+        logger.write_event_log(context, 'MOD_GROUP', 'OK', 'gid=' + gid)
+        status = 'OK'
+    except Exception as e:
+        status = 'ERR:' + str(e)
+
+    web.send_result_json(status, body=None)
+
+#----------------------------------------------------------
+# delgroup
+# ?gid=GID
+#----------------------------------------------------------
+def cmd_delgroup(context):
+    if not authman.auth():
+        on_auth_error()
+        return
+
+    status = 'ERROR'
+    if context.is_admin():
+        gid = web.get_request_param('gid')
+        if gid is None:
+            status = 'ERR_NO_GID'
+        else:
+            status = 'ERR_NO_SUCH_GID'
+            deleted = groupman.delete_group(gid)
+            if deleted:
+                logger.write_event_log(context, 'DEL_GROUP', 'OK', 'gid=' + gid)
+                status = 'OK'
+    else:
+        status = 'FORBIDDEN'
+
+    web.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # hello
