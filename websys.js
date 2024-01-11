@@ -532,7 +532,7 @@ websys.cmdSessions.cb = function(xhr, res, req) {
   var flgA = (req.data.all == 'A');
   var s = '\n';
   if (list instanceof Array) {
-    list = util.sortObject(list, 'uid');
+    list = util.sortObjectList(list, 'uid');
     for (var i = 0; i < list.length; i++) {
       info = list[i];
       s+= '----------------------------------------------------------------------------\n';
