@@ -878,7 +878,7 @@ sysman.sortList = function(itemList, sortKey, isDesc) {
   var items = util.copyObject(itemList);
   var srcList = items;
   var asNum = true;
-  var sortedList = util.sortObject(srcList, sortKey, isDesc, asNum);
+  var sortedList = util.sortObjectList(srcList, sortKey, isDesc, asNum);
   return sortedList;
 };
 
