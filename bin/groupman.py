@@ -40,6 +40,20 @@ def get_all_group_info():
     groups = util.load_dict(GROUPS_FILE_PATH)
     return groups
 
+# get all group info list
+def get_group_list():
+    group_list = []
+    groups = get_all_group_info()
+    if groups is None:
+        return group_list
+
+    for gid in groups:
+        group = groups[gid]
+        group_list.append(group)
+
+    group_list = util.sort_object_list(group_list, 'gid')
+    return group_list
+
 # Add a group
 def add_group(gid, privs='', desc='', status=None):
     groups = get_all_group_info()

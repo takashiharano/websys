@@ -4,8 +4,8 @@
 var sysman = {};
 
 sysman.INTERVAL = 2 * 60 * 1000;
-sysman.LIST_COLUMNS = [
-  {key: 'uid', label: 'UID', style: 'min-width:min-width:10em;'},
+sysman.USER_LIST_COLUMNS = [
+  {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:13em;'},
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
@@ -26,8 +26,10 @@ sysman.listStatus = {
 
 sysman.itemList = [];
 sysman.sessions = null;
-sysman.editWindow = null;
-sysman.mode = null;
+sysman.userEditWindow = null;
+sysman.groupEditWindow = null;
+sysman.userEditMode = null;
+sysman.groupEditMode = null;
 sysman.tmrId = 0;
 sysman.interval = 0;
 
@@ -43,9 +45,13 @@ sysman.onSysReady = function() {
 };
 
 sysman.reload = function() {
+  sysman.reloadUserInfo();
+  sysman.getGroupList();
+};
+
+sysman.reloadUserInfo = function() {
   sysman.getUserList();
   sysman.getSessionList();
-  sysman.getGroups();
 };
 
 sysman.queueNextUpdateSessionInfo = function() {
@@ -181,7 +187,7 @@ sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
 sysman.drawList = function(items, sortIdx, sortOrder) {
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
-      var srtDef = sysman.LIST_COLUMNS[sortIdx];
+      var srtDef = sysman.USER_LIST_COLUMNS[sortIdx];
       var desc = (sortOrder == 2);
       items = sysman.sortList(items, srtDef.key, desc, srtDef.meta);
     }
@@ -256,7 +262,7 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
   }
   htmlList += '</table>';
 
-  var htmlHead = sysman.buildListHeader(sysman.LIST_COLUMNS, sortIdx, sortOrder);
+  var htmlHead = sysman.buildListHeader(sysman.USER_LIST_COLUMNS, sortIdx, sortOrder);
   var html = htmlHead + htmlList; 
 
   sysman.drawListContent(html);
@@ -528,9 +534,9 @@ sysman.newUser = function() {
 };
 
 sysman.editUser = function(uid) {
-  sysman.mode = (uid ? 'edit' : 'new');
-  if (!sysman.editWindow) {
-    sysman.editWindow = sysman.openUserInfoEditorWindow(sysman.mode, uid);
+  sysman.userEditMode = (uid ? 'edit' : 'new');
+  if (!sysman.userEditWindow) {
+    sysman.userEditWindow = sysman.openUserInfoEditorWindow(sysman.userEditMode, uid);
   }
   sysman.clearUserInfoEditor();
   if (uid) {
@@ -607,7 +613,7 @@ sysman.openUserInfoEditorWindow = function(mode, uid) {
 
   html += '<div style="margin-top:24px;text-align:center;">';
   html += '<button onclick="sysman.saveUserInfo();">OK</button>'
-  html += '<button style="margin-left:8px;" onclick="sysman.editWindow.close();">Cancel</button>'
+  html += '<button style="margin-left:8px;" onclick="sysman.userEditWindow.close();">Cancel</button>'
   html += '</div>';
 
   html += '</div>';
@@ -633,7 +639,7 @@ sysman.openUserInfoEditorWindow = function(mode, uid) {
         background: '#000'
       }
     },
-    onclose: sysman.onEditWindowClose,
+    onclose: sysman.onUserEditWindowClose,
     content: html
   };
 
@@ -684,7 +690,7 @@ sysman.clearUserInfoEditor = function() {
 };
 
 sysman.saveUserInfo = function() {
-  if (sysman.mode == 'new') {
+  if (sysman.userEditMode == 'new') {
     sysman.addUser();
   } else {
     sysman.updateUser();
@@ -767,7 +773,7 @@ sysman.addUserCb = function(xhr, res) {
   if (res.status != 'OK') {
     return;
   }
-  sysman.editWindow.close();
+  sysman.userEditWindow.close();
   sysman.getUserList();
 };
 
@@ -814,7 +820,7 @@ sysman.updateUserCb = function(xhr, res) {
   if (res.status != 'OK') {
     return;
   }
-  sysman.editWindow.close();
+  sysman.userEditWindow.close();
   sysman.getUserList();
 };
 
@@ -829,8 +835,8 @@ sysman._deleteUser = function(uid) {
   if (!uid) {
     return;
   }
-  if (sysman.editWindow) {
-    sysman.editWindow.close();
+  if (sysman.userEditWindow) {
+    sysman.userEditWindow.close();
   }
   var params = {
     uid: uid
@@ -982,44 +988,287 @@ sysman.drawGroupStatus = function(s) {
   $el('#groups-status').innerHTML = s;
 };
 
-sysman.getGroups = function() {
-  sysman.callApi('get_groups', null, sysman.getGroupsCb);
+sysman.getGroupList = function() {
+  sysman.callApi('get_group_list', null, sysman.getGroupListCb);
 };
-sysman.getGroupsCb = function(xhr, res) {
+sysman.getGroupListCb = function(xhr, res) {
   if (res.status == 'OK') {
     sysman.drawGroupStatus('');
-    var s = util.decodeBase64(res.body.text);
-    $el('#groups-text').value = s;
+    var list = res.body.group_list;
+    sysman.drawGroupList(list);
   }
 };
 
-sysman.confirmSaveGroups = function() {
-  util.confirm('Save?', sysman.saveGroups);
-};
-sysman.saveGroups = function() {
-  var s = $el('#groups-text').value;
-  var b64 = util.encodeBase64(s);
-  var params = {
-    text: b64
+sysman.drawGroupList = function(list) {
+  var html = '<table>';
+  html += '<tr class="item-list-header">';
+  html += '<th class="item-list" style="min-width:10em;">GID</th>';
+  html += '<th class="item-list" style="min-width:20em;">Prvileges</th>';
+  html += '<th class="item-list" style="min-width:20em;">Description</th>';
+  html += '<th class="item-list">Created</th>';
+  html += '<th class="item-list">Updated</th>';
+  html += '</tr>';
+
+  for (var i = 0; i < list.length; i++) {
+    var group = list[i];
+    var gid = group.gid;
+    var privs = (group.privs ? group.privs : '');
+    var desc = (group.desc ? group.desc : '');
+
+    var createdDate = '---------- --:--:--.---';
+    if (group.created_at > 0) {
+      var createdAt = group.created_at;
+      if (util.isInteger(createdAt)) createdAt *= 1000;
+      createdDate = util.getDateTimeString(createdAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+    }
+
+    var updatedDate = '---------- --:--:--.---';
+    if (group.updated_at > 0) {
+      var updatedAt = group.updated_at;
+      if (util.isInteger(updatedAt)) updatedAt *= 1000;
+      updatedDate = util.getDateTimeString(updatedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+    }
+
+    html += '<tr class="item-list">';
+    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysman.editGroup(\'' + gid + '\');" data-tooltip="Edit">' + gid + '</span></td>';
+    html += '<td class="item-list">' + privs + '</td>';
+    html += '<td class="item-list">' + desc + '</td>';
+    html += '<td class="item-list">' + createdDate + '</td>';
+    html += '<td class="item-list">' + updatedDate + '</td>';
+    html += '</tr>';
   }
-  sysman.callApi('save_groups', params, sysman.saveGroupsCb);
-};
-sysman.saveGroupsCb = function(xhr, res) {
-  sysman.showInfotip('OK');
+  html += '</table>';
+  $el('#group-list').innerHTML = html;
 };
 
 //-----------------------------------------------------------------------------
-sysman.onEditWindowClose = function() {
-  sysman.editWindow = null;
-  sysman.mode = null;
+sysman.newGroup = function() {
+  sysman.editGroup(null);
 };
 
-$onCtrlS = function(e) {
-  if ($el('#groups-text').hasFocus()) {
-    sysman.confirmSaveGroups();
+sysman.editGroup = function(gid) {
+  sysman.groupEditMode = (gid ? 'edit' : 'new');
+  if (!sysman.groupEditWindow) {
+    sysman.groupEditWindow = sysman.openGroupInfoEditorWindow(sysman.groupEditMode, gid);
+  }
+  sysman.clearGroupInfoEditor();
+  if (gid) {
+    var params = {
+      gid: gid
+    };
+    sysman.execCmd('group', params, sysman.getGroupInfoCb);
+  } else {
+    $el('#gid').focus();
   }
 };
 
+sysman.openGroupInfoEditorWindow = function(mode, gid) {
+  var html = '';
+  html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
+  html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="sysman.deleteGroup(\'' + gid + '\');">DEL</button></div>';
+  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:110px;text-align:left;">';
+
+  html += '<table>';
+  html += '  <tr>';
+  html += '    <td>GID</td>';
+  html += '    <td style="width:256px;">';
+  html += '      <input type="text" id="gid" style="width:100%;">';
+  html += '    </td>';
+  html += '  </tr>';
+  html += '  <tr>';
+  html += '    <td>Privileges</td>';
+  html += '    <td><input type="text" id="group-privs" style="width:100%;"></td>';
+  html += '  </tr>';
+  html += '  <tr>';
+  html += '    <td>Description</td>';
+  html += '    <td><input type="text" id="group-desc" style="width:100%;"></td>';
+  html += '  </tr>';
+  html += '<table>';
+
+  html += '<div style="margin-top:24px;text-align:center;">';
+  html += '<button onclick="sysman.saveGroupInfo();">OK</button>'
+  html += '<button style="margin-left:8px;" onclick="sysman.groupEditWindow.close();">Cancel</button>'
+  html += '</div>';
+
+  html += '</div>';
+  html += '</div>';
+
+  var opt = {
+    draggable: true,
+    resizable: true,
+    pos: 'c',
+    closeButton: true,
+    width: 480,
+    height: 200,
+    minWidth: 480,
+    minHeight: 360,
+    scale: 1,
+    hidden: false,
+    modal: false,
+    title: {
+      text: ((mode == 'new') ? 'New' : 'Edit') +' Group'
+    },
+    body: {
+      style: {
+        background: '#000'
+      }
+    },
+    onclose: sysman.onGroupEditWindowClose,
+    content: html
+  };
+
+  var win = util.newWindow(opt);
+  return win;
+};
+
+sysman.saveGroupInfo = function() {
+  if (sysman.groupEditMode == 'new') {
+    sysman.addGroup();
+  } else {
+    sysman.updateGroup();
+  }
+};
+
+//-----------------------------------------------------------------------------
+sysman.addGroup = function() {
+  var gid = $el('#gid').value;
+  var privs = $el('#group-privs').value;
+  var desc = $el('#group-desc').value;
+
+  clnsRes = sysman.cleansePrivileges(privs);
+  if (clnsRes.msg) {
+    sysman.showInfotip(clnsRes.msg, 2000);
+    return;
+  }
+  privs = clnsRes.val;
+
+  var params = {
+    gid: gid,
+    privs: privs,
+    desc: desc
+  };
+
+  sysman.execCmd('addgroup', params, sysman.addGroupCb);
+};
+
+sysman.addGroupCb = function(xhr, res) {
+  sysman.showInfotip(res.status);
+  if (res.status != 'OK') {
+    return;
+  }
+  sysman.groupEditWindow.close();
+  sysman.getGroupList();
+};
+
+//-----------------------------------------------------------------------------
+sysman.updateGroup = function() {
+  var gid = $el('#gid').value;
+  var privs = $el('#group-privs').value;
+  var desc = $el('#group-desc').value;
+
+  var params = {
+    gid: gid,
+    privs: privs,
+    desc: desc
+  };
+
+  sysman.execCmd('modgroup', params, sysman.updateGroupCb);
+};
+
+sysman.updateGroupCb = function(xhr, res) {
+  sysman.showInfotip(res.status);
+  if (res.status != 'OK') {
+    return;
+  }
+  sysman.groupEditWindow.close();
+  sysman.getGroupList();
+};
+
+//-----------------------------------------------------------------------------
+sysman.deleteGroup = function(gid) {
+  var opt = {
+    data: gid
+  };
+  util.confirm('Delete ' + gid + ' ?', sysman._deleteGroup, opt);
+};
+sysman._deleteGroup = function(gid) {
+  if (!gid) {
+    return;
+  }
+  if (sysman.groupEditWindow) {
+    sysman.groupEditWindow.close();
+  }
+  var params = {
+    gid: gid
+  };
+  sysman.execCmd('delgroup', params, sysman.deleteGroupCb);
+};
+
+sysman.deleteGroupCb = function(xhr, res) {
+  if (res.status != 'OK') {
+    sysman.showInfotip(res.status);
+    return;
+  }
+  sysman.showInfotip('OK');
+  sysman.getGroupList();
+};
+
+//-----------------------------------------------------------------------------
+sysman.getGroupInfoCb = function(xhr, res) {
+  if (res.status != 'OK') {
+    sysman.showInfotip(res.status);
+    return;
+  }
+  var info = res.body;
+  sysman.setGroupInfoToEditor(info);
+};
+
+sysman.setGroupInfoToEditor = function(info) {
+  var gid = info.gid;
+  $el('#gid').value = gid;
+  if (gid) {
+    $el('#gid').disabled = true;
+    $el('#gid').addClass('edit-disabled');
+  } else {
+    $el('#gid').disabled = false;
+    $el('#gid').removeClass('edit-disabled');
+  }
+  $el('#group-privs').value = info.privs;
+  $el('#group-desc').value = (info.desc ? info.desc : '');
+};
+
+sysman.clearGroupInfoEditor = function() {
+  var info = {
+    gid: '',
+    privs: '',
+    desc: ''
+  };
+  sysman.setGroupInfoToEditor(info);
+};
+
+sysman.saveUserInfo = function() {
+  if (sysman.userEditMode == 'new') {
+    sysman.addUser();
+  } else {
+    sysman.updateUser();
+  }
+};
+
+
+//-----------------------------------------------------------------------------
+sysman.onUserEditWindowClose = function() {
+  sysman.userEditWindow = null;
+  sysman.userEditMode = null;
+};
+
+sysman.onGroupEditWindowClose = function() {
+  sysman.groupEditWindow = null;
+  sysman.groupEditMode = null;
+};
+
+$onCtrlS = function(e) {
+};
+
 $onBeforeUnload = function(e) {
-  if (sysman.editWindow) e.returnValue = '';
+  if ((sysman.userEditWindow) || (sysman.groupEditWindow)) e.returnValue = '';
 };

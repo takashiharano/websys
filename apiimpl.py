@@ -582,6 +582,26 @@ def cmd_guests(context):
     web.send_result_json(status, body=guest_user_list)
 
 #----------------------------------------------------------
+# group
+# gid=GID
+#----------------------------------------------------------
+def cmd_group(context):
+    status = 'OK'
+    group_info = None
+    gid = web.get_request_param('gid')
+    if gid is None:
+        status = 'NO_GID'
+    else:
+        if context.is_admin():
+            group_info = groupman.get_group_info(gid)
+            if group_info is None:
+                status = 'NG'
+        else:
+            status = 'FORBIDDEN'
+
+    web.send_result_json(status, body=group_info)
+
+#----------------------------------------------------------
 # add a group
 #----------------------------------------------------------
 def cmd_addgroup(context):
@@ -634,14 +654,6 @@ def cmd_modgroup(context):
     if gid is None:
         web.send_result_json('ERR_NO_GID', body=None)
         return
-
-    name = web.get_request_param('name')
-    local_name = web.get_request_param('local_name')
-
-    pw = web.get_request_param('pw')
-    pw_hash = None
-    if pw is not None:
-        pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     privs = None
     aprivs = None

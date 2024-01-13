@@ -149,8 +149,3 @@ tr.item-list:hover {
 #user-list {
   font-size: 12px;
 }
-
-#groups-text {
-  width: calc(100% - 17px);
-  height: 200px;
-}
