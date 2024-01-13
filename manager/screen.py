@@ -40,22 +40,24 @@ def build_main_screen(context):
 </div>
 
 <div style="margin-bottom:4px;">
-Users
+<b>Users</b><br>
 <button onclick="sysman.newUser();">+</button>
 <button onclick="sysman.reloadUserInfo();">RELOAD</button>
 </div>
 <div id="user-list"></div>
 
-<pre style="margin-top:20px;">Sessions
+<pre style="margin-top:10px;">Sessions
 <div id="session-list"></div></pre>
 
-<div style="margin-top:40px;margin-bottom:4px;">
-Groups
+<div style="display:inline-block;margin-top:20px;margin-bottom:40px;">
+<div style="margin-bottom:4px;">
+<b>Groups</b><br>
 <button onclick="sysman.newGroup();">+</button>
 <button onclick="sysman.getGroupList();">RELOAD</button>
 <span id="groups-status" style="margin-left:8px;"></span><br>
 </div>
 <div id="group-list"></div>
+</div>
 
 </div>
 </body>
