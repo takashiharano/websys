@@ -80,9 +80,12 @@ def get_all_user_info(extra_info=False):
     users = util.load_dict(USER_LIST_FILE_PATH)
 
     if extra_info:
+        pws = get_password_list_as_dict()
         for uid in users:
             login_failed_info = load_login_failed_info(uid)
             users[uid]['login_failed_info'] = login_failed_info
+            if uid in pws:
+                users[uid]['pw_changed_at'] = pws[uid]['updated_at']
 
     return users
 
@@ -113,13 +116,12 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         'desc': desc,
         'status': u_status,
         'created_at': now,
-        'updated_at': now,
-        'pw_changed_at': now
+        'updated_at': now
     }
 
     users[uid] = user
     save_users(users)
-    save_user_password(uid, pw)
+    save_user_password(uid, pw, now)
     return user
 
 # Modify a user
@@ -185,8 +187,7 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
             pass
 
     if pw is not None:
-        save_user_password(uid, pw)
-        user['pw_changed_at'] = now
+        save_user_password(uid, pw, now)
         user['status'] = unset_user_state(user['status'], U_ST_NEED_PW_CHANGE)
 
     if updated:
@@ -275,7 +276,6 @@ def add_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
         'status': 0,
         'created_at': now,
         'updated_at': now,
-        'pw_changed_at': now,
         'expires_at': expires_at
     }
 
@@ -357,6 +357,21 @@ def get_password_list():
     pw_list = util.read_text_file_as_list(path)
     return pw_list
 
+def get_password_list_as_dict():
+    pw_list = get_password_list()
+    pws = {}
+    for i in range(len(pw_list)):
+        line = pw_list[i]
+        a = line.split('\t')
+        uid =  a[0]
+        pw = a[1]
+        ts = float(a[2])
+        pws[uid] = {
+            'pw': pw,
+            'updated_at': ts
+        }
+    return pws
+
 def save_password_list(pw_list):
     path = websysconf.PASSWORD_LIST_FILE_PATH
     util.write_text_file_from_list(path, pw_list)
@@ -370,8 +385,8 @@ def get_user_password(uid):
             return a[1]
     return None
 
-def save_user_password(uid, pw):
-    new_data = uid + '\t' + pw
+def save_user_password(uid, pw, timestamp):
+    new_data = uid + '\t' + pw + '\t' + str(timestamp)
     pw_list = get_password_list()
     for i in range(len(pw_list)):
         data = pw_list[i]
