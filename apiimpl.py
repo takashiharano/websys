@@ -312,7 +312,7 @@ def cmd_useradd(context):
     privs = ''
     if p_privs is not None:
         privs = p_privs
-        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = util.replace(privs, r'\s{2,}', ' ')
         privs = privs.strip()
 
     if p_st == '':
@@ -382,7 +382,7 @@ def cmd_usermod(context):
         p_privs = web.get_request_param('privs')
         if p_privs is not None:
             privs = p_privs
-            privs = util.replace(privs, '\s{2,}', ' ')
+            privs = util.replace(privs, r'\s{2,}', ' ')
             privs = privs.strip()
 
         aprivs = _get_optional_param_by_list('aprivs')
@@ -408,7 +408,7 @@ def _get_optional_param_by_list(key):
     param_list = None
     if p_value is not None:
         p_value = p_value.strip()
-        p_value = util.replace(p_value, '\s{2,}', ' ')
+        p_value = util.replace(p_value, r'\s{2,}', ' ')
         param_list = p_value.split(' ')
         if len(param_list) == 1 and param_list[0] == '':
             param_list = None
@@ -487,11 +487,11 @@ def cmd_gencode(context):
     privs = ''
     if p_privs is not None:
         privs = p_privs
-        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = util.replace(privs, r'\s{2,}', ' ')
         privs = privs.strip()
 
     try:
-        uid = userman.create_guest(uid=id, valid_min=valid_min, group=group, privs=privs)
+        uid = userman.add_guest(uid=id, valid_min=valid_min, group=group, privs=privs)
     except Exception as e:
         status = str(e)
 
@@ -625,7 +625,7 @@ def cmd_addgroup(context):
     privs = ''
     if p_privs is not None:
         privs = p_privs
-        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = util.replace(privs, r'\s{2,}', ' ')
         privs = privs.strip()
 
     try:
@@ -663,7 +663,7 @@ def cmd_modgroup(context):
     p_privs = web.get_request_param('privs')
     if p_privs is not None:
         privs = p_privs
-        privs = util.replace(privs, '\s{2,}', ' ')
+        privs = util.replace(privs, r'\s{2,}', ' ')
         privs = privs.strip()
 
     aprivs = _get_optional_param_by_list('aprivs')

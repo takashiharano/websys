@@ -199,9 +199,13 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     var uid = item.uid;
     var name = item.name.replace(/ /g, '&nbsp');
     var local_name = item.local_name.replace(/ /g, '&nbsp');
+    var loginFailedCount = 0;
+    var loginFailedTime = '';
     var loginFailedInfo = item.login_failed_info;
-    var loginFailedCount = loginFailedInfo['count'];
-    var loginFailedTime = util.getDateTimeString(loginFailedInfo['time']);
+    if (loginFailedInfo) {
+      loginFailedCount = loginFailedInfo['count'];
+      loginFailedTime = util.getDateTimeString(loginFailedInfo['time']);
+    }
 
     var createdDate = '---------- --:--:--.---';
     if (item.created_at > 0) {
