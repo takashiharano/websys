@@ -1121,14 +1121,6 @@ sysman.openGroupInfoEditorWindow = function(mode, gid) {
   return win;
 };
 
-sysman.saveGroupInfo = function() {
-  if (sysman.groupEditMode == 'new') {
-    sysman.addGroup();
-  } else {
-    sysman.updateGroup();
-  }
-};
-
 //-----------------------------------------------------------------------------
 sysman.addGroup = function() {
   var gid = $el('#gid').value;
@@ -1246,14 +1238,13 @@ sysman.clearGroupInfoEditor = function() {
   sysman.setGroupInfoToEditor(info);
 };
 
-sysman.saveUserInfo = function() {
-  if (sysman.userEditMode == 'new') {
-    sysman.addUser();
+sysman.saveGroupInfo = function() {
+  if (sysman.groupEditMode == 'new') {
+    sysman.addGroup();
   } else {
-    sysman.updateUser();
+    sysman.updateGroup();
   }
 };
-
 
 //-----------------------------------------------------------------------------
 sysman.onUserEditWindowClose = function() {
