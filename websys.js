@@ -651,7 +651,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var group = dbg.getOptVal(arg, 'g');
   var privs = dbg.getOptVal(arg, 'privs');
   var desc = dbg.getOptVal(arg, 'desc');
-  var st = dbg.getOptVal(arg, 'st');
+  var flags = dbg.getOptVal(arg, 'flags');
   if (!p) p = '';
   var pw = websys.getUserPwHash(uid, p);
   var param = {
@@ -707,11 +707,11 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     }
     param.desc = desc;
   }
-  if (st) {
-    if (util.isInteger(st)) {
-      param.st = st;
+  if (flags) {
+    if (util.isInteger(flags)) {
+      param.flags = flags;
     } else {
-      log.e('ERROR: st should be an integer value');
+      log.e('ERROR: flags should be an integer value');
       return;
     }
   }
@@ -841,12 +841,12 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     }
     param.desc = desc;
   }
-  var st = dbg.getOptVal(arg, 'st');
-  if (st) {
-    if (util.isInteger(st)) {
-      param.st = st;
+  var flags = dbg.getOptVal(arg, 'flags');
+  if (flags) {
+    if (util.isInteger(flags)) {
+      param.flags = flags;
     } else {
-      log.e('ERROR: st should be an integer value');
+      log.e('ERROR: flags should be an integer value');
       return;
     }
   }
@@ -1389,7 +1389,6 @@ websys.getUserFlags = function() {
   return flags;
 };
 
-
 /**
  * Ctrl+C
  */
@@ -1413,16 +1412,16 @@ websys.onCtrlC = function() {
 /**
  * command listener
  */
-websys.cmdListener = function(str) {
+websys.cmdListener = function(s) {
   switch (websys.status) {
     case websys.ST_LOGIN_ID:
-      websys.login.inputId(str);
+      websys.login.inputId(s);
       return false;
     case websys.ST_LOGIN_PW:
-      websys.login.inputPw(str);
+      websys.login.inputPw(s);
       return false;
     case websys.ST_CHANGE_PW:
-      websys.cmdPasswd.inputPw(str);
+      websys.cmdPasswd.inputPw(s);
       return false;
   }
 };
@@ -1511,9 +1510,9 @@ websys.CMD_TBL = [
   {cmd: 'syslog', fn: websys.syslog, desc: 'Show sysyem log'},
   {cmd: 'unlockuser', fn: websys.unlockuser, desc: 'Unlock user login', help: 'unlockuser uid'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
-  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-st STATUS]'},
+  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-flags FLAGS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"] [-st STATUS]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-nlocal "LOCAL_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"] [-flags FLAGS]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];
