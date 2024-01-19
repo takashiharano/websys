@@ -6,6 +6,7 @@ sys.path.append(UTIL_PATH)
 import util
 
 SESSION_TIMEOUT_SEC = 7 * util.DAY
+MAX_SESSIONS_PER_USER = 10
 DATA_DIR = util.get_relative_path(__file__, '../../private/websys')
 LOCK_FILE_PATH = DATA_DIR + '/lock'
 USER_ROOT_PATH = DATA_DIR + '/users'

@@ -17,6 +17,7 @@ import web
 
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 SESSION_TIMEOUT_SEC = websysconf.SESSION_TIMEOUT_SEC
+MAX_SESSIONS_PER_USER = websysconf.MAX_SESSIONS_PER_USER
 ALGOTRITHM = websysconf.ALGOTRITHM
 
 current_session_info = None
@@ -165,14 +166,43 @@ def create_session_info(uid, is_guest=False):
 # Append session info to session file
 #----------------------------------------------------------
 def append_session_info_to_session_file(uid, session_info):
-    user_sessions = get_user_sessions(uid)
+    sessions = get_user_sessions(uid)
 
-    if user_sessions is None:
-        user_sessions = {}
+    if sessions is None:
+        sessions = {}
+
+    if len(sessions) >= MAX_SESSIONS_PER_USER:
+        sessions = _trim_sessions(sessions, MAX_SESSIONS_PER_USER - 1)
 
     sid = session_info['sid']
-    user_sessions[sid] = session_info
-    save_user_sessions_to_file(uid, user_sessions)
+    sessions[sid] = session_info
+    save_user_sessions_to_file(uid, sessions)
+
+def _trim_sessions(sessions, num_of_sessions):
+    time_list = []
+    for sid in sessions:
+        session = sessions[sid]
+        t = session['last_accessed']['time']
+        time_list.append(t)
+
+    time_list.sort(reverse=True)
+
+    trimmed_sessions = {}
+    for sid in sessions:
+        session = sessions[sid]
+        t = session['last_accessed']['time']
+        if _in_top_n(time_list, num_of_sessions, t):
+            trimmed_sessions[sid] = session
+
+    return trimmed_sessions
+
+def _in_top_n(v_list, n, v):
+    if n > len(v_list):
+        n = len(v_list)
+    for i in range(n):
+        if v == v_list[i]:
+            return True
+    False
 
 #----------------------------------------------------------
 # Generate session id
