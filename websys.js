@@ -7,8 +7,8 @@ websys.ST_LOGIN_ID = 1;
 websys.ST_LOGIN_PW = 2;
 websys.ST_CHANGE_PW = 3;
 
-websys.U_ST_NEED_PW_CHANGE = 1;
-websys.U_ST_DISABLED = 1 << 1;
+websys.U_FLG_NEED_PW_CHANGE = 1;
+websys.U_FLG_DISABLED = 1 << 1;
 
 websys.initStatus = 0;
 websys.status = 0;
@@ -1379,14 +1379,14 @@ websys.isGuest = function() {
   }
 };
 
-websys.getUserStatus = function() {
+websys.getUserFlags = function() {
   var uid = null;
   var userInfo = websys.getUserInfo();
-  var status = 0;
-  if (userInfo && userInfo.status) {
-    status = userInfo.status;
+  var flags = 0;
+  if (userInfo && userInfo.flags) {
+    flags = userInfo.flags;
   }
-  return status;
+  return flags;
 };
 
 

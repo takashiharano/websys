@@ -19,8 +19,8 @@ GUEST_USER_LIST_FILE_PATH = websysconf.GUEST_USER_LIST_FILE_PATH
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 
-U_ST_NEED_PW_CHANGE = 1
-U_ST_DISABLED = 1 << 1
+U_FLG_NEED_PW_CHANGE = 1
+U_FLG_DISABLED = 1 << 1
 
 # users.json
 # {
@@ -32,7 +32,7 @@ U_ST_DISABLED = 1 << 1
 #     "group": "GROUP1 GROUP2",
 #     "privs": "PRIVILEGE1 PRIVILEGE2",
 #     "desc": "Description",
-#     "status": 0,
+#     "flags": 0,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
 #     "pw_changed_at": 1688806688.959123
@@ -50,7 +50,7 @@ U_ST_DISABLED = 1 << 1
 #     "privs": "",
 #     "desc": "Description",
 #     "is_guest": true,
-#     "status": 0,
+#     "flags": 0,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
 #     "pw_changed_at": 1688806688.959123,
@@ -80,18 +80,15 @@ def get_all_user_info(extra_info=False):
     users = util.load_dict(USER_LIST_FILE_PATH)
 
     if extra_info:
-        pws = get_password_list_as_dict()
         for uid in users:
-            login_failed_info = load_login_failed_info(uid)
-            users[uid]['login_failed_info'] = login_failed_info
-            if uid in pws:
-                users[uid]['pw_changed_at'] = pws[uid]['updated_at']
+            status_info = load_user_status_info(uid)
+            users[uid]['status_info'] = status_info
 
     return users
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', desc='', status=None):
+def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', desc='', flags=None):
     users = get_all_user_info()
     if users is None:
         users = {}
@@ -99,10 +96,10 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         raise Exception('ALREADY_EXISTS')
 
     now = util.get_timestamp()
-    if status is None:
-        u_status = U_ST_NEED_PW_CHANGE
+    if flags is None:
+        u_flags = U_FLG_NEED_PW_CHANGE
     else:
-        u_status = parse_int(status)
+        u_flags = parse_int(flags)
 
     desc = util.replace(desc, '\t|\r\n|\n', ' ')
 
@@ -114,18 +111,20 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         'group': group,
         'privs': privs,
         'desc': desc,
-        'status': u_status,
+        'flags': u_flags,
         'created_at': now,
         'updated_at': now
     }
 
     users[uid] = user
     save_users(users)
-    save_user_password(uid, pw, now)
+    save_user_password(uid, pw)
+    create_user_status_info(uid)
+
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, desc=None, status=None):
+def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, desc=None, flags=None):
     now = util.get_timestamp()
 
     users = get_all_user_info()
@@ -178,17 +177,20 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
         user['desc'] = desc
         updated = True
 
-    if status is not None:
+    if flags is not None:
         try:
-            u_status = int(status)
-            user['status'] = u_status
+            u_flags = int(flags)
+            user['flags'] = u_flags
             updated = True
         except:
             pass
 
     if pw is not None:
-        save_user_password(uid, pw, now)
-        user['status'] = unset_user_state(user['status'], U_ST_NEED_PW_CHANGE)
+        save_user_password(uid, pw)
+        user['flags'] = unset_user_flag(user['flags'], U_FLG_NEED_PW_CHANGE)
+        user_status_info = load_user_status_info(uid)
+        user_status_info['pw_changed_at'] = now
+        write_user_status_info(uid, user_status_info)
 
     if updated:
         user['updated_at'] = now
@@ -273,7 +275,7 @@ def add_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
         'privs': privs,
         'desc': desc,
         'is_guest': True,
-        'status': 0,
+        'flags': 0,
         'created_at': now,
         'updated_at': now,
         'expires_at': expires_at
@@ -385,8 +387,8 @@ def get_user_password(uid):
             return a[1]
     return None
 
-def save_user_password(uid, pw, timestamp):
-    new_data = uid + '\t' + pw + '\t' + str(timestamp)
+def save_user_password(uid, pw):
+    new_data = uid + '\t' + pw
     pw_list = get_password_list()
     for i in range(len(pw_list)):
         data = pw_list[i]
@@ -414,32 +416,32 @@ def delete_user_password(uid):
         save_password_list(pw_list)
 
 #------------------------------------------------------------------------------
-# User Status
+# User Flags
 #------------------------------------------------------------------------------
 def is_disabled(user_info):
-    return has_user_state(user_info, U_ST_DISABLED)
+    return has_user_flag(user_info, U_FLG_DISABLED)
 
-def has_user_state(user_info, st):
-    status =  0
-    if 'status' in user_info:
-        status =  user_info['status']
-        if util.typename(status) == 'str':
-            status = parse_int(status)
-    if status & st:
+def has_user_flag(user_info, flg):
+    flags =  0
+    if 'flags' in user_info:
+        flags =  user_info['flags']
+        if util.typename(flags) == 'str':
+            flags = parse_int(flags)
+    if flags & flg:
         return True
     return False
 
-def set_user_state(status, st):
-    if util.typename(status) == 'str':
-        status = parse_int(status)
-    status |= st
-    return status
+def set_user_flag(flags, flg):
+    if util.typename(flags) == 'str':
+        flags = parse_int(flags)
+    flags |= flg
+    return flags
 
-def unset_user_state(status, st):
-    if util.typename(status) == 'str':
-        status = parse_int(status)
-    status &= ~st
-    return status
+def unset_user_flag(flags, flg):
+    if util.typename(flags) == 'str':
+        flags = parse_int(flags)
+    flags &= ~flg
+    return flags
 
 def parse_int(s):
     v = 0
@@ -450,22 +452,38 @@ def parse_int(s):
     return v
 
 #------------------------------------------------------------------------------
-# Login failure counter and time
+# User status
 #------------------------------------------------------------------------------
-DEFAULT_LOGIN_FAILED_INFO = {'count': 0, 'time': 0}
-def load_login_failed_info(uid):
-    path = USER_ROOT_PATH + '/' + uid + '/login_failed.txt'
-    info = util.load_dict(path, default=DEFAULT_LOGIN_FAILED_INFO)
+DEFAULT_STATUS_INFO = {
+    'pw_changed_at': 0,
+    'last_logged_in': 0,
+    'last_accessed': 0,
+    'login_failed': {'count': 0, 'time': 0}
+}
+
+def get_user_status_file_path(uid):
+    return  USER_ROOT_PATH + '/' + uid + '/status.json'
+
+def create_user_status_info(uid):
+    info = DEFAULT_STATUS_INFO
+    write_user_status_info(uid, info)
+
+def load_user_status_info(uid):
+    path = get_user_status_file_path(uid)
+    info = util.load_dict(path, default=DEFAULT_STATUS_INFO)
     return info
 
-def write_login_failed(uid, info):
-    path = USER_ROOT_PATH + '/' + uid + '/login_failed.txt'
-    util.save_dict(path, info, indent=None)
+def write_user_status_info(uid, info):
+    path = get_user_status_file_path(uid)
+    util.save_dict(path, info)
 
+# Clear login failure counter and time
 def clear_login_failed(uid):
-    path = USER_ROOT_PATH + '/' + uid + '/login_failed.txt'
-    util.delete_file(path)
-    return DEFAULT_LOGIN_FAILED_INFO
+    info = load_user_status_info(uid)
+    info['login_failed']['count'] = 0
+    info['login_failed']['time'] = 0
+    write_user_status_info(uid, info)
+    return info
 
 #------------------------------------------------------------------------------
 # Groups

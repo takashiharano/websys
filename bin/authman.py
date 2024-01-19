@@ -51,7 +51,6 @@ def do_login(uid, pw, ext_auth=False):
     sessionman.set_current_session_info_to_global(session_info)
 
     write_login_log('OK', uid, session_info)
-    userman.clear_login_failed(uid)
     return login_info
 
 def _login(uid, pw, ext_auth=False):
@@ -68,21 +67,22 @@ def _login(uid, pw, ext_auth=False):
     LOGIN_FAILURE_MAX = websysconf.LOGIN_FAILURE_MAX
     LOGIN_LOCK_PERIOD_SEC = websysconf.LOGIN_LOCK_PERIOD_SEC
     now = util.get_timestamp()
+    user_status_info = userman.load_user_status_info(uid)
 
-    login_failed_info = userman.load_login_failed_info(uid)
-    if LOGIN_FAILURE_MAX > 0 and login_failed_info['count'] >= LOGIN_FAILURE_MAX:
-        diff_t = now - login_failed_info['time']
+    if LOGIN_FAILURE_MAX > 0 and user_status_info['login_failed']['count'] >= LOGIN_FAILURE_MAX:
+        diff_t = now - user_status_info['login_failed']['time']
         if LOGIN_LOCK_PERIOD_SEC == 0 or diff_t <= LOGIN_LOCK_PERIOD_SEC:
             raise Exception('LOCKED')
         else:
-            login_failed_info = userman.clear_login_failed(uid)
+            user_status_info['login_failed']['count'] = 0
+            user_status_info['login_failed']['time'] = 0
 
     user_pw = userman.get_user_password(uid)
     pw2 = util.hash(pw, ALGOTRITHM)
     if pw2 != user_pw:
-        login_failed_info['count'] += 1
-        login_failed_info['time'] = now
-        userman.write_login_failed(uid, login_failed_info)
+        user_status_info['login_failed']['count'] += 1
+        user_status_info['login_failed']['time'] = now
+        userman.write_user_status_info(uid, user_status_info)
         raise Exception('NG')
 
     new_session_info = sessionman.create_and_register_session_info(uid, is_guest=False, ext_auth=ext_auth)
@@ -91,6 +91,12 @@ def _login(uid, pw, ext_auth=False):
         'session_info': new_session_info,
         'user_info': loggedin_user_info
     }
+
+    user_status_info['last_logged_in'] = now
+    user_status_info['login_failed']['count'] = 0
+    user_status_info['login_failed']['time'] = 0
+    userman.write_user_status_info(uid, user_status_info)
+
     return login_info
 
 # guest login

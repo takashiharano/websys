@@ -282,7 +282,7 @@ def cmd_useradd(context):
     p_group = web.get_request_param('group', '')
     p_privs = web.get_request_param('privs')
     desc = web.get_request_param('desc', '')
-    p_st = web.get_request_param('st')
+    p_flags = web.get_request_param('flags')
 
     if uid is None:
         web.send_result_json('ERR_UID', body=None)
@@ -315,11 +315,11 @@ def cmd_useradd(context):
         privs = util.replace(privs, r'\s{2,}', ' ')
         privs = privs.strip()
 
-    if p_st == '':
-        p_st = None
+    if p_flags == '':
+        p_flags = None
 
     try:
-        userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, desc=desc, status=p_st)
+        userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, desc=desc, flags=p_flags)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -363,7 +363,7 @@ def cmd_usermod(context):
     aprivs = None
     rprivs = None
     desc = None
-    u_status = None
+    u_flags = None
 
     if context.is_admin():
         p_admin = web.get_request_param('admin')
@@ -390,12 +390,12 @@ def cmd_usermod(context):
 
         desc = web.get_request_param('desc', '')
 
-        p_st = web.get_request_param('st')
-        if p_st is not None:
-            u_status = p_st
+        p_flags = web.get_request_param('flags')
+        if p_flags is not None:
+            u_flags = p_flags
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, status=u_status)
+        userman.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, flags=u_flags)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:

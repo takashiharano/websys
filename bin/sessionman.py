@@ -128,8 +128,7 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
     new_session_info = create_session_info(uid, is_guest)
     if ext_auth:
         new_session_info['ext_auth'] = True
-    sid = new_session_info['sid']
-    append_session_info_to_session_file(uid, sid, new_session_info)
+    append_session_info_to_session_file(uid, new_session_info)
     return new_session_info
 
 #----------------------------------------------------------
@@ -165,12 +164,13 @@ def create_session_info(uid, is_guest=False):
 #----------------------------------------------------------
 # Append session info to session file
 #----------------------------------------------------------
-def append_session_info_to_session_file(uid, sid, session_info):
+def append_session_info_to_session_file(uid, session_info):
     user_sessions = get_user_sessions(uid)
 
     if user_sessions is None:
         user_sessions = {}
 
+    sid = session_info['sid']
     user_sessions[sid] = session_info
     save_user_sessions_to_file(uid, user_sessions)
 
@@ -221,6 +221,11 @@ def update_session_info_in_session_file(uid, sid, time=None, addr=None, host=Non
         last_accessed['ua'] = ua
 
     save_user_sessions_to_file(uid, sessions)
+
+    user_status_info = userman.load_user_status_info(uid)
+    user_status_info['last_accessed'] = time
+    userman.write_user_status_info(uid, user_status_info)
+
     return session
 
 #----------------------------------------------------------

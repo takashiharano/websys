@@ -10,13 +10,15 @@ sysman.USER_LIST_COLUMNS = [
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
   {key: 'group', label: 'Groups', style: 'min-width:15em;'},
-  {key: 'privs', label: 'Privileges', style: 'min-width:15em;'},
+  {key: 'privs', label: 'Privileges', style: 'min-width:10em;'},
   {key: 'desc', label: 'Description', style: 'min-width:15em;'},
-  {key: 'status', label: 'Status'},
+  {key: 'flags', label: 'Flags'},
   {key: 'fail', label: 'Fail', sort: false},
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
-  {key: 'pw_changed_at', label: 'PwChanged'}
+  {key: 'pw_changed_at', label: 'PwChanged'},
+  {key: 'last_logged_in', label: 'Last Logged in'},
+  {key: 'last_accessed', label: 'Last Accessed'}
 ];
 
 sysman.listStatus = {
@@ -201,32 +203,18 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     var local_name = item.local_name.replace(/ /g, '&nbsp');
     var loginFailedCount = 0;
     var loginFailedTime = '';
-    var loginFailedInfo = item.login_failed_info;
+    var statusInfo = item.status_info;
+    var loginFailedInfo = statusInfo.login_failed;
     if (loginFailedInfo) {
       loginFailedCount = loginFailedInfo['count'];
       loginFailedTime = util.getDateTimeString(loginFailedInfo['time']);
     }
 
-    var createdDate = '---------- --:--:--.---';
-    if (item.created_at > 0) {
-      var createdAt = item.created_at;
-      if (util.isInteger(createdAt)) createdAt *= 1000;
-      createdDate = util.getDateTimeString(createdAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
-    }
-
-    var updatedDate = '---------- --:--:--.---';
-    if (item.updated_at > 0) {
-      var updatedAt = item.updated_at;
-      if (util.isInteger(updatedAt)) updatedAt *= 1000;
-      updatedDate = util.getDateTimeString(updatedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
-    }
-
-    var pwChangedDate = '---------- --:--:--.---';
-    if (item.pw_changed_at > 0) {
-      var pwChangedAt = item.pw_changed_at;
-      if (util.isInteger(pwChangedAt)) pwChangedAt *= 1000;
-      pwChangedDate = util.getDateTimeString(pwChangedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
-    }
+    var createdDate = sysman.getDateTimeString(item.created_at);
+    var updatedDate = sysman.getDateTimeString(item.updated_at);
+    var pwChangedDate = sysman.getDateTimeString(statusInfo.pw_changed_at);
+    var lastLoginDate = sysman.getDateTimeString(statusInfo.last_logged_in);
+    var lastAccessedDate = sysman.getDateTimeString(statusInfo.last_accessed);
 
     var desc = (item.desc ? item.desc : '');
     var escDesc = util.escHtml(desc);
@@ -245,7 +233,7 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list">' + item.group + '</td>';
     htmlList += '<td class="item-list">' + item.privs + '</td>';
     htmlList += '<td class="item-list" style="max-width:20em">' + dispDesc + '</td>';
-    htmlList += '<td class="item-list" style="text-align:center;">' + item.status + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + item.flags + '</td>';
 
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (loginFailedCount > 0) {
@@ -262,6 +250,8 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessedDate + '</td>';
     htmlList += '</tr>';
   }
   htmlList += '</table>';
@@ -270,6 +260,15 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
   var html = htmlHead + htmlList; 
 
   sysman.drawListContent(html);
+};
+
+sysman.getDateTimeString = function(ts) {
+  var s = '---------- --:--:--.---';
+  if (ts > 0) {
+    if (util.isInteger(ts)) ts *= 1000;
+    s = util.getDateTimeString(ts, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+  }
+  return s;
 };
 
 sysman.getSessionList = function() {
@@ -596,8 +595,8 @@ sysman.openUserInfoEditorWindow = function(mode, uid) {
   html += '    <td><input type="text" id="desc" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
-  html += '    <td>Status</td>';
-  html += '    <td><input type="text" id="status" style="width:1.5em;"></td>';
+  html += '    <td>Flags</td>';
+  html += '    <td><input type="text" id="flags" style="width:1.5em;"></td>';
   html += '  </tr>';
 
   html += '  <tr>';
@@ -676,7 +675,7 @@ sysman.setUserInfoToEditor = function(info) {
   $el('#group').value = info.group;
   $el('#privs').value = info.privs;
   $el('#desc').value = (info.desc ? info.desc : '');
-  $el('#status').value = info.status;
+  $el('#flags').value = info.flags;
 };
 
 sysman.clearUserInfoEditor = function() {
@@ -688,7 +687,7 @@ sysman.clearUserInfoEditor = function() {
     group: '',
     privs: '',
     desc: '',
-    status: ''
+    flags: ''
   };
   sysman.setUserInfoToEditor(info);
 };
@@ -710,7 +709,7 @@ sysman.addUser = function() {
   var group = $el('#group').value;
   var privs = $el('#privs').value;
   var desc = $el('#desc').value;
-  var status = $el('#status').value.trim();
+  var flags = $el('#flags').value.trim();
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
 
@@ -765,7 +764,7 @@ sysman.addUser = function() {
     group: group,
     privs: privs,
     desc: desc,
-    st: status,
+    flags: flags,
     pw: pw
   };
 
@@ -790,7 +789,7 @@ sysman.updateUser = function() {
   var group = $el('#group').value;
   var privs = $el('#privs').value;
   var desc = $el('#desc').value;
-  var status = $el('#status').value;
+  var flags = $el('#flags').value;
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
 
@@ -809,7 +808,7 @@ sysman.updateUser = function() {
     group: group,
     privs: privs,
     desc: desc,
-    st: status
+    flags: flags
   };
 
   if (pw) {
@@ -1018,20 +1017,8 @@ sysman.drawGroupList = function(list) {
     var gid = group.gid;
     var privs = (group.privs ? group.privs : '');
     var desc = (group.desc ? group.desc : '');
-
-    var createdDate = '---------- --:--:--.---';
-    if (group.created_at > 0) {
-      var createdAt = group.created_at;
-      if (util.isInteger(createdAt)) createdAt *= 1000;
-      createdDate = util.getDateTimeString(createdAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
-    }
-
-    var updatedDate = '---------- --:--:--.---';
-    if (group.updated_at > 0) {
-      var updatedAt = group.updated_at;
-      if (util.isInteger(updatedAt)) updatedAt *= 1000;
-      updatedDate = util.getDateTimeString(updatedAt, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
-    }
+    var createdDate = sysman.getDateTimeString(group.created_at);
+    var updatedDate = sysman.getDateTimeString(group.updated_at);
 
     html += '<tr class="item-list">';
     html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysman.editGroup(\'' + gid + '\');" data-tooltip="Edit">' + gid + '</span></td>';
