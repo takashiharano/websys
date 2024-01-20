@@ -13,11 +13,11 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'privs', label: 'Privileges', style: 'min-width:10em;'},
   {key: 'desc', label: 'Description', style: 'min-width:15em;'},
   {key: 'flags', label: 'Flags'},
-  {key: 'fail', label: 'Fail', sort: false},
+  {key: 'status_info.login_failed.count', label: 'Fail', sort: false},
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
-  {key: 'pw_changed_at', label: 'PwChanged'},
-  {key: 'last_accessed', label: 'Last Accessed'}
+  {key: 'status_info.pw_changed_at', label: 'PwChanged'},
+  {key: 'status_info.last_accessed', label: 'Last Accessed'}
 ];
 
 sysmgr.listStatus = {
@@ -25,7 +25,7 @@ sysmgr.listStatus = {
   sortOrder: 1
 };
 
-sysmgr.itemList = [];
+sysmgr.userList = [];
 sysmgr.sessions = null;
 sysmgr.userEditWindow = null;
 sysmgr.groupEditWindow = null;
@@ -125,11 +125,11 @@ sysmgr.getUserListCb = function(xhr, res, req) {
   }
   var users = res.body;
   var infoList = [];
-  for (var k in users) {
-    var user = users[k];
+  for (var uid in users) {
+    var user = users[uid];
     infoList.push(user);
   }
-  sysmgr.itemList = infoList;
+  sysmgr.userList = infoList;
   sysmgr.drawList(infoList, 0, 1);
 };
 
@@ -273,8 +273,11 @@ sysmgr.buildLedHtml = function(now, ts) {
     ledColor = '#cc0';
   } else if (elapsed <= 6 * util.HOUR) {
     ledColor = '#a44';
+  } else if (elapsed <= 24 * util.HOUR) {
+    ledColor = '#822';
   }
-  var html = '<span class="led" style="color:' + ledColor + '"></span>';
+  var dt = sysmgr.getDateTimeString(ts);
+  var html = '<span class="led" style="color:' + ledColor + ';" data-tooltip="' + dt + '"></span>';
   return html;
 };
 
@@ -504,7 +507,7 @@ sysmgr.sortItemList = function(sortIdx, sortOrder) {
   }
   sysmgr.listStatus.sortIdx = sortIdx;
   sysmgr.listStatus.sortOrder = sortOrder;
-  sysmgr.drawList(sysmgr.itemList,sortIdx, sortOrder);
+  sysmgr.drawList(sysmgr.userList, sortIdx, sortOrder);
 };
 
 sysmgr.confirmLogoutSession = function(uid, sid) {
