@@ -12,10 +12,10 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 import bsb64
 
-import userman
-import groupman
-import sessionman
-import authman
+import usermgr
+import groupmgr
+import sessionmgr
+import authmgr
 
 root_path = ''
 query = None
@@ -135,7 +135,7 @@ class WebContext:
         user_info = self.user_info
         if user_info is None:
             return False
-        return userman.is_member_of(user_info, group_name)
+        return usermgr.is_member_of(user_info, group_name)
 
     def get_groups(self):
         user_info = self.user_info
@@ -154,7 +154,7 @@ class WebContext:
         user_info = self.user_info
         if user_info is None:
             return False
-        return userman.has_privilege(user_info, priv_name)
+        return usermgr.has_privilege(user_info, priv_name)
 
     # Returns if the user has privilege in privileges or groups
     # priv_name: case-insensitive
@@ -165,7 +165,7 @@ class WebContext:
         groups = self.get_groups()
         for i in range(len(groups)):
             gid = groups[i]
-            if groupman.has_privilege_in_group(gid, priv_name):
+            if groupmgr.has_privilege_in_group(gid, priv_name):
                 return True
 
         return False
@@ -210,9 +210,9 @@ def _on_access(context, allow_guest):
     session_info = None
     user_info = None
 
-    sessionman.clear_all_expired_sessions()
+    sessionmgr.clear_all_expired_sessions()
 
-    sessions = sessionman.get_all_sessions_info()
+    sessions = sessionmgr.get_all_sessions_info()
     if sessions is None:
         return context
 
@@ -223,14 +223,14 @@ def _on_access(context, allow_guest):
         return context
 
     uid = session_info['uid']
-    user_info = userman.get_user_info(uid)
+    user_info = usermgr.get_user_info(uid)
 
-    session_info = sessionman.update_last_accessed_info(uid, sid)
-    sessionman.set_current_session_info_to_global(session_info)
-    authorized = authman.auth(allow_guest)
+    session_info = sessionmgr.update_last_accessed_info(uid, sid)
+    sessionmgr.set_current_session_info_to_global(session_info)
+    authorized = authmgr.auth(allow_guest)
 
     context.set_session_info(session_info)
-    context.set_user_info(user_info) # see userman.create_user() for object fields
+    context.set_user_info(user_info) # see usermgr.create_user() for object fields
     context.set_authorized(authorized)
 
     return context
@@ -295,7 +295,7 @@ def build_session_cookie(session_info):
     if session_info is not None:
         sid = session_info['sid']
         uid = session_info['uid']
-        session_timeout = sessionman.get_session_timeout_value()
+        session_timeout = sessionmgr.get_session_timeout_value()
         cookie1 = util.build_cookie('sid', sid, max_age=str(session_timeout), path='/', http_only=True)
         cookies = []
         cookies.append({'Set-Cookie': cookie1})
@@ -330,7 +330,7 @@ def get_user_agent():
 #----------------------------------------------------------
 def send_response(result, type, headers=None, encoding=None):
     if headers is None:
-        session_info = sessionman.get_current_session_info_from_global()
+        session_info = sessionmgr.get_current_session_info_from_global()
         cookies = build_session_cookie(session_info)
         headers = cookies
     _send_response(result, type, headers, encoding)
@@ -412,7 +412,7 @@ def get_user_name(uid, default=None):
     user_name = default
     if default is None:
         user_name = uid
-    user_info = userman.get_user_info(uid)
+    user_info = usermgr.get_user_info(uid)
     if user_info is not None and 'name' in user_info:
         user_name = user_info['name']
     return user_name
@@ -421,7 +421,7 @@ def get_user_local_name(uid, default=None):
     user_local_name = default
     if default is None:
         user_local_name = uid
-    user_info = userman.get_user_info(uid)
+    user_info = usermgr.get_user_info(uid)
     if user_info is not None and 'local_name' in user_info:
         user_local_name = user_info['local_name']
     return user_local_name

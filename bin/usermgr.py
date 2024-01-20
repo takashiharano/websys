@@ -12,7 +12,7 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 
 import common
-import sessionman
+import sessionmgr
 
 USER_LIST_FILE_PATH = websysconf.USER_LIST_FILE_PATH
 GUEST_USER_LIST_FILE_PATH = websysconf.GUEST_USER_LIST_FILE_PATH
@@ -34,8 +34,7 @@ U_FLG_DISABLED = 1 << 1
 #     "desc": "Description",
 #     "flags": 0,
 #     "created_at": 1667047612.967891,
-#     "updated_at": 1667047612.967891,
-#     "pw_changed_at": 1688806688.959123
+#     "updated_at": 1667047612.967891
 #   },
 #   ...
 # }
@@ -53,7 +52,6 @@ U_FLG_DISABLED = 1 << 1
 #     "flags": 0,
 #     "created_at": 1667047612.967891,
 #     "updated_at": 1667047612.967891,
-#     "pw_changed_at": 1688806688.959123,
 #     "expires_at": 1571476916.59936
 #   },
 #   ...
@@ -205,7 +203,7 @@ def delete_user(uid):
     users = get_all_user_info()
     if users is None or uid not in users or uid == 'root':
         return False
-    sessionman.clear_user_sessions(uid)
+    sessionmgr.clear_user_sessions(uid)
     users.pop(uid)
     save_users(users)
     delete_user_password(uid)
@@ -310,7 +308,7 @@ def delete_guest_user(uid):
     users = get_all_guest_user_info()
     if users is None or uid not in users:
         return False
-    sessionman.clear_user_sessions(uid)
+    sessionmgr.clear_user_sessions(uid)
     users.pop(uid)
     save_guest_users(users)
     return True

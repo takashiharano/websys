@@ -14,9 +14,9 @@ util.append_system_path(__file__, ROOT_PATH)
 util.append_system_path(__file__, '../')
 util.append_system_path(__file__, ROOT_PATH + 'websys/bin')
 import websysconf
-import userman
-import groupman
-import sessionman
+import usermgr
+import groupmgr
+import sessionmgr
 import web
 
 DATA_DIR = util.get_relative_path(__file__, '../../../private/websys/')
@@ -43,8 +43,8 @@ def proc_get_user_list(context):
         web.send_result_json('FORBIDDEN', body=None)
         return
 
-    user_dict = userman.get_all_user_info(True)
-    guest_user_dict = userman.get_all_guest_user_info()
+    user_dict = usermgr.get_all_user_info(True)
+    guest_user_dict = usermgr.get_all_guest_user_info()
     if guest_user_dict is not None:
         user_dict.update(guest_user_dict)
 
@@ -80,8 +80,8 @@ def proc_get_session_list(context):
 #  }
 # ]
 def get_sorted_session_list():
-    sessions = sessionman.get_all_sessions_info()
-    users = userman.get_all_user_info()
+    sessions = sessionmgr.get_all_sessions_info()
+    users = usermgr.get_all_user_info()
 
     last_accessed_time_list = []
     for sid in sessions:
@@ -110,7 +110,7 @@ def _get_user_fullname(users, uid):
 
 #------------------------------------------------------------------------------
 def proc_get_group_list(context):
-    group_list = groupman.get_group_list()
+    group_list = groupmgr.get_group_list()
     result = {
         'group_list': group_list
     }

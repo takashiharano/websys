@@ -10,7 +10,7 @@ import websysconf
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
-import authman
+import authmgr
 import web
 
 ALLOW_GUESTS = True
@@ -18,7 +18,7 @@ ALLOW_GUESTS = True
 # dir list
 def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
     web.on_access()
-    if auth_required and not authman.auth(allow_guest=ALLOW_GUESTS):
+    if auth_required and not authmgr.auth(allow_guest=ALLOW_GUESTS):
         web.redirect_auth_screen()
         return
 

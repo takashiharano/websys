@@ -12,7 +12,7 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 import bsb64
 
-import authman
+import authmgr
 import web
 
 TXT_EXT = ['bas', 'bat', 'c', 'css', 'html', 'java', 'js', 'log', 'ps1', 'sh', 'txt', 'xml']
@@ -47,7 +47,7 @@ def output_text_file(root_path, path):
 
 def main(root_path, path, allow_guest=False, auth_required=True):
     web.on_access()
-    if auth_required and  not authman.auth(allow_guest=allow_guest):
+    if auth_required and  not authmgr.auth(allow_guest=allow_guest):
         util.send_response('FORBIDDEN')
     else:
         if is_text_file(path):

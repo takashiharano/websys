@@ -12,7 +12,7 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 
 import logger
-import userman
+import usermgr
 import web
 
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
@@ -112,7 +112,7 @@ def get_user_info_from_sid(sid):
         return None
 
     uid = session_info['uid']
-    user_info = userman.get_user_info(uid, guest=True)
+    user_info = usermgr.get_user_info(uid, guest=True)
 
     return user_info
 
@@ -252,9 +252,9 @@ def update_session_info_in_session_file(uid, sid, time=None, addr=None, host=Non
 
     save_user_sessions_to_file(uid, sessions)
 
-    user_status_info = userman.load_user_status_info(uid)
+    user_status_info = usermgr.load_user_status_info(uid)
     user_status_info['last_accessed'] = time
-    userman.write_user_status_info(uid, user_status_info)
+    usermgr.write_user_status_info(uid, user_status_info)
 
     return session
 

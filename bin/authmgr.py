@@ -12,8 +12,8 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 
 import logger
-import sessionman
-import userman
+import sessionmgr
+import usermgr
 import web
 
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
@@ -48,26 +48,26 @@ def do_login(uid, pw, ext_auth=False):
         raise Exception(status)
 
     session_info = login_info['session_info']
-    sessionman.set_current_session_info_to_global(session_info)
+    sessionmgr.set_current_session_info_to_global(session_info)
 
     write_login_log('OK', uid, session_info)
     return login_info
 
 def _login(uid, pw, ext_auth=False):
-    user_info = userman.get_user_info(uid, guest=False)
+    user_info = usermgr.get_user_info(uid, guest=False)
     if user_info is None:
         try:
             return _guest_login(uid, ext_auth)
         except Exception as e:
             raise e
 
-    if userman.is_disabled(user_info):
+    if usermgr.is_disabled(user_info):
         raise Exception('DISABLED')
 
     LOGIN_FAILURE_MAX = websysconf.LOGIN_FAILURE_MAX
     LOGIN_LOCK_PERIOD_SEC = websysconf.LOGIN_LOCK_PERIOD_SEC
     now = util.get_timestamp()
-    user_status_info = userman.load_user_status_info(uid)
+    user_status_info = usermgr.load_user_status_info(uid)
 
     if LOGIN_FAILURE_MAX > 0 and user_status_info['login_failed']['count'] >= LOGIN_FAILURE_MAX:
         diff_t = now - user_status_info['login_failed']['time']
@@ -77,15 +77,15 @@ def _login(uid, pw, ext_auth=False):
             user_status_info['login_failed']['count'] = 0
             user_status_info['login_failed']['time'] = 0
 
-    user_pw = userman.get_user_password(uid)
+    user_pw = usermgr.get_user_password(uid)
     pw2 = util.hash(pw, ALGOTRITHM)
     if pw2 != user_pw:
         user_status_info['login_failed']['count'] += 1
         user_status_info['login_failed']['time'] = now
-        userman.write_user_status_info(uid, user_status_info)
+        usermgr.write_user_status_info(uid, user_status_info)
         raise Exception('NG')
 
-    new_session_info = sessionman.create_and_register_session_info(uid, is_guest=False, ext_auth=ext_auth)
+    new_session_info = sessionmgr.create_and_register_session_info(uid, is_guest=False, ext_auth=ext_auth)
     loggedin_user_info = user_info
     login_info = {
         'session_info': new_session_info,
@@ -94,13 +94,13 @@ def _login(uid, pw, ext_auth=False):
 
     user_status_info['login_failed']['count'] = 0
     user_status_info['login_failed']['time'] = 0
-    userman.write_user_status_info(uid, user_status_info)
+    usermgr.write_user_status_info(uid, user_status_info)
 
     return login_info
 
 # guest login
 def _guest_login(uid, ext_auth=False):
-    user_info = userman.get_guest_user_info(uid)
+    user_info = usermgr.get_guest_user_info(uid)
     if user_info is None:
         raise Exception('USER_NOT_FOUND')
 
@@ -109,7 +109,7 @@ def _guest_login(uid, ext_auth=False):
         if user_info['expires_at'] < now:
             raise Exception('EXPIRED')
 
-    new_session_info = sessionman.create_and_register_session_info(uid, is_guest=True, ext_auth=ext_auth)
+    new_session_info = sessionmgr.create_and_register_session_info(uid, is_guest=True, ext_auth=ext_auth)
     sid = new_session_info['sid']
 
     login_info = {
@@ -126,7 +126,7 @@ def _guest_login(uid, ext_auth=False):
 def logout(sid):
     session = None
     if web.synchronize_start():
-        session = sessionman.clear_session(sid)
+        session = sessionmgr.clear_session(sid)
         web.synchronize_end()
     return session
 
@@ -140,7 +140,7 @@ def auth(allow_guest=True):
     return False
 
 def _auth(allow_guest):
-    session_info = sessionman.get_current_session_info_from_global()
+    session_info = sessionmgr.get_current_session_info_from_global()
     if session_info is None:
         return 'SESSION_INFO_NOT_FOUND'
 
@@ -148,11 +148,11 @@ def _auth(allow_guest):
         return 'OK'
 
     sid = session_info['sid']
-    user_info = sessionman.get_user_info_from_sid(sid)
+    user_info = sessionmgr.get_user_info_from_sid(sid)
     if user_info is None:
         return 'USER_INFO_NOT_FOUND'
 
-    if userman.is_disabled(user_info):
+    if usermgr.is_disabled(user_info):
         return 'USER_IS_DISABLED'
 
     if 'expires_at' in user_info:

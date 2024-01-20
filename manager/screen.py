@@ -29,7 +29,7 @@ def build_main_screen(context):
     html += '<script src="' + ROOT_PATH + 'libs/debug.js"></script>'
     html += '<script src="' + ROOT_PATH + 'libs/util.js"></script>'
     html += '<script src="' + ROOT_PATH + 'websys/websys.js"></script>'
-    html += '<script src="sysman.js"></script>'
+    html += '<script src="sysmgr.js"></script>'
     html += '''<script src="./?res=js"></script>
 </head>
 <body>
@@ -41,8 +41,8 @@ def build_main_screen(context):
 
 <div style="margin-bottom:4px;">
 <b>Users</b><br>
-<button onclick="sysman.newUser();">+</button>
-<button onclick="sysman.reloadUserInfo();">RELOAD</button>
+<button onclick="sysmgr.newUser();">+</button>
+<button onclick="sysmgr.reloadUserInfo();">RELOAD</button>
 </div>
 <div id="user-list"></div>
 
@@ -52,8 +52,8 @@ def build_main_screen(context):
 <div style="display:inline-block;margin-top:20px;margin-bottom:40px;">
 <div style="margin-bottom:4px;">
 <b>Groups</b><br>
-<button onclick="sysman.newGroup();">+</button>
-<button onclick="sysman.getGroupList();">RELOAD</button>
+<button onclick="sysmgr.newGroup();">+</button>
+<button onclick="sysmgr.getGroupList();">RELOAD</button>
 <span id="groups-status" style="margin-left:8px;"></span><br>
 </div>
 <div id="group-list"></div>

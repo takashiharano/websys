@@ -11,10 +11,10 @@ import util
 util.append_system_path(__file__, './bin')
 import logger
 import websysconf
-import userman
-import groupman
-import sessionman
-import authman
+import usermgr
+import groupmgr
+import sessionmgr
+import authmgr
 import web
 
 #----------------------------------------------------------
@@ -27,15 +27,15 @@ def cmd_login(context):
     p_ext_auth = web.get_request_param('ext_auth')
     ext_auth = True if p_ext_auth == 'true' else False
 
-    userman.delete_expired_guest()
+    usermgr.delete_expired_guest()
 
     if not ext_auth:
         current_sid = context.get_session_id()
         if current_sid is not None:
-            authman.logout(current_sid)
+            authmgr.logout(current_sid)
 
     try:
-        login_info = authman.login(id, pw, ext_auth)
+        login_info = authmgr.login(id, pw, ext_auth)
         session_info = login_info['session_info']
         user_info = login_info['user_info']
         sid = session_info['sid']
@@ -126,13 +126,13 @@ def logout_by_sid(context, current_sid, sid):
     self_logout = False
     if not context.is_admin():
         current_uid = context.get_user_id()
-        target_session_info = sessionman.get_session_info(sid)
+        target_session_info = sessionmgr.get_session_info(sid)
         if target_session_info is None:
             return False
         elif target_session_info['uid'] != current_uid:
             raise Exception('FORBIDDEN')
 
-    cleared_session = authman.logout(sid)
+    cleared_session = authmgr.logout(sid)
     if cleared_session is None:
         raise Exception('SESSION_NOT_FOUND')
 
@@ -150,7 +150,7 @@ def logout_by_uid(context, uid):
         if not context.is_admin():
             raise Exception('FORBIDDEN')
 
-    i = sessionman.clear_user_sessions(uid)
+    i = sessionmgr.clear_user_sessions(uid)
     if i == 0:
         raise Exception('NOT_LOGGED_IN')
 
@@ -161,7 +161,7 @@ def all_logout(context, current_sid, self_logout=False):
     if not context.is_admin():
         raise Exception('FORBIDDEN')
 
-    sessions = sessionman.get_all_sessions_info()
+    sessions = sessionmgr.get_all_sessions_info()
     for sid in sessions:
         if self_logout or sid != current_sid:
             logout_by_sid(context, current_sid, sid)
@@ -173,7 +173,7 @@ def all_logout(context, current_sid, self_logout=False):
 #----------------------------------------------------------
 def cmd_auth(context):
     status = 'FORBIDDEN'
-    if authman.auth():
+    if authmgr.auth():
         status = 'OK'
     web.send_result_json(status, body=None)
 
@@ -202,7 +202,7 @@ def cmd_sessions(context):
     else:
         if context.is_admin():
             session_list = []
-            sessions = sessionman.get_all_sessions_info()
+            sessions = sessionmgr.get_all_sessions_info()
             for sid in sessions:
                 session_list.append(sessions[sid])
         else:
@@ -230,10 +230,10 @@ def cmd_user(context):
           status = 'FORBIDDEN'
       else:
           if uid == current_uid:
-              user_info = userman.get_user_info(uid)
+              user_info = usermgr.get_user_info(uid)
           else:
               if context.is_admin():
-                  user_info = userman.get_user_info(uid)
+                  user_info = usermgr.get_user_info(uid)
                   if user_info is None:
                       status = 'NG'
               else:
@@ -245,14 +245,14 @@ def cmd_user(context):
 # users
 #----------------------------------------------------------
 def cmd_users(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
     if context.is_admin():
         status = 'OK'
-        user_list = userman.get_all_user_info()
-        guest_user_list = userman.get_all_guest_user_info()
+        user_list = usermgr.get_all_user_info()
+        guest_user_list = usermgr.get_all_guest_user_info()
         if guest_user_list is not None:
             user_list.update(guest_user_list)
     else:
@@ -265,7 +265,7 @@ def cmd_users(context):
 # add a user
 #----------------------------------------------------------
 def cmd_useradd(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -319,7 +319,7 @@ def cmd_useradd(context):
         p_flags = None
 
     try:
-        userman.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, desc=desc, flags=p_flags)
+        usermgr.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, desc=desc, flags=p_flags)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -331,7 +331,7 @@ def cmd_useradd(context):
 # mod a user
 #----------------------------------------------------------
 def cmd_usermod(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -395,7 +395,7 @@ def cmd_usermod(context):
             u_flags = p_flags
 
     try:
-        userman.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, flags=u_flags)
+        usermgr.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, flags=u_flags)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -418,7 +418,7 @@ def _get_optional_param_by_list(key):
 # Change password
 #----------------------------------------------------------
 def cmd_passwd(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -440,7 +440,7 @@ def cmd_passwd(context):
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     try:
-        userman.modify_user(uid, pw_hash)
+        usermgr.modify_user(uid, pw_hash)
         status = 'OK'
         logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + uid)
     except Exception as e:
@@ -453,7 +453,7 @@ def cmd_passwd(context):
 # ?validsec=1800
 #----------------------------------------------------------
 def cmd_gencode(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -491,7 +491,7 @@ def cmd_gencode(context):
         privs = privs.strip()
 
     try:
-        uid = userman.add_guest(uid=id, valid_min=valid_min, group=group, privs=privs)
+        uid = usermgr.add_guest(uid=id, valid_min=valid_min, group=group, privs=privs)
     except Exception as e:
         status = str(e)
 
@@ -502,7 +502,7 @@ def cmd_gencode(context):
 # ?uid=UID
 #----------------------------------------------------------
 def cmd_userdel(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -516,11 +516,11 @@ def cmd_userdel(context):
                 status = 'ERR_PROHIBITED_UID'
             else:
                 status = 'ERR_NO_SUCH_UID'
-                deleted = userman.delete_guest_user(uid)
+                deleted = usermgr.delete_guest_user(uid)
                 if deleted:
                     status = 'OK'
                 else:
-                    deleted = userman.delete_user(uid)
+                    deleted = usermgr.delete_user(uid)
                     if deleted:
                         logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
                         status = 'OK'
@@ -543,7 +543,7 @@ def _is_prohibited_uid(uid):
 # ?uid=UID
 #----------------------------------------------------------
 def cmd_unlockuser(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -553,7 +553,7 @@ def cmd_unlockuser(context):
         if uid is None:
             status = 'ERR_NO_UID'
         else:
-            userman.clear_login_failed(uid)
+            usermgr.clear_login_failed(uid)
             logger.write_event_log(context, 'UNLOCK_USER', 'OK', 'target=' + uid)
             status = 'OK'
     else:
@@ -565,15 +565,15 @@ def cmd_unlockuser(context):
 # guests
 #----------------------------------------------------------
 def cmd_guests(context):
-    userman.delete_expired_guest()
+    usermgr.delete_expired_guest()
 
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
     if context.is_admin():
         status = 'OK'
-        guest_user_list = userman.get_all_guest_user_info()
+        guest_user_list = usermgr.get_all_guest_user_info()
 
     else:
         status = 'FORBIDDEN'
@@ -593,7 +593,7 @@ def cmd_group(context):
         status = 'NO_GID'
     else:
         if context.is_admin():
-            group_info = groupman.get_group_info(gid)
+            group_info = groupmgr.get_group_info(gid)
             if group_info is None:
                 status = 'NG'
         else:
@@ -605,7 +605,7 @@ def cmd_group(context):
 # add a group
 #----------------------------------------------------------
 def cmd_addgroup(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -629,7 +629,7 @@ def cmd_addgroup(context):
         privs = privs.strip()
 
     try:
-        groupman.add_group(gid, privs=privs, desc=desc)
+        groupmgr.add_group(gid, privs=privs, desc=desc)
         logger.write_event_log(context, 'ADD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:
@@ -641,7 +641,7 @@ def cmd_addgroup(context):
 # mod a group
 #----------------------------------------------------------
 def cmd_modgroup(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -672,7 +672,7 @@ def cmd_modgroup(context):
     desc = web.get_request_param('desc', '')
 
     try:
-        groupman.modify_group(gid, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc)
+        groupmgr.modify_group(gid, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc)
         logger.write_event_log(context, 'MOD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:
@@ -685,7 +685,7 @@ def cmd_modgroup(context):
 # ?gid=GID
 #----------------------------------------------------------
 def cmd_delgroup(context):
-    if not authman.auth():
+    if not authmgr.auth():
         on_auth_error()
         return
 
@@ -696,7 +696,7 @@ def cmd_delgroup(context):
             status = 'ERR_NO_GID'
         else:
             status = 'ERR_NO_SUCH_GID'
-            deleted = groupman.delete_group(gid)
+            deleted = groupmgr.delete_group(gid)
             if deleted:
                 logger.write_event_log(context, 'DEL_GROUP', 'OK', 'gid=' + gid)
                 status = 'OK'
@@ -716,7 +716,7 @@ def cmd_hello(context):
     if q is None:
         msg = 'Hello, World!'
     else:
-        if not authman.auth():
+        if not authmgr.auth():
             on_auth_error()
             return
 
@@ -740,7 +740,7 @@ def on_auth_error():
 #----------------------------------------------------------
 def get_session_list_from_session(context):
     uid = context.get_user_id()
-    session_list = sessionman.get_user_sessions(uid)
+    session_list = sessionmgr.get_user_sessions(uid)
     return session_list
 
 #----------------------------------------------------------

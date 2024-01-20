@@ -14,11 +14,11 @@ import websysconf
 
 #------------------------------------------------------------------------------
 def build_js(context):
-    js = 'var sysman = sysman || {};'
-    js += 'sysman.websysconf = {'
+    js = 'var sysmgr = sysmgr || {};'
+    js += 'sysmgr.websysconf = {'
     js += 'LOGIN_FAILURE_MAX: ' + str(websysconf.LOGIN_FAILURE_MAX)
     js += '};'
-    js += 'websys.init(\'' + ROOT_PATH + '/\', sysman.onSysReady);'
+    js += 'websys.init(\'' + ROOT_PATH + '/\', sysmgr.onSysReady);'
     return js
 
 #------------------------------------------------------------------------------
