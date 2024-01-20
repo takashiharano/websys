@@ -456,7 +456,6 @@ def parse_int(s):
 #------------------------------------------------------------------------------
 DEFAULT_STATUS_INFO = {
     'pw_changed_at': 0,
-    'last_logged_in': 0,
     'last_accessed': 0,
     'login_failed': {'count': 0, 'time': 0}
 }
@@ -465,7 +464,7 @@ def get_user_status_file_path(uid):
     return  USER_ROOT_PATH + '/' + uid + '/status.json'
 
 def create_user_status_info(uid):
-    info = DEFAULT_STATUS_INFO
+    info = DEFAULT_STATUS_INFO.copy()
     write_user_status_info(uid, info)
 
 def load_user_status_info(uid):

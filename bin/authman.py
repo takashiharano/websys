@@ -92,7 +92,6 @@ def _login(uid, pw, ext_auth=False):
         'user_info': loggedin_user_info
     }
 
-    user_status_info['last_logged_in'] = now
     user_status_info['login_failed']['count'] = 0
     user_status_info['login_failed']['time'] = 0
     userman.write_user_status_info(uid, user_status_info)

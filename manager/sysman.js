@@ -17,7 +17,6 @@ sysman.USER_LIST_COLUMNS = [
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
   {key: 'pw_changed_at', label: 'PwChanged'},
-  {key: 'last_logged_in', label: 'Last Logged in'},
   {key: 'last_accessed', label: 'Last Accessed'}
 ];
 
@@ -137,6 +136,7 @@ sysman.getUserListCb = function(xhr, res, req) {
 sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
   var html = '<table>';
   html += '<tr class="item-list-header">';
+  html += '<th class="item-list">&nbsp;</th>';
 
   for (var i = 0; i < columns.length; i++) {
     var column = columns[i];
@@ -187,6 +187,8 @@ sysman.buildListHeader = function(columns, sortIdx, sortOrder) {
 };
 
 sysman.drawList = function(items, sortIdx, sortOrder) {
+  var now = util.now();
+
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
       var srtDef = sysman.USER_LIST_COLUMNS[sortIdx];
@@ -213,7 +215,6 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     var createdDate = sysman.getDateTimeString(item.created_at);
     var updatedDate = sysman.getDateTimeString(item.updated_at);
     var pwChangedDate = sysman.getDateTimeString(statusInfo.pw_changed_at);
-    var lastLoginDate = sysman.getDateTimeString(statusInfo.last_logged_in);
     var lastAccessedDate = sysman.getDateTimeString(statusInfo.last_accessed);
 
     var desc = (item.desc ? item.desc : '');
@@ -223,9 +224,10 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
       dispDesc += ' data-tooltip="' + escDesc + '"';
     }
     dispDesc += '>' + escDesc + '</span>';
+    var led = sysman.buildLedHtml(now, statusInfo.last_accessed);
 
     htmlList += '<tr class="item-list">';
-
+    htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
     htmlList += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysman.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span></td>';
     htmlList += '<td class="item-list">' + name + '</td>';
     htmlList += '<td class="item-list">' + local_name + '</td>';
@@ -250,7 +252,6 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
-    htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessedDate + '</td>';
     htmlList += '</tr>';
   }
@@ -260,6 +261,21 @@ sysman.drawList = function(items, sortIdx, sortOrder) {
   var html = htmlHead + htmlList; 
 
   sysman.drawListContent(html);
+};
+
+sysman.buildLedHtml = function(now, ts) {
+  var tMs = ts * 1000;
+  var elapsed = now - tMs;
+  var ledColor = '#888';
+  if (elapsed <= 5 * util.MINUTE) {
+    ledColor = '#0f0';
+  } else if (elapsed <= 60 * util.MINUTE) {
+    ledColor = '#cc0';
+  } else if (elapsed <= 6 * util.HOUR) {
+    ledColor = '#a44';
+  }
+  var html = '<span class="led" style="color:' + ledColor + '"></span>';
+  return html;
 };
 
 sysman.getDateTimeString = function(ts) {
@@ -384,20 +400,7 @@ sysman.buildSessionInfoOne = function(session, now, mn) {
   var addr = la['addr'];
   var brws = util.getBrowserInfo(la['ua']);
   var ua = brws.name + ' ' + brws.version;
-
-  var elapsed = now - tMs;
-  var ledColor = '#888';
-  if (elapsed <= 10 * util.MINUTE) {
-    ledColor = '#0f0';
-  } else if (elapsed <= 30 * util.MINUTE) {
-    ledColor = '#0a0';
-  } else if (elapsed <= 6 * util.HOUR) {
-    ledColor = '#080';
-  } else if (tMs >= mn) {
-    ledColor = '#262';
-  }
-
-  var led = '<span class="led" style="color:' + ledColor + '"></span>'
+  var led = sysman.buildLedHtml(now, t);
   var ssidLink = '<span class="pseudo-link link-button" onclick="sysman.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
   var timeId = 'tm-' + sid7;
   var tmspan = '<span id="' + timeId + '"></span>'
