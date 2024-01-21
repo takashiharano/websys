@@ -101,6 +101,10 @@ button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
   color: #f88;
 }
 
+.text-skyblue {
+  color: #08c;
+}
+
 .item-list-header {
   background: #06c;
 }

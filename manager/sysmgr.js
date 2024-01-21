@@ -6,7 +6,7 @@ var sysmgr = {};
 sysmgr.INTERVAL = 2 * 60 * 1000;
 sysmgr.USER_LIST_COLUMNS = [
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
-  {key: 'name', label: 'Full Name', style: 'min-width:13em;'},
+  {key: 'name', label: 'Full Name', style: 'min-width:10em;'},
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
   {key: 'group', label: 'Groups', style: 'min-width:15em;'},
@@ -227,12 +227,12 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     dispDesc += '>' + escDesc + '</span>';
     var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed);
 
-    var cInd = ((uid == currentUid) ? '<span class="text-red" style="cursor:default;margin-right:2px;" data-tooltip="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
+    var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
     var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span>';
 
     htmlList += '<tr class="item-list">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
-    htmlList += '<td class="item-list">' + dispUid + '</td>';
+    htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + name + '</td>';
     htmlList += '<td class="item-list">' + local_name + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
@@ -410,7 +410,7 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var ua = brws.name + ' ' + brws.version;
   var led = sysmgr.buildLedHtml(now, t);
   var ssidLink = '<span class="pseudo-link link-button" onclick="sysmgr.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
-  var dispSid = ((sid == cSid) ? '<span class="text-red" style="cursor:default;margin-right:2px;" data-tooltip="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
+  var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
   var timeId = 'tm-' + sid7;
   var tmspan = '<span id="' + timeId + '"></span>'
   var laTimeMs = Math.floor(t * 1000);
