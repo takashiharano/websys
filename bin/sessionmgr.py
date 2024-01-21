@@ -193,6 +193,8 @@ def _trim_sessions(sessions, num_of_sessions):
         t = session['last_accessed']['time']
         if _in_top_n(time_list, num_of_sessions, t):
             trimmed_sessions[sid] = session
+        else:
+            write_logout_log(session, 'EXCEEDED')
 
     return trimmed_sessions
 
@@ -281,16 +283,18 @@ def clear_session(sid):
     return session
 
 #----------------------------------------------------------
-def write_logout_log(session, expire=False):
-    status = 'OK'
+def write_logout_log(session, status='OK'):
     uid = session['uid']
-    if expire:
-        status = 'EXPIRED'
     la_info = session['last_accessed']
-    addr = la_info['addr']
-    host = la_info['host']
+    addr = '-'
+    host = '-'
     ua = la_info['ua']
     sid = session['sid']
+
+    if status == 'OK':
+        addr = la_info['addr']
+        host = la_info['host']
+
     logger.write_status_log('LOGOUT', status, uid, addr, host, ua, sid)
 
 #----------------------------------------------------------
@@ -322,7 +326,7 @@ def clear_expired_sessions(uid, sessions, now):
                 new_sessions[sid] = session
             else:
                 cleared = True
-                write_logout_log(session, True)
+                write_logout_log(session, 'EXPIRED')
         except:
             pass
 
@@ -366,4 +370,7 @@ def load_all_session_info_from_file():
 #----------------------------------------------------------
 def save_user_sessions_to_file(uid, sessions):
     path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
-    util.save_dict(path, sessions)
+    if len(sessions) == 0:
+        util.delete_file(path)
+    else:
+        util.save_dict(path, sessions)
