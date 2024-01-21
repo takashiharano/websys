@@ -188,6 +188,7 @@ sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
 
 sysmgr.drawList = function(items, sortIdx, sortOrder) {
   var now = util.now();
+  var currentUid = websys.getUserId();
 
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
@@ -226,9 +227,12 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     dispDesc += '>' + escDesc + '</span>';
     var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed);
 
+    var cInd = ((uid == currentUid) ? '<span class="text-red" style="cursor:default;margin-right:2px;" data-tooltip="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
+    var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span>';
+
     htmlList += '<tr class="item-list">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
-    htmlList += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span></td>';
+    htmlList += '<td class="item-list">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + name + '</td>';
     htmlList += '<td class="item-list">' + local_name + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
@@ -324,7 +328,7 @@ sysmgr.drawSessionList = function(sessions) {
   html += '<td></td>';
   html += '<td>UID</td>';
   html += '<td>Name</td>';
-  html += '<td>Session</td>';
+  html += '<td><span style="margin-left:8px;">Session</span></td>';
   html += '<td>Last Accessed</td>';
   html += '<td>Elapsed</td>';
   html += '<td style="font-weight:normal;">' + sysmgr.buildTimeLineHeader(now) + '</td>';
@@ -389,6 +393,7 @@ sysmgr.buildSessionInfoHtml = function(sessions, now) {
   return html;
 };
 sysmgr.buildSessionInfoOne = function(session, now, mn) {
+  var cSid = websys.getSessionId();
   var uid = session.uid;
   var name = session.user_name;
   var loginT = session.created_time;
@@ -405,6 +410,7 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var ua = brws.name + ' ' + brws.version;
   var led = sysmgr.buildLedHtml(now, t);
   var ssidLink = '<span class="pseudo-link link-button" onclick="sysmgr.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
+  var dispSid = ((sid == cSid) ? '<span class="text-red" style="cursor:default;margin-right:2px;" data-tooltip="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
   var timeId = 'tm-' + sid7;
   var tmspan = '<span id="' + timeId + '"></span>'
   var laTimeMs = Math.floor(t * 1000);
@@ -414,8 +420,8 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   html += '<tr class="item-list">';
   html += '<td style="padding-right:4px;">' + led + '</td>';
   html += '<td style="padding-right:10px;">' + uid + '</td>';
-  html += '<td style="padding-right:10px;">' + name + '</td>';
-  html += '<td style="padding-right:10px;">' + ssidLink + '</td>';
+  html += '<td style="padding-right:6px;">' + name + '</td>';
+  html += '<td style="padding-right:10px;">' + dispSid + '</td>';
   html += '<td style="padding-right:10px;">' + laTime + '</td>';
   html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
   html += '<td>' + timeline + '</td>';
