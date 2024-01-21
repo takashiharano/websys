@@ -537,9 +537,6 @@ sysmgr.logoutSession = function(sid) {
 };
 sysmgr.logoutSessionCb = function(xhr, res) {
   sysmgr.showInfotip(res.status);
-  if (res.status != 'OK') {
-    return;
-  }
   sysmgr.getSessionList();
 };
 
