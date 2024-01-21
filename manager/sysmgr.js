@@ -2,6 +2,7 @@
  * Copyright (c) 2023 Takashi Harano
  */
 var sysmgr = {};
+sysmgr.INSEC = true;
 
 sysmgr.INTERVAL = 2 * 60 * 1000;
 sysmgr.USER_LIST_COLUMNS = [
@@ -213,10 +214,10 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
       loginFailedTime = util.getDateTimeString(loginFailedInfo['time']);
     }
 
-    var createdDate = sysmgr.getDateTimeString(item.created_at);
-    var updatedDate = sysmgr.getDateTimeString(item.updated_at);
-    var pwChangedDate = sysmgr.getDateTimeString(statusInfo.pw_changed_at);
-    var lastAccessedDate = sysmgr.getDateTimeString(statusInfo.last_accessed);
+    var createdDate = sysmgr.getDateTimeString(item.created_at, sysmgr.INSEC);
+    var updatedDate = sysmgr.getDateTimeString(item.updated_at, sysmgr.INSEC);
+    var pwChangedDate = sysmgr.getDateTimeString(statusInfo.pw_changed_at, sysmgr.INSEC);
+    var lastAccessedDate = sysmgr.getDateTimeString(statusInfo.last_accessed, sysmgr.INSEC);
 
     var desc = (item.desc ? item.desc : '');
     var escDesc = util.escHtml(desc);
@@ -225,7 +226,7 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
       dispDesc += ' data-tooltip="' + escDesc + '"';
     }
     dispDesc += '>' + escDesc + '</span>';
-    var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed);
+    var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed, sysmgr.INSEC);
 
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
     var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span>';
@@ -267,29 +268,35 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
   sysmgr.drawListContent(html);
 };
 
-sysmgr.buildLedHtml = function(now, ts) {
-  var tMs = ts * 1000;
+sysmgr.buildLedHtml = function(now, ts, inSec) {
+  var COLORS = [
+    {t: 5 * util.MINUTE, color: '#0f0'},
+    {t: 60 * util.MINUTE, color: '#cc0'},
+    {t: 6 * util.HOUR, color: '#a44'},
+    {t: 24 * util.HOUR, color: '#822'}
+  ];
+  var tMs = ts;
+  if (inSec) tMs = Math.floor(tMs * 1000);
   var elapsed = now - tMs;
   var ledColor = '#888';
-  if (elapsed <= 5 * util.MINUTE) {
-    ledColor = '#0f0';
-  } else if (elapsed <= 60 * util.MINUTE) {
-    ledColor = '#cc0';
-  } else if (elapsed <= 6 * util.HOUR) {
-    ledColor = '#a44';
-  } else if (elapsed <= 24 * util.HOUR) {
-    ledColor = '#822';
+  for (var i = 0; i < COLORS.length; i++) {
+    var c = COLORS[i];
+    if (elapsed <= c.t) {
+      ledColor = c.color;
+      break;
+    }
   }
-  var dt = sysmgr.getDateTimeString(ts);
+  var dt = sysmgr.getDateTimeString(tMs);
   var html = '<span class="led" style="color:' + ledColor + ';" data-tooltip="' + dt + '"></span>';
   return html;
 };
 
-sysmgr.getDateTimeString = function(ts) {
+sysmgr.getDateTimeString = function(ts, inSec) {
+  var tMs = ts;
+  if (inSec) tMs = Math.floor(tMs * 1000);
   var s = '---------- --:--:--.---';
-  if (ts > 0) {
-    if (util.isInteger(ts)) ts *= 1000;
-    s = util.getDateTimeString(ts, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+  if (tMs > 0) {
+    s = util.getDateTimeString(tMs, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   }
   return s;
 };
@@ -398,23 +405,22 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var name = session.user_name;
   var loginT = session.created_time;
   var la = session.last_accessed;
-  var t = la['time'];
-  var tMs = t * 1000;
-  var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
-  var laTime = util.getDateTimeString(t, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss')
+  var laTime = la['time'];
+  if (sysmgr.INSEC) laTime = Math.floor(laTime * 1000);
+  var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+  var laTimeStr = util.getDateTimeString(laTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var sid = session['sid'];
   var ssid = util.snip(sid, 7, 2, '..');
   var sid7 = util.snip(sid, 7, 0, '');
   var addr = la['addr'];
   var brws = util.getBrowserInfo(la['ua']);
   var ua = brws.name + ' ' + brws.version;
-  var led = sysmgr.buildLedHtml(now, t);
+  var led = sysmgr.buildLedHtml(now, laTime);
   var ssidLink = '<span class="pseudo-link link-button" onclick="sysmgr.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
   var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
   var timeId = 'tm-' + sid7;
   var tmspan = '<span id="' + timeId + '"></span>'
-  var laTimeMs = Math.floor(t * 1000);
-  var timeline = sysmgr.buildTimeLine(now, laTimeMs);
+  var timeline = sysmgr.buildTimeLine(now, laTime);
 
   var html = '';
   html += '<tr class="item-list">';
@@ -422,7 +428,7 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   html += '<td style="padding-right:10px;">' + uid + '</td>';
   html += '<td style="padding-right:6px;">' + name + '</td>';
   html += '<td style="padding-right:10px;">' + dispSid + '</td>';
-  html += '<td style="padding-right:10px;">' + laTime + '</td>';
+  html += '<td style="padding-right:10px;">' + laTimeStr + '</td>';
   html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
   html += '<td>' + timeline + '</td>';
   html += '<td style="padding-right:10px;">' + addr + '</td>';
@@ -430,7 +436,7 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '</tr>';
 
-  util.timecounter.start('#' + timeId, tMs);
+  util.timecounter.start('#' + timeId, laTime);
   return html;
 };
 sysmgr.buildTimeLine = function(now, lastAccessedTime) {
@@ -1026,8 +1032,8 @@ sysmgr.drawGroupList = function(list) {
     var gid = group.gid;
     var privs = (group.privs ? group.privs : '');
     var desc = (group.desc ? group.desc : '');
-    var createdDate = sysmgr.getDateTimeString(group.created_at);
-    var updatedDate = sysmgr.getDateTimeString(group.updated_at);
+    var createdDate = sysmgr.getDateTimeString(group.created_at, sysmgr.INSEC);
+    var updatedDate = sysmgr.getDateTimeString(group.updated_at, sysmgr.INSEC);
 
     html += '<tr class="item-list">';
     html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysmgr.editGroup(\'' + gid + '\');" data-tooltip="Edit">' + gid + '</span></td>';
