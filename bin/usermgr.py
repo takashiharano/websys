@@ -11,6 +11,7 @@ import websysconf
 sys.path.append(websysconf.UTIL_PATH)
 import util
 
+import logger
 import common
 import sessionmgr
 
@@ -468,9 +469,14 @@ def create_user_status_info(uid):
 def load_user_status_info(uid):
     info = DEFAULT_STATUS_INFO.copy()
     path = get_user_status_file_path(uid)
-    data = util.load_dict(path)
-    if not data is None:
-        info = util.update_dict(info, data)
+
+    try:
+        data = util.load_dict(path)
+        if not data is None:
+            info = util.update_dict(info, data)
+    except Exception as e:
+        logger.write_status_log('SYSTEM', 'ERROR', uid, info='usermgr.load_user_status_info(): ' + str(e))
+
     return info
 
 def write_user_status_info(uid, info):
