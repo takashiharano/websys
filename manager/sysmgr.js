@@ -3,6 +3,8 @@
  */
 var sysmgr = {};
 sysmgr.INSEC = true;
+sysmgr.dialogFgColor = '#fff';
+sysmgr.dialogBgColor = '#000';
 
 sysmgr.INTERVAL = 2 * 60 * 1000;
 sysmgr.USER_LIST_COLUMNS = [
@@ -344,7 +346,7 @@ sysmgr.drawSessionList = function(sessions) {
 };
 
 sysmgr.buildTimeLineHeader = function(now) {
-  var currentInd = '<span class="blink1" style="color:#0cf;">v</span>';
+  var currentInd = '<span class="blink1 text-skyblue">v</span>';
 
   var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
   var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
@@ -649,7 +651,8 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
     },
     body: {
       style: {
-        background: '#000'
+        color: sysmgr.dialogFgColor,
+        background: sysmgr.dialogBgColor
       }
     },
     onclose: sysmgr.onUserEditWindowClose,
@@ -1111,7 +1114,8 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
     },
     body: {
       style: {
-        background: '#000'
+        color: sysmgr.dialogFgColor,
+        background: sysmgr.dialogBgColor
       }
     },
     onclose: sysmgr.onGroupEditWindowClose,
