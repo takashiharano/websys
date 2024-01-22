@@ -32,7 +32,8 @@ def get_user_sessions(uid):
     session_file_path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
     try:
         session_list = util.load_dict(session_file_path)
-    except:
+    except Exception as e:
+        logger.write_system_log('ERROR', uid, 'sessionmgr.get_user_sessions(): ' + str(e))
         session_list = None
 
     return session_list
@@ -63,19 +64,14 @@ def get_user_sessions(uid):
 # Returns None id the session does not exist.
 def get_session_info(sid):
     session = None
-
     user_dirs = util.list_dirs(USER_ROOT_PATH)
     for i in range(len(user_dirs)):
         uid = user_dirs[i]
-        try:
-            user_sessions = get_user_sessions(uid)
-            if user_sessions is not None:
-                if sid in user_sessions:
-                    session = user_sessions[sid]
-                    break
-        except:
-            pass
-
+        user_sessions = get_user_sessions(uid)
+        if user_sessions is not None:
+            if sid in user_sessions:
+                session = user_sessions[sid]
+                break
     return session
 
 #----------------------------------------------------------
@@ -229,7 +225,7 @@ def update_last_accessed_info(uid, sid):
 #----------------------------------------------------------
 # Update session info
 #----------------------------------------------------------
-def update_session_info_in_session_file(uid, sid, time=None, addr=None, host=None, ua=None, tz=None):
+def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua=None, tz=None):
     sessions = get_user_sessions(uid)
 
     if sessions is None:
@@ -241,8 +237,10 @@ def update_session_info_in_session_file(uid, sid, time=None, addr=None, host=Non
     session = sessions[sid]
     uid = session['uid']
     last_accessed = session['last_accessed']
-    if time is not None:
-        last_accessed['time'] = time
+
+    prev_time = last_accessed['time']
+
+    last_accessed['time'] = time
     if tz is not None:
         last_accessed['tz'] = tz
     if addr is not None:
@@ -252,11 +250,13 @@ def update_session_info_in_session_file(uid, sid, time=None, addr=None, host=Non
     if ua is not None:
         last_accessed['ua'] = ua
 
-    save_user_sessions_to_file(uid, sessions)
+    elapsed = time - prev_time
+    if elapsed > 0.5:
+        save_user_sessions_to_file(uid, sessions)
 
-    user_status_info = usermgr.load_user_status_info(uid)
-    user_status_info['last_accessed'] = time
-    usermgr.write_user_status_info(uid, user_status_info)
+        user_status_info = usermgr.load_user_status_info(uid)
+        user_status_info['last_accessed'] = time
+        usermgr.write_user_status_info(uid, user_status_info)
 
     return session
 

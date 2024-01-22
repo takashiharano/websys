@@ -475,7 +475,7 @@ def load_user_status_info(uid):
         if not data is None:
             info = util.update_dict(info, data)
     except Exception as e:
-        logger.write_status_log('SYSTEM', 'ERROR', uid, info='usermgr.load_user_status_info(): ' + str(e))
+        logger.write_system_log('ERROR', uid, 'usermgr.load_user_status_info(): ' + str(e))
 
     return info
 

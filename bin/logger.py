@@ -25,7 +25,7 @@ def write_log(data):
     util.append_line_to_text_file(LOG_FILE_PATH, data, max=1000)
 
 #----------------------------------------------------------
-def write_status_log(op_type, status, uid, addr='-', host='-', ua='-', sid='-', info=''):
+def write_status_log(op_type, status, uid, addr, host, ua, sid, info=''):
     now = util.get_timestamp()
     date_time = util.get_datetime_str(now, fmt='%Y-%m-%dT%H:%M:%S.%f')
     data = date_time
@@ -58,3 +58,7 @@ def write_event_log(context, op_type, status, info):
     ua = web.get_user_agent()
     sid = context.get_session_id()
     write_status_log(op_type, status, uid, addr, host, ua, sid, info)
+
+#----------------------------------------------------------
+def write_system_log(status, uid, info):
+    write_status_log('SYSTEM', status, uid, addr='-', host='-', ua='-', sid='-', info=info)
