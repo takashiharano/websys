@@ -456,7 +456,8 @@ def parse_int(s):
 DEFAULT_STATUS_INFO = {
     'last_accessed': 0,
     'pw_changed_at': 0,
-    'login_failed': {'count': 0, 'time': 0}
+    'login_failed_count': 0,
+    'login_failed_time': 0
 }
 
 def get_user_status_file_path(uid):
@@ -486,8 +487,8 @@ def write_user_status_info(uid, info):
 # Clear login failure counter and time
 def clear_login_failed(uid):
     info = load_user_status_info(uid)
-    info['login_failed']['count'] = 0
-    info['login_failed']['time'] = 0
+    info['login_failed_count'] = 0
+    info['login_failed_time'] = 0
     write_user_status_info(uid, info)
     return info
 

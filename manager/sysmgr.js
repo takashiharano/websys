@@ -14,7 +14,7 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'privs', label: 'Privileges', style: 'min-width:10em;'},
   {key: 'desc', label: 'Description', style: 'min-width:15em;'},
   {key: 'flags', label: 'Flags'},
-  {key: 'status_info.login_failed.count', label: 'Fail', sort: false},
+  {key: 'status_info.login_failed_count', label: 'Fail', sort: false},
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
   {key: 'status_info.pw_changed_at', label: 'PwChanged'},
@@ -205,14 +205,9 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     var uid = item.uid;
     var name = item.name.replace(/ /g, '&nbsp');
     var local_name = item.local_name.replace(/ /g, '&nbsp');
-    var loginFailedCount = 0;
-    var loginFailedTime = '';
     var statusInfo = item.status_info;
-    var loginFailedInfo = statusInfo.login_failed;
-    if (loginFailedInfo) {
-      loginFailedCount = loginFailedInfo['count'];
-      loginFailedTime = util.getDateTimeString(loginFailedInfo['time']);
-    }
+    loginFailedCount = statusInfo.login_failed_count;
+    loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
 
     var createdDate = sysmgr.getDateTimeString(item.created_at, sysmgr.INSEC);
     var updatedDate = sysmgr.getDateTimeString(item.updated_at, sysmgr.INSEC);

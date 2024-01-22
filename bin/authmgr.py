@@ -69,19 +69,19 @@ def _login(uid, pw, ext_auth=False):
     now = util.get_timestamp()
     user_status_info = usermgr.load_user_status_info(uid)
 
-    if LOGIN_FAILURE_MAX > 0 and user_status_info['login_failed']['count'] >= LOGIN_FAILURE_MAX:
-        diff_t = now - user_status_info['login_failed']['time']
+    if LOGIN_FAILURE_MAX > 0 and user_status_info['login_failed_count'] >= LOGIN_FAILURE_MAX:
+        diff_t = now - user_status_info['login_failed_time']
         if LOGIN_LOCK_PERIOD_SEC == 0 or diff_t <= LOGIN_LOCK_PERIOD_SEC:
             raise Exception('LOCKED')
         else:
-            user_status_info['login_failed']['count'] = 0
-            user_status_info['login_failed']['time'] = 0
+            user_status_info['login_failed_count'] = 0
+            user_status_info['login_failed_time'] = 0
 
     user_pw = usermgr.get_user_password(uid)
     pw2 = util.hash(pw, ALGOTRITHM)
     if pw2 != user_pw:
-        user_status_info['login_failed']['count'] += 1
-        user_status_info['login_failed']['time'] = now
+        user_status_info['login_failed_count'] += 1
+        user_status_info['login_failed_time'] = now
         usermgr.write_user_status_info(uid, user_status_info)
         raise Exception('NG')
 
@@ -92,8 +92,8 @@ def _login(uid, pw, ext_auth=False):
         'user_info': loggedin_user_info
     }
 
-    user_status_info['login_failed']['count'] = 0
-    user_status_info['login_failed']['time'] = 0
+    user_status_info['login_failed_count'] = 0
+    user_status_info['login_failed_time'] = 0
     usermgr.write_user_status_info(uid, user_status_info)
 
     return login_info
