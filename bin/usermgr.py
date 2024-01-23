@@ -77,13 +77,34 @@ def get_user_info(uid, guest=True):
 # get all user info
 def get_all_user_info(extra_info=False):
     users = util.load_dict(USER_LIST_FILE_PATH)
+    if not extra_info:
+        return users
 
-    if extra_info:
-        for uid in users:
-            status_info = load_user_status_info(uid)
-            users[uid]['status_info'] = status_info
+    for uid in users:
+        status_info = load_user_status_info(uid)
+        users[uid]['status_info'] = status_info
+
+    user_sessions = count_sessions_per_user()
+    for uid in users:
+        if uid in user_sessions:
+            users[uid]['status_info']['sessions'] = user_sessions[uid]
+        else:
+            users[uid]['status_info']['sessions'] = 0
 
     return users
+
+#---
+def count_sessions_per_user():
+    user_sessions = {}
+    sessions = sessionmgr.get_all_sessions_info()
+    for sid in sessions:
+        session = sessions[sid]
+        uid = session['uid']
+        if uid in user_sessions:
+            user_sessions[uid] += 1
+        else:
+            user_sessions[uid] = 1
+    return user_sessions
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))

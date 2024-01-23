@@ -206,16 +206,11 @@ def on_access(allow_guest=True):
     return context
 
 def _on_access(context, allow_guest):
-    sid = util.get_cookie_val('sid')
-    session_info = None
-    user_info = None
-
     sessionmgr.clear_all_expired_sessions()
 
+    sid = util.get_cookie_val('sid')
     sessions = sessionmgr.get_all_sessions_info()
-    if sessions is None:
-        return context
-
+    session_info = None
     if sid in sessions:
         session_info = sessions[sid]
 

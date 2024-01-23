@@ -5,6 +5,14 @@ var sysmgr = {};
 sysmgr.INSEC = true;
 sysmgr.dialogFgColor = '#fff';
 sysmgr.dialogBgColor = '#000';
+sysmgr.dialogTitleFgColor = '#fff';
+sysmgr.dialogTitleBgColor = 'linear-gradient(150deg, rgba(0,32,255,0.8),rgba(0,82,255,0.8))';
+
+sysmgr.LED_COLORS = [
+  {t: 10 * util.MINUTE, color: '#0f0'},
+  {t: 3 * util.HOUR, color: '#cc0'},
+  {t: 0, color: '#a44'},
+];
 
 sysmgr.INTERVAL = 2 * 60 * 1000;
 sysmgr.USER_LIST_COLUMNS = [
@@ -20,7 +28,8 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
   {key: 'status_info.pw_changed_at', label: 'PwChanged'},
-  {key: 'status_info.last_accessed', label: 'Last Accessed'}
+  {key: 'status_info.last_accessed', label: 'Last Accessed'},
+  {key: 'status_info.sessions', label: 'S'}
 ];
 
 sysmgr.listStatus = {
@@ -64,7 +73,7 @@ sysmgr.queueNextUpdateSessionInfo = function() {
 
 sysmgr.updateSessionInfo = function() {
   sysmgr.interval = 1;
-  sysmgr.getSessionList();
+  sysmgr.reloadUserInfo();
 };
 
 sysmgr.callApi = function(act, params, cb) {
@@ -215,6 +224,7 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     var updatedDate = sysmgr.getDateTimeString(item.updated_at, sysmgr.INSEC);
     var pwChangedDate = sysmgr.getDateTimeString(statusInfo.pw_changed_at, sysmgr.INSEC);
     var lastAccessedDate = sysmgr.getDateTimeString(statusInfo.last_accessed, sysmgr.INSEC);
+    var sessions = statusInfo.sessions;
 
     var desc = (item.desc ? item.desc : '');
     var escDesc = util.escHtml(desc);
@@ -223,7 +233,8 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
       dispDesc += ' data-tooltip="' + escDesc + '"';
     }
     dispDesc += '>' + escDesc + '</span>';
-    var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed, sysmgr.INSEC);
+    var active = (sessions > 0);
+    var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed, sysmgr.INSEC, active);
 
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
     var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span>';
@@ -255,6 +266,7 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessedDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:right;">' + sessions + '</td>';
     htmlList += '</tr>';
   }
   htmlList += '</table>';
@@ -265,22 +277,19 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
   sysmgr.drawListContent(html);
 };
 
-sysmgr.buildLedHtml = function(now, ts, inSec) {
-  var COLORS = [
-    {t: 5 * util.MINUTE, color: '#0f0'},
-    {t: 60 * util.MINUTE, color: '#cc0'},
-    {t: 6 * util.HOUR, color: '#a44'},
-    {t: 24 * util.HOUR, color: '#822'}
-  ];
+sysmgr.buildLedHtml = function(now, ts, inSec, active) {
+  var COLORS = sysmgr.LED_COLORS;
   var tMs = ts;
   if (inSec) tMs = Math.floor(tMs * 1000);
   var elapsed = now - tMs;
   var ledColor = '#888';
-  for (var i = 0; i < COLORS.length; i++) {
-    var c = COLORS[i];
-    if (elapsed <= c.t) {
-      ledColor = c.color;
-      break;
+  if (active) {
+    for (var i = 0; i < COLORS.length; i++) {
+      var c = COLORS[i];
+      if ((elapsed <= c.t) || (c.t == 0)) {
+        ledColor = c.color;
+        break;
+      }
     }
   }
   var dt = sysmgr.getDateTimeString(tMs);
@@ -326,7 +335,6 @@ sysmgr.getSessionListCb = function(xhr, res, req) {
 
 sysmgr.drawSessionList = function(sessions) {
   var now = util.now();
-
   var html = '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
@@ -412,7 +420,7 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var addr = la['addr'];
   var brws = util.getBrowserInfo(la['ua']);
   var ua = brws.name + ' ' + brws.version;
-  var led = sysmgr.buildLedHtml(now, laTime);
+  var led = sysmgr.buildLedHtml(now, laTime, false, true);
   var ssidLink = '<span class="pseudo-link link-button" onclick="sysmgr.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
   var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
   var timeId = 'tm-' + sid7;
@@ -647,7 +655,11 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
     hidden: false,
     modal: false,
     title: {
-      text: ((mode == 'new') ? 'New' : 'Edit') +' User'
+      text: ((mode == 'new') ? 'New' : 'Edit') +' User',
+      style: {
+        color: sysmgr.dialogTitleFgColor,
+        background: sysmgr.dialogTitleBgColor
+      }
     },
     body: {
       style: {
@@ -1110,7 +1122,11 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
     hidden: false,
     modal: false,
     title: {
-      text: ((mode == 'new') ? 'New' : 'Edit') +' Group'
+      text: ((mode == 'new') ? 'New' : 'Edit') +' Group',
+      style: {
+        color: sysmgr.dialogTitleFgColor,
+        background: sysmgr.dialogTitleBgColor
+      }
     },
     body: {
       style: {
