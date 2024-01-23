@@ -152,7 +152,8 @@ def create_session_info(uid, is_guest=False):
             'time': now,
             'tz': tz,
             'addr': addr,
-            'host': host
+            'host': host,
+            'ua': useragent
         }
     }
 
@@ -285,11 +286,13 @@ def clear_session(sid):
 #----------------------------------------------------------
 def write_logout_log(session, status='OK'):
     uid = session['uid']
-    la_info = session['last_accessed']
+    sid = session['sid']
     addr = '-'
     host = '-'
-    ua = la_info['ua']
-    sid = session['sid']
+    ua = ''
+    la_info = session['last_accessed']
+    if 'ua' in la_info:
+        ua = la_info['ua']
 
     if status == 'OK':
         addr = la_info['addr']
