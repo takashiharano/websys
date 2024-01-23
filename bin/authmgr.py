@@ -124,10 +124,10 @@ def _guest_login(uid, ext_auth=False):
 # logout
 # return cleared session info
 #----------------------------------------------------------
-def logout(sid):
+def logout(sid, renew=False):
     session = None
     if web.synchronize_start():
-        session = sessionmgr.clear_session(sid)
+        session = sessionmgr.clear_session(sid, renew)
         web.synchronize_end()
     return session
 

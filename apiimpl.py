@@ -30,9 +30,7 @@ def cmd_login(context):
     usermgr.delete_expired_guest()
 
     if not ext_auth:
-        current_sid = context.get_session_id()
-        if current_sid is not None:
-            authmgr.logout(current_sid)
+        invalidate_existing_session(context)
 
     try:
         login_info = authmgr.login(id, pw, ext_auth)
@@ -52,6 +50,12 @@ def cmd_login(context):
         util.sleep(0.5)
 
     web.send_result_json(status, body=body)
+
+#---
+def invalidate_existing_session(context):
+    current_sid = context.get_session_id()
+    if current_sid is not None:
+        authmgr.logout(current_sid, renew=True)
 
 #----------------------------------------------------------
 # syslog

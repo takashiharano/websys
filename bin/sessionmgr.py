@@ -264,7 +264,7 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
 #----------------------------------------------------------
 # Clear session
 #----------------------------------------------------------
-def clear_session(sid):
+def clear_session(sid, renew=False):
     session = get_session_info(sid)
     if session is None:
         return None
@@ -275,7 +275,8 @@ def clear_session(sid):
 
     if user_sessions is not None:
         session = user_sessions.pop(sid, None)
-        write_logout_log(session)
+        status = 'RENEW' if renew else 'OK'
+        write_logout_log(session, status)
         save_user_sessions_to_file(uid, user_sessions)
 
     if get_current_session_id() == sid:
