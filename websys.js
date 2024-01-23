@@ -241,11 +241,16 @@ websys.hello.cb = function(xhr, res) {
  * login
  */
 websys.login = function(arg, tbl, echo) {
-  var uid = dbg.splitCmdLine(arg)[0];
+  var uid = dbg.getOptVal(arg, '')[0];
+  var pw = dbg.getOptVal(arg, 'p');
   websys.status = websys.ST_LOGIN_ID;
   dbg.cmd.saveHistory(false);
   if (uid) {
-    websys.login.inputId(uid);
+    if (pw) {
+      websys.login.doLogin(uid, pw);
+    } else {
+      websys.login.inputId(uid);
+    }
   } else {
     log('ID ?');
   }
@@ -1501,7 +1506,7 @@ websys.CMD_TBL = [
   {cmd: 'gencode', fn: websys.gencode, desc: 'Make a guest user', help: 'gencode [ID(A-Za-z0-9_-)] [-valid MIN] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"]'},
   {cmd: 'guests', fn: websys.guests, desc: 'Show all guest user info'},
   {cmd: 'hello', fn: websys.hello, desc: 'Hello'},
-  {cmd: 'login', fn: websys.login, desc: 'Login'},
+  {cmd: 'login', fn: websys.login, desc: 'Login', help: 'login [ID [-p PW]]'},
   {cmd: 'logout', fn: websys.cmdLogout, desc: 'Logout', help: 'logout [-sid sid]|[-u uid]'},
   {cmd: 'modgroup', fn: websys.cmdModGroup, desc: 'Mod a group', help: 'modgroup GID [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"]'},
   {cmd: 'passwd', fn: websys.cmdPasswd, desc: 'Change user\'s password', help: 'passwd [-u UID] [-p PW]'},
