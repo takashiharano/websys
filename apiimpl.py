@@ -306,7 +306,7 @@ def cmd_useradd(context):
     group = ''
     if p_group is not None:
         group = p_group
-        group = util.replace(group, '\s{2,}', ' ')
+        group = util.replace(group, r'\s{2,}', ' ')
         group = group.strip()
 
     privs = ''
@@ -373,7 +373,7 @@ def cmd_usermod(context):
         p_group = web.get_request_param('group')
         if p_group is not None:
             group = p_group
-            group = util.replace(group, '\s{2,}', ' ')
+            group = util.replace(group, r'\s{2,}', ' ')
             group = group.strip()
 
         agroup = _get_optional_param_by_list('agroup')
@@ -480,7 +480,7 @@ def cmd_gencode(context):
     group = ''
     if p_group is not None:
         group = p_group
-        group = util.replace(group, '\s{2,}', ' ')
+        group = util.replace(group, r'\s{2,}', ' ')
         group = group.strip()
 
     p_privs = web.get_request_param('privs')
