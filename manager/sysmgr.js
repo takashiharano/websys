@@ -14,7 +14,7 @@ sysmgr.LED_COLORS = [
   {t: 0, color: '#a44'},
 ];
 
-sysmgr.INTERVAL = 2 * 60 * 1000;
+sysmgr.INTERVAL = 60000;
 sysmgr.USER_LIST_COLUMNS = [
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:10em;'},
@@ -342,7 +342,7 @@ sysmgr.drawSessionList = function(sessions) {
   html += '<td>Name</td>';
   html += '<td><span style="margin-left:8px;">Session</span></td>';
   html += '<td>Last Accessed</td>';
-  html += '<td>Elapsed</td>';
+  html += '<td style="min-width:98px;"">Elapsed</td>';
   html += '<td style="font-weight:normal;">' + sysmgr.buildTimeLineHeader(now) + '</td>';
   html += '<td>Addr</td>';
   html += '<td>User-Agent</td>';
@@ -415,7 +415,7 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var laTimeStr = util.getDateTimeString(laTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var sid = session['sid'];
-  var ssid = util.snip(sid, 7, 2, '..');
+  var ssid = util.snip(sid, 7, 3, '..');
   var sid7 = util.snip(sid, 7, 0, '');
   var addr = la['addr'];
   var brws = util.getBrowserInfo(la['ua']);
@@ -441,8 +441,11 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '</tr>';
 
-  util.timecounter.start('#' + timeId, laTime);
+  setTimeout(sysmgr.startElapsedCounter, 0, {timeId: '#' + timeId, laTime: laTime});
   return html;
+};
+sysmgr.startElapsedCounter = function(param) {
+  util.timecounter.start(param.timeId, param.laTime);
 };
 sysmgr.buildTimeLine = function(now, lastAccessedTime) {
   var mn = util.getMidnightTimestamp(now);
