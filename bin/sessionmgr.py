@@ -191,7 +191,7 @@ def _trim_sessions(sessions, num_of_sessions):
         if _in_top_n(time_list, num_of_sessions, t):
             trimmed_sessions[sid] = session
         else:
-            write_logout_log(session, 'EXCEEDED')
+            write_logout_log(session, 'EXCEED_MAX')
 
     return trimmed_sessions
 
@@ -201,7 +201,7 @@ def _in_top_n(v_list, n, v):
     for i in range(n):
         if v == v_list[i]:
             return True
-    False
+    return False
 
 #----------------------------------------------------------
 # Generate session id
