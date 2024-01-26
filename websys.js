@@ -409,7 +409,7 @@ websys.syslog.cb = function(xhr, res) {
     var brws = util.getBrowserInfo(ua);
     ua = brws.name + ' ' + brws.version;
     time = time.replace(/T/, ' ');
-    sid = util.snip(sid, 7, 2);
+    sid = util.snip(sid, 7, 3);
     s += time + '\t' + type + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\t' + info + '\n';
   }
   var r = util.alignFields(s, '\t', 2);
