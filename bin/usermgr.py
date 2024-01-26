@@ -476,6 +476,7 @@ def parse_int(s):
 #------------------------------------------------------------------------------
 DEFAULT_STATUS_INFO = {
     'last_accessed': 0,
+    'last_login': 0,
     'pw_changed_at': 0,
     'login_failed_count': 0,
     'login_failed_time': 0
