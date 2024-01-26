@@ -254,10 +254,7 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
     elapsed = time - prev_time
     if elapsed > 0.5:
         save_user_sessions_to_file(uid, sessions)
-
-        user_status_info = usermgr.load_user_status_info(uid)
-        user_status_info['last_accessed'] = time
-        usermgr.write_user_status_info(uid, user_status_info)
+        usermgr.update_user_status_info(uid, 'last_accessed', time)
 
     return session
 
@@ -344,13 +341,9 @@ def clear_user_sessions(uid):
     user_sessions = get_user_sessions(uid)
     if user_sessions is None:
         return 0
-
-    i = 0
-    for sid in user_sessions:
-        i = i + 1
-
+    count =  len(user_sessions)
     save_user_sessions_to_file(uid, {})
-    return i
+    return count
 
 #----------------------------------------------------------
 # Load sessions info
@@ -375,6 +368,8 @@ def load_all_session_info_from_file():
 def save_user_sessions_to_file(uid, sessions):
     path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
     if len(sessions) == 0:
+        now = util.get_timestamp()
         util.delete_file(path)
+        usermgr.update_user_status_info(uid, 'last_logout', now)
     else:
         util.save_dict(path, sessions)

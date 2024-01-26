@@ -28,6 +28,8 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'created_at', label: 'Created'},
   {key: 'updated_at', label: 'Updated'},
   {key: 'status_info.pw_changed_at', label: 'PwChanged'},
+  {key: 'status_info.last_login', label: 'Last Login'},
+  {key: 'status_info.last_logout', label: 'Last Logout'},
   {key: 'status_info.last_accessed', label: 'Last Accessed'},
   {key: 'status_info.sessions', label: 'S'}
 ];
@@ -223,6 +225,8 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     var createdDate = sysmgr.getDateTimeString(item.created_at, sysmgr.INSEC);
     var updatedDate = sysmgr.getDateTimeString(item.updated_at, sysmgr.INSEC);
     var pwChangedDate = sysmgr.getDateTimeString(statusInfo.pw_changed_at, sysmgr.INSEC);
+    var lastLoginDate = sysmgr.getDateTimeString(statusInfo.last_login, sysmgr.INSEC);
+    var lastLogoutDate = sysmgr.getDateTimeString(statusInfo.last_logout, sysmgr.INSEC);
     var lastAccessedDate = sysmgr.getDateTimeString(statusInfo.last_accessed, sysmgr.INSEC);
     var sessions = statusInfo.sessions;
 
@@ -265,6 +269,8 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastLogoutDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:right;">' + sessions + '</td>';
     htmlList += '</tr>';

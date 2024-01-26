@@ -208,9 +208,7 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
     if pw is not None:
         save_user_password(uid, pw)
         user['flags'] = unset_user_flag(user['flags'], U_FLG_NEED_PW_CHANGE)
-        user_status_info = load_user_status_info(uid)
-        user_status_info['pw_changed_at'] = now
-        write_user_status_info(uid, user_status_info)
+        update_user_status_info(uid, 'pw_changed_at', now)
 
     if updated:
         user['updated_at'] = now
@@ -477,6 +475,7 @@ def parse_int(s):
 DEFAULT_STATUS_INFO = {
     'last_accessed': 0,
     'last_login': 0,
+    'last_logout': 0,
     'pw_changed_at': 0,
     'login_failed_count': 0,
     'login_failed_time': 0
@@ -513,6 +512,11 @@ def clear_login_failed(uid):
     info['login_failed_time'] = 0
     write_user_status_info(uid, info)
     return info
+
+def update_user_status_info(uid, key, v):
+    user_status_info = load_user_status_info(uid)
+    user_status_info[key] = v
+    write_user_status_info(uid, user_status_info)
 
 #------------------------------------------------------------------------------
 # Groups
