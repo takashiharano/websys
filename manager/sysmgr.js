@@ -25,13 +25,13 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'desc', label: 'Description', style: 'min-width:15em;'},
   {key: 'flags', label: 'Flags'},
   {key: 'status_info.login_failed_count', label: 'Fail', sort: false},
-  {key: 'created_at', label: 'Created'},
-  {key: 'updated_at', label: 'Updated'},
-  {key: 'status_info.pw_changed_at', label: 'PwChanged'},
+  {key: 'status_info.sessions', label: 'S'},
+  {key: 'status_info.last_accessed', label: 'Last Accessed'},
   {key: 'status_info.last_login', label: 'Last Login'},
   {key: 'status_info.last_logout', label: 'Last Logout'},
-  {key: 'status_info.last_accessed', label: 'Last Accessed'},
-  {key: 'status_info.sessions', label: 'S'}
+  {key: 'created_at', label: 'Created'},
+  {key: 'updated_at', label: 'Updated'},
+  {key: 'status_info.pw_changed_at', label: 'PwChanged'}
 ];
 
 sysmgr.listStatus = {
@@ -266,13 +266,13 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     }
     htmlList += '</td>';
 
+    htmlList += '<td class="item-list" style="text-align:right;">' + sessions + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessedDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastLogoutDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
-    htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
-    htmlList += '<td class="item-list" style="text-align:center;">' + lastLogoutDate + '</td>';
-    htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessedDate + '</td>';
-    htmlList += '<td class="item-list" style="text-align:right;">' + sessions + '</td>';
     htmlList += '</tr>';
   }
   htmlList += '</table>';
