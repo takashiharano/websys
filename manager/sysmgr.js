@@ -16,6 +16,7 @@ sysmgr.LED_COLORS = [
 
 sysmgr.INTERVAL = 60000;
 sysmgr.USER_LIST_COLUMNS = [
+  {key: 'status_info.last_accessed', label: ''},
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:10em;'},
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
@@ -35,7 +36,7 @@ sysmgr.USER_LIST_COLUMNS = [
 ];
 
 sysmgr.listStatus = {
-  sortIdx: 0,
+  sortIdx: 1,
   sortOrder: 1
 };
 
@@ -144,14 +145,13 @@ sysmgr.getUserListCb = function(xhr, res, req) {
     infoList.push(user);
   }
   sysmgr.userList = infoList;
-  sysmgr.drawList(infoList, 0, 1);
+  var listStatus = sysmgr.listStatus;
+  sysmgr.drawList(infoList, listStatus.sortIdx, listStatus.sortOrder);
 };
 
 sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
   var html = '<table>';
   html += '<tr class="item-list-header">';
-  html += '<th class="item-list">&nbsp;</th>';
-
   for (var i = 0; i < columns.length; i++) {
     var column = columns[i];
     var label = column['label'];
@@ -195,7 +195,6 @@ sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
     }
     html += '</th>';
   }
-
   html += '</tr>';
   return html;
 };
