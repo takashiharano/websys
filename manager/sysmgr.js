@@ -219,17 +219,15 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     var name = item.name.replace(/ /g, '&nbsp');
     var local_name = item.local_name.replace(/ /g, '&nbsp');
     var statusInfo = item.status_info;
-    loginFailedCount = statusInfo.login_failed_count;
-    loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
-
+    var loginFailedCount = statusInfo.login_failed_count;
+    var loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
+    var sessions = statusInfo.sessions;
+    var lastAccessedDate = sysmgr.getDateTimeString(statusInfo.last_accessed, sysmgr.INSEC);
+    var lastLoginDate = sysmgr.getDateTimeString(statusInfo.last_login, sysmgr.INSEC);
+    var lastLogoutDate = sysmgr.getDateTimeString(statusInfo.last_logout, sysmgr.INSEC);
     var createdDate = sysmgr.getDateTimeString(item.created_at, sysmgr.INSEC);
     var updatedDate = sysmgr.getDateTimeString(item.updated_at, sysmgr.INSEC);
     var pwChangedDate = sysmgr.getDateTimeString(statusInfo.pw_changed_at, sysmgr.INSEC);
-    var lastLoginDate = sysmgr.getDateTimeString(statusInfo.last_login, sysmgr.INSEC);
-    var lastLogoutDate = sysmgr.getDateTimeString(statusInfo.last_logout, sysmgr.INSEC);
-    var lastAccessedDate = sysmgr.getDateTimeString(statusInfo.last_accessed, sysmgr.INSEC);
-    var sessions = statusInfo.sessions;
-
     var desc = (item.desc ? item.desc : '');
     var escDesc = util.escHtml(desc);
     var dispDesc = '<span style="display:inline-block;width:100%;overflow:hidden;text-overflow:ellipsis;"';
