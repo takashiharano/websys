@@ -13,7 +13,10 @@ import util
 import authmgr
 import web
 
-ALLOW_GUESTS = True
+ALLOW_GUESTS = False
+DEBUG = False
+
+post_url = '../test/' if DEBUG else './'
 
 # dir list
 def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
@@ -40,7 +43,6 @@ def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
     html = '''<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>File List</title>
@@ -174,9 +176,9 @@ util.postSubmit = function(url, params, uriEnc) {
   <span class="reload-button pseudo-button" onclick="location.href='./'">RELOAD</span>
 '''
     if upload:
+        html += '  <div style="display:inline-block;">'
+        html += '    <form action="' + post_url + '" method="POST" enctype="multipart/form-data">'
         html += '''
-  <div style="display:inline-block;">
-    <form action="./" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="mode" value="upload">
       <input type="file" name="file"><input type="submit" value="Upload">
     </form>
