@@ -16,7 +16,7 @@ sysmgr.LED_COLORS = [
 
 sysmgr.INTERVAL = 60000;
 sysmgr.USER_LIST_COLUMNS = [
-  {key: 'status_info.last_accessed', label: ''},
+  {key: 'elapsed', label: ''},
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:10em;'},
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
@@ -36,7 +36,7 @@ sysmgr.USER_LIST_COLUMNS = [
 ];
 
 sysmgr.listStatus = {
-  sortIdx: 1,
+  sortIdx: 0,
   sortOrder: 1
 };
 
@@ -138,15 +138,26 @@ sysmgr.getUserListCb = function(xhr, res, req) {
     sysmgr.showInfotip(res.status);
     return;
   }
+  var now = util.now();
   var users = res.body;
-  var infoList = [];
+  var userList = [];
   for (var uid in users) {
     var user = users[uid];
-    infoList.push(user);
+    var statusInfo = user.status_info;
+    var lastAccessedDate = statusInfo.last_accessed;
+    var dt = sysmgr.elapsedSinceLastAccess(now, lastAccessedDate);
+    user.elapsed = dt;
+    userList.push(user);
   }
-  sysmgr.userList = infoList;
+  sysmgr.userList = userList;
   var listStatus = sysmgr.listStatus;
-  sysmgr.drawList(infoList, listStatus.sortIdx, listStatus.sortOrder);
+  sysmgr.drawList(userList, listStatus.sortIdx, listStatus.sortOrder);
+};
+
+sysmgr.elapsedSinceLastAccess = function(now, t) {
+  if (sysmgr.INSEC) t = Math.floor(t * 1000);
+  var dt = now - t;
+  return dt;
 };
 
 sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
@@ -257,7 +268,7 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
       if ((sysmgr.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= sysmgr.websysconf.LOGIN_FAILURE_MAX)) {
         clz += ' text-red';
       }
-      htmlList += '<span class="' + clz + '" data-tooltip="' + loginFailedTime + '" onclick="sysmgr.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
+      htmlList += '<span class="' + clz + '" data-tooltip="Last failed: ' + loginFailedTime + '" onclick="sysmgr.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
     } else {
       htmlList += '';
     }
@@ -296,7 +307,7 @@ sysmgr.buildLedHtml = function(now, ts, inSec, active) {
     }
   }
   var dt = sysmgr.getDateTimeString(tMs);
-  var html = '<span class="led" style="color:' + ledColor + ';" data-tooltip="' + dt + '"></span>';
+  var html = '<span class="led" style="color:' + ledColor + ';" data-tooltip="Last accessed: ' + dt + '"></span>';
   return html;
 };
 
