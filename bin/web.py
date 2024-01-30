@@ -234,6 +234,10 @@ def _on_access(context, allow_guest):
 # Get Request Param
 #----------------------------------------------------------
 def get_request_param(key=None, default=None):
+    content_type = os.environ.get('CONTENT_TYPE', '')
+    if content_type.startswith('multipart/form-data'):
+        return default
+
     q = util.get_query()
     if q is None or util.typename(q) == 'FieldStorage':
         return default

@@ -22,15 +22,16 @@ def main(root_path, target_path, auth_required, upload=False):
 
     context = web.on_access()
 
-    form = None
     content_type = os.environ.get('CONTENT_TYPE', '')
-    if content_type.startswith('multipart/form-data'):
-        form = util.get_field_storage()
 
     if not context.is_authorized():
         upload = False
 
-    if form is None:
+    if content_type.startswith('multipart/form-data'):
+        save_dir = './'
+        result = save_file(save_dir)
+        dirlist.dir_list(root_path, target_path, auth_required=auth_required, upload=upload, info=result)
+    else:
         file_path = util.get_request_param('file')
         if file_path is None:
             dirlist.dir_list(root_path, target_path, auth_required=auth_required, upload=upload, info='')
@@ -41,16 +42,14 @@ def main(root_path, target_path, auth_required, upload=False):
                 dirlist.dir_list(root_path, target_path, auth_required=auth_required, upload=upload, info='Deleted')
             else:
                 file.main(root_path, file_path, auth_required=auth_required)
-    else:
-        save_dir = './'
-        result = save_file(form, save_dir)
-        dirlist.dir_list(root_path, target_path, auth_required=auth_required, upload=upload, info=result)
 
-def save_file(form, save_dir):
-    if 'file' in form:
-        item = form['file']
-        content = item.file
-        filename = item.filename
+def save_file(save_dir):
+    multi_prt_data = util.get_multipart_data()
+    if 'file' in multi_prt_data:
+        item = multi_prt_data['file']
+        content = item['body']
+        disposition = item['disposition']
+        filename = disposition['filename']
         if content and filename:
             if filename.endswith('.cgi'):
                 filename += '.txt'
