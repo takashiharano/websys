@@ -242,8 +242,22 @@ def delete_user_dir(uid):
 # Guest user
 #------------------------------------------------------------------------------
 # Get all guest user
-def get_all_guest_user_info():
+def get_all_guest_user_info(extra_info=False):
     users = util.load_dict(GUEST_USER_LIST_FILE_PATH)
+    if not extra_info:
+        return users
+
+    for uid in users:
+        status_info = load_user_status_info(uid)
+        users[uid]['status_info'] = status_info
+
+    user_sessions = count_sessions_per_user()
+    for uid in users:
+        if uid in user_sessions:
+            users[uid]['status_info']['sessions'] = user_sessions[uid]
+        else:
+            users[uid]['status_info']['sessions'] = 0
+
     return users
 
 # get guest user info
@@ -301,6 +315,7 @@ def add_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
 
     guest_users[new_uid] = user
     save_guest_users(guest_users)
+    create_user_status_info(new_uid)
 
     return new_uid
 

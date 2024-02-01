@@ -44,7 +44,7 @@ def proc_get_user_list(context):
         return
 
     user_dict = usermgr.get_all_user_info(True)
-    guest_user_dict = usermgr.get_all_guest_user_info()
+    guest_user_dict = usermgr.get_all_guest_user_info(True)
     if guest_user_dict is not None:
         user_dict.update(guest_user_dict)
 
