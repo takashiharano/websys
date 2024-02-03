@@ -252,7 +252,8 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
         last_accessed['ua'] = ua
 
     elapsed = time - prev_time
-    if elapsed > 0.5:
+    MIN_UPDATE_INTERVAL = 0.5
+    if elapsed > MIN_UPDATE_INTERVAL:
         save_user_sessions_to_file(uid, sessions)
         usermgr.update_user_status_info(uid, 'last_accessed', time)
 
