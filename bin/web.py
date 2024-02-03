@@ -63,9 +63,9 @@ class WebContext:
     #
     # Returns:
     # user: {
-    #   "uid": "root",
-    #   "name": "root",
-    #   "local_name": "root_L",
+    #   "uid": "root", # guest: "123456"
+    #   "name": "root", # guest: "GUEST"
+    #   "local_name": "root_L", # guest: "GUEST_L"
     #   "is_admin": true,
     #   "group": "GROUP1 GROUP2",
     #   "privs": "PRIVILEGE1 PRIVILEGE2",
@@ -73,22 +73,9 @@ class WebContext:
     #   "status": 0,
     #   "created_at": 1667047612.967891,
     #   "updated_at": 1667047612.967891,
-    #   "pw_changed_at": 1667047612.967891
-    # }
-    #
-    # users_guest: {
-    #   "uid": "123456",
-    #   "name": "GUEST",
-    #   "local_name": "GUEST_L",
-    #   "group": "GROUP1",
-    #   "privs": "",
-    #   "desc": "Description",
-    #   "is_guest": true,
-    #   "status": 0,
-    #   "created_at": 1667047612.967891,
-    #   "updated_at": 1667047612.967891,
     #   "pw_changed_at": 1667047612.967891,
-    #   "expires_at": 1571476916.59936
+    #   "is_guest": true, # for guest only
+    #   "expires_at": 1571476916.59936 # for guest only
     # }
     #
     # or None

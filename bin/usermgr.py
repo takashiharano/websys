@@ -116,6 +116,16 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         raise Exception('ALREADY_EXISTS')
 
     now = util.get_timestamp()
+    user = create_new_user(now, uid, name, local_name, is_admin, group, privs, desc, flags, is_guest=False, expires_at=0)
+
+    users[uid] = user
+    save_users(users)
+    save_user_password(uid, pw)
+    create_user_status_info(uid)
+
+    return user
+
+def create_new_user(timestamp, uid, name=None, local_name=None, is_admin=False, group='', privs='', desc='', flags=None, is_guest=False, expires_at=0):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
@@ -132,14 +142,13 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
         'privs': privs,
         'desc': desc,
         'flags': u_flags,
-        'created_at': now,
-        'updated_at': now
+        'created_at': timestamp,
+        'updated_at': timestamp
     }
 
-    users[uid] = user
-    save_users(users)
-    save_user_password(uid, pw)
-    create_user_status_info(uid)
+    if is_guest:
+        user['is_guest'] = True
+        user['expires_at'] = expires_at
 
     return user
 
@@ -295,23 +304,9 @@ def add_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
     name = 'GUEST' + str(gid)
     local_name = name
 
-    desc = util.replace(desc, '\t|\r\n|\n', ' ')
-
     now = util.get_timestamp()
     expires_at = now + valid_min * 60
-    user = {
-        'uid': new_uid,
-        'name': name,
-        'local_name': local_name,
-        'group': group,
-        'privs': privs,
-        'desc': desc,
-        'is_guest': True,
-        'flags': 0,
-        'created_at': now,
-        'updated_at': now,
-        'expires_at': expires_at
-    }
+    user = create_new_user(now, new_uid, name, local_name, is_admin=False, group=group, privs=privs, desc=desc, flags=0, is_guest=True, expires_at=expires_at)
 
     guest_users[new_uid] = user
     save_guest_users(guest_users)
