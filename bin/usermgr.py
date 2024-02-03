@@ -46,14 +46,15 @@ U_FLG_DISABLED = 1 << 1
 #     "uid": "123456",
 #     "name": "GUEST",
 #     "local_name": "GUEST_L",
+#     "is_admin": true,
 #     "group": "GROUP1",
 #     "privs": "",
 #     "desc": "Description",
-#     "is_guest": true,
 #     "flags": 0,
-#     "created_at": 1667047612.967891,
-#     "updated_at": 1667047612.967891,
-#     "expires_at": 1571476916.59936
+#     "created_at": 1706947022.714497
+#     "updated_at": 1706947022.714497
+#     "is_guest": true
+#     "expires_at": 1706948822.714497
 #   },
 #   ...
 # }
@@ -155,12 +156,18 @@ def create_new_user(timestamp, uid, name=None, local_name=None, is_admin=False, 
 # Modify a user
 def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, desc=None, flags=None):
     now = util.get_timestamp()
+    is_guest = False
 
     users = get_all_user_info()
     if users is None:
         users = {}
-    elif uid not in users:
-        raise Exception('NOT_EXISTS')
+
+    if uid not in users:
+        users = get_all_guest_user_info()
+        if users is None or uid not in users:
+            raise Exception('NOT_EXISTS')
+        else:
+            is_guest = True
 
     user = users[uid]
 
@@ -223,7 +230,11 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
         user['updated_at'] = now
 
     users[uid] = user
-    save_users(users)
+
+    if is_guest:
+        save_guest_users(users)
+    else:
+        save_users(users)
 
     return user
 
@@ -330,6 +341,8 @@ def delete_expired_guest():
         user = users[uid]
         if user['expires_at'] >= now:
             new_users[uid] = user
+        else:
+            delete_user_dir(uid)
 
     save_guest_users(new_users)
 
@@ -341,6 +354,7 @@ def delete_guest_user(uid):
     sessionmgr.clear_user_sessions(uid)
     users.pop(uid)
     save_guest_users(users)
+    delete_user_dir(uid)
     return True
 
 # Save Guest Users
