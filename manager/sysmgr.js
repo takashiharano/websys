@@ -459,7 +459,8 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   return html;
 };
 sysmgr.startElapsedCounter = function(param) {
-  util.timecounter.start(param.timeId, param.laTime);
+  var o = {zero: true};
+  util.timecounter.start(param.timeId, param.laTime, o);
 };
 sysmgr.buildTimeLine = function(now, lastAccessedTime) {
   var mn = util.getMidnightTimestamp(now);
