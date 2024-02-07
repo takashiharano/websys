@@ -20,6 +20,8 @@ SESSION_TIMEOUT_SEC = websysconf.SESSION_TIMEOUT_SEC
 MAX_SESSIONS_PER_USER = websysconf.MAX_SESSIONS_PER_USER
 ALGOTRITHM = websysconf.ALGOTRITHM
 
+MIN_FILE_UPDATE_INTERVAL_SEC = 1
+
 current_session_info = None
 
 #----------------------------------------------------------
@@ -252,8 +254,7 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
         last_accessed['ua'] = ua
 
     elapsed = time - prev_time
-    MIN_UPDATE_INTERVAL = 0.5
-    if elapsed > MIN_UPDATE_INTERVAL:
+    if elapsed > MIN_FILE_UPDATE_INTERVAL_SEC:
         save_user_sessions_to_file(uid, sessions)
         usermgr.update_user_status_info(uid, 'last_accessed', time)
 
