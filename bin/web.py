@@ -414,7 +414,7 @@ def get_user_local_name(uid, default=None):
 
 #----------------------------------------------------------
 def synchronize_start():
-    return util.file_lock(LOCK_FILE_PATH, 25, 0.2)
+    return util.file_lock(LOCK_FILE_PATH, 15, 0.2)
 
 def synchronize_end():
     util.file_unlock(LOCK_FILE_PATH)
