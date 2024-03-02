@@ -12,6 +12,7 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 
 import logger
+import common
 import usermgr
 import web
 
@@ -25,15 +26,22 @@ MIN_FILE_UPDATE_INTERVAL_SEC = 0.25
 current_session_info = None
 
 #----------------------------------------------------------
+# Get sessions file path
+#----------------------------------------------------------
+def get_sessions_file_path(uid):
+    path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
+    return path
+
+#----------------------------------------------------------
 # Get all sessions info
 #----------------------------------------------------------
 def get_all_sessions_info():
     return load_all_session_info_from_file()
 
 def get_user_sessions(uid):
-    session_file_path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
+    path = get_sessions_file_path(uid)
     try:
-        session_list = util.load_dict(session_file_path)
+        session_list = common.load_dict(path)
     except Exception as e:
         logger.write_system_log('ERROR', uid, 'sessionmgr.get_user_sessions(): ' + str(e))
         session_list = None
@@ -368,7 +376,7 @@ def load_all_session_info_from_file():
 # Save sessions info
 #----------------------------------------------------------
 def save_user_sessions_to_file(uid, sessions):
-    path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
+    path = get_sessions_file_path(uid)
     if len(sessions) == 0:
         now = util.get_timestamp()
         util.delete_file(path)

@@ -77,7 +77,7 @@ def get_user_info(uid, guest=True):
 
 # get all user info
 def get_all_user_info(extra_info=False):
-    users = util.load_dict(USER_LIST_FILE_PATH)
+    users = common.load_dict(USER_LIST_FILE_PATH)
     if not extra_info:
         return users
 
@@ -263,7 +263,7 @@ def delete_user_dir(uid):
 #------------------------------------------------------------------------------
 # Get all guest user
 def get_all_guest_user_info(extra_info=False):
-    users = util.load_dict(GUEST_USER_LIST_FILE_PATH)
+    users = common.load_dict(GUEST_USER_LIST_FILE_PATH)
     if not extra_info:
         return users
 
@@ -517,7 +517,7 @@ def load_user_status_info(uid):
     path = get_user_status_file_path(uid)
 
     try:
-        data = util.load_dict(path)
+        data = common.load_dict(path)
         if not data is None:
             info = util.update_dict(info, data)
     except Exception as e:

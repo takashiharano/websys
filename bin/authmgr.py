@@ -16,7 +16,6 @@ import sessionmgr
 import usermgr
 import web
 
-USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 ALGOTRITHM = websysconf.ALGOTRITHM
 
 #----------------------------------------------------------

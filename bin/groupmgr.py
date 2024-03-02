@@ -37,7 +37,7 @@ def get_group_info(gid):
 
 # get all group info
 def get_all_group_info():
-    groups = util.load_dict(GROUPS_FILE_PATH)
+    groups = common.load_dict(GROUPS_FILE_PATH)
     return groups
 
 # get all group info list
