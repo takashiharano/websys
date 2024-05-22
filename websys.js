@@ -38,11 +38,11 @@ websys.openChangePwDialog = function() {
   var html = '<table>';
   html += '<tr>';
   html += '<td>New Password:</td>';
-  html += '<td><input type="password" id="websys-pw1" class="websys-dialog"></td>';
+  html += '<td><input type="password" id="websys-pw1" class="websys-dialog" style="color:#000;"></td>';
   html += '</tr>';
   html += '<tr>';
   html += '<td>Re-type:</td>';
-  html += '<td><input type="password" id="websys-pw2" class="websys-dialog"></td>';
+  html += '<td><input type="password" id="websys-pw2" class="websys-dialog" style="color:#000;"></td>';
   html += '</tr>';
   html += '</tr>';
   html += '</table>\n\n';
