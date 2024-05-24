@@ -35,19 +35,23 @@ websys.logout.cb = function(xhr, res) {
 
 //-----------------------------------------------------------------------------
 websys.openChangePwDialog = function() {
-  var html = '<table>';
+  var html = '<div style="margin:10px;">';
+  html += '<table>';
   html += '<tr>';
   html += '<td>New Password:</td>';
-  html += '<td><input type="password" id="websys-pw1" class="websys-dialog" style="color:#000;"></td>';
+  html += '<td><input type="password" id="websys-pw1" class="websys-dialog"></td>';
   html += '</tr>';
   html += '<tr>';
-  html += '<td>Re-type:</td>';
-  html += '<td><input type="password" id="websys-pw2" class="websys-dialog" style="color:#000;"></td>';
+  html += '<td style="text-align:right;">Re-type:</td>';
+  html += '<td><input type="password" id="websys-pw2" class="websys-dialog"></td>';
   html += '</tr>';
   html += '</tr>';
-  html += '</table>\n\n';
-  html += '<button onclick="websys.changePw();">OK</button>';
-  html += '<button onclick="websys.closeDialog();" style="margin-left:4px;">Cancel</button>';
+  html += '</table>\n';
+  html += '<div style="margin-top:8px;">';
+  html += '<button onclick="websys.changePw();" style="min-width:64px;">OK</button>';
+  html += '<button onclick="websys.closeDialog();" style="margin-left:8px;min-width:64px;">Cancel</button>';
+  html += '</div>';
+  html += '</div>';
   var opt = {
     closeAnywhere: false
   };
@@ -1385,7 +1389,6 @@ websys.isGuest = function() {
 };
 
 websys.getUserFlags = function() {
-  var uid = null;
   var userInfo = websys.getUserInfo();
   var flags = 0;
   if (userInfo && userInfo.flags) {
