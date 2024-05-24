@@ -150,6 +150,13 @@ tr.item-list:hover {
   color: #fff;
 }
 
+.dialog {
+  border: 1px solid #51a7e8;
+  border-radius: 4px;
+  color: #fff !important;
+  background: #000 !important;
+}
+
 #user-list {
   font-size: 12px;
 }
