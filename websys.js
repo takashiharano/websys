@@ -1487,15 +1487,26 @@ websys.onReady = function() {
 };
 
 websys.onInfoReady = function() {
-  if (websys.onWebSysReady) {
+  var f = true;
+  if (websys.onWebSysReadyUserFn) {
+    f = websys.onWebSysReadyUserFn();
+  }
+  if (f !== false) {
     websys.onWebSysReady();
   }
 };
 
-websys.onWebSysReady = null;
+websys.onWebSysReady = function() {
+  var flags = websys.getUserFlags();
+  if (flags & websys.U_FLG_NEED_PW_CHANGE) {
+    websys.openChangePwDialog();
+  }
+};
+
+websys.onWebSysReadyUserFn = null;
 websys.init = function(basePath, readyFn) {
   websys.basePath = basePath;
-  websys.onWebSysReady = readyFn;
+  websys.onWebSysReadyUserFn = readyFn;
   if (websys.initStatus == 1) {
     websys.onReady();
   } else {
