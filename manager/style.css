@@ -2,7 +2,7 @@ html, body {
   width: 100%;
   height: calc(100vh - 20px);
   margin: 0;
-  background: #000;
+  background: #1e1e1e;
   color: #fff;
   font-size: 12px;
   font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
@@ -115,7 +115,7 @@ td.item-list,th.item-list {
 }
 
 tr.item-list:hover {
-  background: #004;
+  background: #2c2c2c;
 }
 
 .edit-disabled {
@@ -154,7 +154,7 @@ tr.item-list:hover {
   border: 1px solid #51a7e8;
   border-radius: 4px;
   color: #fff !important;
-  background: #000 !important;
+  background: #101010 !important;
 }
 
 #user-list {

@@ -4,7 +4,7 @@
 var sysmgr = {};
 sysmgr.INSEC = true;
 sysmgr.dialogFgColor = '#fff';
-sysmgr.dialogBgColor = '#000';
+sysmgr.dialogBgColor = '#1e1e1e';
 sysmgr.dialogTitleFgColor = '#fff';
 sysmgr.dialogTitleBgColor = 'linear-gradient(150deg, rgba(0,32,255,0.8),rgba(0,82,255,0.8))';
 
