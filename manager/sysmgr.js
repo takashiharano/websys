@@ -161,8 +161,7 @@ sysmgr.elapsedSinceLastAccess = function(now, t) {
 };
 
 sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
-  var html = '<table>';
-  html += '<tr class="item-list-header">';
+  var html = '<tr class="item-list-header">';
   for (var i = 0; i < columns.length; i++) {
     var column = columns[i];
     var label = column['label'];
@@ -283,10 +282,13 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
     htmlList += '</tr>';
   }
-  htmlList += '</table>';
 
   var htmlHead = sysmgr.buildListHeader(sysmgr.USER_LIST_COLUMNS, sortIdx, sortOrder);
-  var html = htmlHead + htmlList; 
+  var html = '<div style="width:100%;max-height:400px;overflow:auto;">';
+  html += '<table>';
+  html += htmlHead + htmlList; 
+  html += '</table>';
+  html += '</div>';
 
   sysmgr.drawListContent(html);
 };
@@ -349,7 +351,8 @@ sysmgr.getSessionListCb = function(xhr, res, req) {
 
 sysmgr.drawSessionList = function(sessions) {
   var now = util.now();
-  var html = '<table>';
+  var html = '<div style="width:100%;max-height:400px;overflow:auto;">';
+  html += '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
   html += '<td>UID</td>';
@@ -364,6 +367,7 @@ sysmgr.drawSessionList = function(sessions) {
   html += '</tr>';
   html += sysmgr.buildSessionInfoHtml(sessions, now);
   html += '</table>';
+  html += '</div>';
   $el('#session-list').innerHTML = html;
 };
 
@@ -652,7 +656,7 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   html += '    <td>Re-type</td>';
   html += '    <td><input type="password" id="pw2" style="width:100%;"></td>';
   html += '  </tr>';
-  html += '<table>';
+  html += '</table>';
 
   html += '<div style="margin-top:24px;text-align:center;">';
   html += '<button onclick="sysmgr.saveUserInfo();">OK</button>'
@@ -1072,7 +1076,8 @@ sysmgr.getGroupListCb = function(xhr, res) {
 };
 
 sysmgr.drawGroupList = function(list) {
-  var html = '<table>';
+  var html = '<div style="width:100%;max-height:300px;overflow:auto;">';
+  html += '<table>';
   html += '<tr class="item-list-header">';
   html += '<th class="item-list" style="min-width:10em;">GID</th>';
   html += '<th class="item-list" style="min-width:20em;">Prvileges</th>';
@@ -1098,6 +1103,7 @@ sysmgr.drawGroupList = function(list) {
     html += '</tr>';
   }
   html += '</table>';
+  html += '</div>';
   $el('#group-list').innerHTML = html;
 };
 
@@ -1143,7 +1149,7 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
   html += '    <td>Description</td>';
   html += '    <td><input type="text" id="group-desc" style="width:100%;"></td>';
   html += '  </tr>';
-  html += '<table>';
+  html += '</table>';
 
   html += '<div style="margin-top:24px;text-align:center;">';
   html += '<button onclick="sysmgr.saveGroupInfo();">OK</button>'
