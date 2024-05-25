@@ -575,17 +575,19 @@ sysmgr.newUser = function() {
 };
 
 sysmgr.editUser = function(uid) {
-  sysmgr.userEditMode = (uid ? 'edit' : 'new');
+  var mode = (uid ? 'edit' : 'new');
+  sysmgr.userEditMode = mode;
   if (!sysmgr.userEditWindow) {
-    sysmgr.userEditWindow = sysmgr.openUserInfoEditorWindow(sysmgr.userEditMode, uid);
+    sysmgr.userEditWindow = sysmgr.openUserInfoEditorWindow(mode, uid);
   }
   sysmgr.clearUserInfoEditor();
-  if (uid) {
+  if (mode == 'edit') {
     var params = {
       uid: uid
     };
     sysmgr.execCmd('user', params, sysmgr.GetUserInfoCb);
   } else {
+    $el('#flags').value = '1';
     $el('#uid').focus();
   }
 };
@@ -604,7 +606,7 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   html += '  <tr>';
   html += '    <td>UID</td>';
   html += '    <td style="width:256px;">';
-  html += '      <input type="text" id="uid" style="width:100%;">';
+  html += '      <input type="text" id="uid" style="width:100%;" onblur="sysmgr.onUidBlur();">';
   html += '    </td>';
   html += '  </tr>';
   html += '  <tr>';
@@ -691,6 +693,30 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
 
   var win = util.newWindow(opt);
   return win;
+};
+
+sysmgr.onUidBlur = function() {
+  var name = $el('#name').value;
+  if (name) return;
+  var uid = $el('#uid').value;
+  if (uid.match()) {
+    name = sysmgr.mail2name(uid);
+  }
+  $el('#name').value = name;
+};
+
+sysmgr.mail2name = function(m) {
+  var a = m.split('@');
+  a = a[0].split('.');
+  if (a.length == 1) return a[0];
+  var s = '';
+  for (var i = 0; i < a.length; i++) {
+    if (i > 0) {
+      s += ' ';
+    }
+    s += util.capitalize(a[i]);
+  }
+  return s;
 };
 
 sysmgr.GetUserInfoCb = function(xhr, res) {
