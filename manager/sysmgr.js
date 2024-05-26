@@ -241,14 +241,14 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     var escDesc = util.escHtml(desc);
     var dispDesc = '<span style="display:inline-block;width:100%;overflow:hidden;text-overflow:ellipsis;"';
     if (util.lenW(desc) > 35) {
-      dispDesc += ' data-tooltip="' + escDesc + '"';
+      dispDesc += ' data-tooltip2="' + escDesc + '"';
     }
     dispDesc += '>' + escDesc + '</span>';
     var active = (sessions > 0);
     var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed, sysmgr.INSEC, active);
 
-    var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
-    var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip="Edit">' + uid + '</span>';
+    var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
+    var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + uid + '</span>';
 
     htmlList += '<tr class="item-list">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
@@ -267,7 +267,7 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
       if ((sysmgr.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= sysmgr.websysconf.LOGIN_FAILURE_MAX)) {
         clz += ' text-red';
       }
-      htmlList += '<span class="' + clz + '" data-tooltip="Last failed: ' + loginFailedTime + '" onclick="sysmgr.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
+      htmlList += '<span class="' + clz + '" data-tooltip2="Last failed: ' + loginFailedTime + '" onclick="sysmgr.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
     } else {
       htmlList += '';
     }
@@ -439,8 +439,8 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var brws = util.getBrowserInfo(la['ua']);
   var ua = brws.name + ' ' + brws.version;
   var led = sysmgr.buildLedHtml(now, laTime, false, true);
-  var ssidLink = '<span class="pseudo-link link-button" onclick="sysmgr.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
-  var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
+  var ssidLink = '<span class="pseudo-link link-button" onclick="sysmgr.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip2="' + sid + '">' + ssid + '</span>';
+  var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
   var timeId = 'tm-' + sid7;
   var tmspan = '<span id="' + timeId + '"></span>'
   var timeline = sysmgr.buildTimeLine(now, laTime);
@@ -1095,7 +1095,7 @@ sysmgr.drawGroupList = function(list) {
     var updatedDate = sysmgr.getDateTimeString(group.updated_at, sysmgr.INSEC);
 
     html += '<tr class="item-list">';
-    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysmgr.editGroup(\'' + gid + '\');" data-tooltip="Edit">' + gid + '</span></td>';
+    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysmgr.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + gid + '</span></td>';
     html += '<td class="item-list">' + privs + '</td>';
     html += '<td class="item-list">' + desc + '</td>';
     html += '<td class="item-list">' + createdDate + '</td>';
