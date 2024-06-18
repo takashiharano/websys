@@ -552,12 +552,15 @@ sysmgr.sortItemList = function(sortIdx, sortOrder) {
 sysmgr.confirmLogoutSession = function(uid, sid) {
   var cSid = websys.getSessionId();
   var ssid = util.snip(sid, 7, 7, '..');
+  var currentUid = websys.getUserId();
   var m = 'Logout?\n\n';
   if (sid == cSid) {
     m += '<span style="color:#f44;font-weight:bold;">[CURRENT SESSION]</span>\n';
   }
   m += '<div style="text-align:left;">';
-  m += 'uid: ' + uid + '\n';
+  m += 'uid: ' + uid;
+  if (uid == currentUid) m += ' <span style="color:#2af;">(You)</span>';
+  m += '\n';
   m += 'sid: ' + sid;
   m += '</div>';
   util.confirm(m, sysmgr.logoutSession, {data: sid});
