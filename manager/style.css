@@ -157,6 +157,10 @@ tr.item-list:hover {
   background: #101010 !important;
 }
 
+.timeline-span {
+  opacity: 0.6;
+}
+
 #user-list {
   font-size: 12px;
 }

@@ -473,25 +473,27 @@ sysmgr.buildTimeLine = function(now, lastAccessedTime) {
   var tmp = nowHHMM.split(':');
   var nowHH = tmp[0];
   var nowMM = tmp[1];
+  var accDateTime = util.getDateTimeString(lastAccessedTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var accYYYYMMDD = util.getDateTimeString(lastAccessedTime, '%YYYY%MM%DD');
   var accHHMM = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
   tmp = accHHMM.split(':');
   var accHH = tmp[0];
   var accMM = tmp[1];
 
-  var span = '<span style="opacity:0.6;">';
-  var html = span;
+  var html = '<span style="cursor:default;">';
+  html += '<span class="timeline-span">';
   var f = false;
   for (var i = 0; i <= 23; i++) {
     if ((i == 0) && (lastAccessedTime < mn)) {
-      html += '</span><span style="color:#d66;">&lt;</span>' + span;
+      html += '</span><span style="color:#d66;" data-tooltip="' + accDateTime + '">&lt;</span>';
+      html += '<span class="timeline-span">';
     } else {
       html += '|';
     }
     for (var j = 0; j < 4; j++) {
       var s = '-';
       if ((accYYYYMMDD == nowYYYYMMDD) && (sysmgr.inTheTimeSlot(i, j, accHH, accMM))) {
-        s = '</span><span style="color:#0f0;">*</span>' + span;
+        s = '</span><span style="color:#0f0;" data-tooltip="' + accDateTime + '">*</span><span class="timeline-span">';
       }
       html += s;
       if (sysmgr.inTheTimeSlot(i, j, nowHH, nowMM)) {
@@ -501,6 +503,7 @@ sysmgr.buildTimeLine = function(now, lastAccessedTime) {
     }
   }
   if (f) html += '</span>';
+  html += '</span>';
   html += '</span>';
   return html;
 };
