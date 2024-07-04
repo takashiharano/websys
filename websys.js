@@ -10,6 +10,8 @@ websys.ST_CHANGE_PW = 3;
 websys.U_FLG_NEED_PW_CHANGE = 1;
 websys.U_FLG_DISABLED = 1 << 1;
 
+websys.sendEncKey = 1;
+websys.recvEncKey = 7;
 websys.initStatus = 0;
 websys.status = 0;
 websys.isDbgAvailable = false;
@@ -1215,7 +1217,7 @@ websys.http = function(req, cb) {
     if (newReq.data instanceof Object) {
       newReq.data = util.http.buildQueryString(newReq.data);
     }
-    newReq.data = e(newReq.data, 1);
+    newReq.data = e(newReq.data, websys.sendEncKey);
   }
   websys.onHttpOn();
   websys.httpSessions++;
@@ -1230,16 +1232,18 @@ websys.http.onDone = function(xhr, res, req) {
     websys.onHttpOff();
   }
   if (xhr.status == 200) {
-    res = res.trim();
     try {
-      res = d(res, 7);
-      var resJson = util.fromJSON(res);
-      if (resJson.status == 'AUTH_ERROR') {
+      if (typeof res == 'string') {
+        res = res.trim();
+        res = d(res, websys.recvEncKey);
+        var resObj = util.fromJSON(res);
+      } else {
+        resObj = res;
+      }
+      if (resObj.status == 'AUTH_ERROR') {
         setTimeout(websys.getUserSessionInfo, 0);
       }
     } catch (e) {}
-  }
-  if (xhr.status == 200) {
     // always Content-Type: text/plain; charset=utf-8
     if (orgReq.responseType == 'json') {
       res = util.fromJSON(res);

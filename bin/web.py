@@ -17,11 +17,12 @@ import groupmgr
 import sessionmgr
 import authmgr
 
+LOCK_FILE_PATH = websysconf.LOCK_FILE_PATH
 root_path = ''
 query = None
-
-encryption = True
-LOCK_FILE_PATH = websysconf.LOCK_FILE_PATH
+sendrecv_encryption = True
+recv_encryption_key = 1
+send_encryption_key = 7
 
 #----------------------------------------------------------
 # set root path
@@ -229,10 +230,10 @@ def get_request_param(key=None, default=None):
     if q is None or util.typename(q) == 'FieldStorage':
         return default
 
-    if encryption:
+    if sendrecv_encryption:
         q = util.replace(q, '&?_trcid=.+', '')
         try:
-            q = bsb64.decode_string(q, 1)
+            q = bsb64.decode_string(q, recv_encryption_key)
         except:
             pass
 
@@ -314,14 +315,14 @@ def get_user_agent():
 #----------------------------------------------------------
 # send response
 #----------------------------------------------------------
-def send_response(result, type, headers=None, encoding=None):
+def send_response(result, type, headers=None, encoding=None, encryption=sendrecv_encryption):
     if headers is None:
         session_info = sessionmgr.get_current_session_info_from_global()
         cookies = build_session_cookie(session_info)
         headers = cookies
-    _send_response(result, type, headers, encoding)
+    _send_response(result, type, headers, encoding, encryption)
 
-def _send_response(result, type, headers=None, encoding=None):
+def _send_response(result, type, headers=None, encoding=None, encryption=False):
     if type == 'application/json' and util.typename(result) != 'str':
         result = util.to_json(result)
 
@@ -329,7 +330,7 @@ def _send_response(result, type, headers=None, encoding=None):
         content = result
     else:
         if encryption:
-            content = bsb64.encode_string(result, 7)
+            content = bsb64.encode_string(result, send_encryption_key)
             type = 'text/plain'
         else:
             content = result
@@ -337,10 +338,10 @@ def _send_response(result, type, headers=None, encoding=None):
     util.send_response(content, type, headers=headers)
 
 #----------------------------------------------------------
-def send_result_json(status, body=None, headers=None, http_headers=None):
+def send_result_json(status, body=None, headers=None, http_headers=None, encryption=sendrecv_encryption):
     result = util.build_result_object(status, body, headers)
     content = util.to_json(result)
-    send_response(content, 'application/json', headers=http_headers)
+    send_response(content, 'application/json', headers=http_headers, encryption=encryption)
 
 #----------------------------------------------------------
 # Blue Screen
