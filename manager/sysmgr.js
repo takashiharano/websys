@@ -473,7 +473,8 @@ sysmgr.buildTimeLine = function(now, lastAccessedTime) {
   var tmp = nowHHMM.split(':');
   var nowHH = tmp[0];
   var nowMM = tmp[1];
-  var accDateTime = util.getDateTimeString(lastAccessedTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+  var accDateTime = util.getDateTimeString(lastAccessedTime, '%YYYY-%MM-%DD %HH:%mm');
+  var accTime = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
   var accYYYYMMDD = util.getDateTimeString(lastAccessedTime, '%YYYY%MM%DD');
   var accHHMM = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
   tmp = accHHMM.split(':');
@@ -493,7 +494,7 @@ sysmgr.buildTimeLine = function(now, lastAccessedTime) {
     for (var j = 0; j < 4; j++) {
       var s = '-';
       if ((accYYYYMMDD == nowYYYYMMDD) && (sysmgr.inTheTimeSlot(i, j, accHH, accMM))) {
-        s = '</span><span style="color:#0f0;" data-tooltip="' + accDateTime + '">*</span><span class="timeline-span">';
+        s = '</span><span style="color:#0f0;" data-tooltip="' + accTime + '">*</span><span class="timeline-span">';
       }
       html += s;
       if (sysmgr.inTheTimeSlot(i, j, nowHH, nowMM)) {
