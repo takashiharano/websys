@@ -69,6 +69,14 @@ td {
   vertical-align: top;
 }
 
+table.edit-table {
+  width: 100%;
+}
+
+.edit-table td {
+  white-space: pre;
+}
+
 button, input[type="button"], input[type="submit"] {
   min-width: 45px;
   border: none;

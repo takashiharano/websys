@@ -613,12 +613,10 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   }
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:290px;text-align:left;">';
 
-  html += '<table>';
+  html += '<table class="edit-table">';
   html += '  <tr>';
   html += '    <td>UID</td>';
-  html += '    <td style="width:256px;">';
-  html += '      <input type="text" id="uid" style="width:100%;" onblur="sysmgr.onUidBlur();">';
-  html += '    </td>';
+  html += '    <td><input type="text" id="uid" style="width:100%;" onblur="sysmgr.onUidBlur();"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Full name</td>';
@@ -678,7 +676,7 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
     resizable: true,
     pos: 'c',
     closeButton: true,
-    width: 480,
+    width: 500,
     height: 380,
     minWidth: 480,
     minHeight: 360,
