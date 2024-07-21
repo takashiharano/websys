@@ -26,7 +26,7 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'privs', label: 'Privileges', style: 'min-width:5em;'},
   {key: 'info1', label: 'Info1', style: 'min-width:5em;'},
   {key: 'info2', label: 'Info2', style: 'min-width:5em;'},
-  {key: 'desc', label: 'Description', style: 'min-width:10em;'},
+  {key: 'desc', label: 'Description', style: 'min-width:5em;'},
   {key: 'flags', label: 'Flags'},
   {key: 'status_info.login_failed_count', label: 'Fail', sort: false},
   {key: 'status_info.sessions', label: 'S'},
@@ -220,7 +220,7 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     if (sortOrder > 0) {
       var srtDef = sysmgr.USER_LIST_COLUMNS[sortIdx];
       var isDesc = (sortOrder == 2);
-      items = sysmgr.sortList(items, srtDef.key, isDesc, srtDef.meta);
+      items = sysmgr.sortList(items, srtDef.key, isDesc);
     }
   }
 
