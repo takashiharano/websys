@@ -261,7 +261,9 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     var dispInfo1 = sysmgr.buildCopyableLabel(info1);
     var dispInfo2 = sysmgr.buildCopyableLabel(info2);
 
-    htmlList += '<tr class="item-list">';
+    var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
+
+    htmlList += '<tr class="item-list ' + clz + '">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + dispFullname + '</td>';
@@ -1151,7 +1153,9 @@ sysmgr.drawGroupList = function(list) {
     var createdDate = sysmgr.getDateTimeString(group.created_at, sysmgr.INSEC);
     var updatedDate = sysmgr.getDateTimeString(group.updated_at, sysmgr.INSEC);
 
-    html += '<tr class="item-list">';
+    var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
+
+    html += '<tr class="item-list ' + clz + '">';
     html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysmgr.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + gid + '</span></td>';
     html += '<td class="item-list">' + privs + '</td>';
     html += '<td class="item-list">' + desc + '</td>';

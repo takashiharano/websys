@@ -118,12 +118,20 @@ button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
 }
 
 td.item-list,th.item-list {
-  border: 1px solid #888;
+  border: 1px solid #484848;
   white-space: nowrap;
 }
 
 tr.item-list:hover {
-  background: #2c2c2c;
+  background: #444;
+}
+
+.row-odd {
+  background: #282828;
+}
+
+.row-even {
+  background: #323232;
 }
 
 .edit-disabled {
