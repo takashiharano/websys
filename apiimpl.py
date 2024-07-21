@@ -281,10 +281,13 @@ def cmd_useradd(context):
     uid = web.get_request_param('uid')
     name = web.get_request_param('name')
     local_name = web.get_request_param('local_name')
+    email = web.get_request_param('email')
     pw = web.get_request_param('pw')
     p_admin = web.get_request_param('admin')
     p_group = web.get_request_param('group', '')
     p_privs = web.get_request_param('privs')
+    info1 = web.get_request_param('info1', '')
+    info2 = web.get_request_param('info2', '')
     desc = web.get_request_param('desc', '')
     p_flags = web.get_request_param('flags')
 
@@ -323,7 +326,7 @@ def cmd_useradd(context):
         p_flags = None
 
     try:
-        usermgr.create_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, privs=privs, desc=desc, flags=p_flags)
+        usermgr.add_user(uid, pw_hash, name=name, local_name=local_name, email=email, is_admin=is_admin, group=group, privs=privs, info1=info1, info2=info2, desc=desc, flags=p_flags)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -353,6 +356,7 @@ def cmd_usermod(context):
 
     name = web.get_request_param('name')
     local_name = web.get_request_param('local_name')
+    email = web.get_request_param('email')
 
     pw = web.get_request_param('pw')
     pw_hash = None
@@ -366,6 +370,7 @@ def cmd_usermod(context):
     privs = None
     aprivs = None
     rprivs = None
+    info1 = None
     desc = None
     u_flags = None
 
@@ -391,7 +396,8 @@ def cmd_usermod(context):
 
         aprivs = _get_optional_param_by_list('aprivs')
         rprivs = _get_optional_param_by_list('rprivs')
-
+        info1 = web.get_request_param('info1', '')
+        info2 = web.get_request_param('info2', '')
         desc = web.get_request_param('desc', '')
 
         p_flags = web.get_request_param('flags')
@@ -399,7 +405,7 @@ def cmd_usermod(context):
             u_flags = p_flags
 
     try:
-        usermgr.modify_user(uid, pw_hash, name=name, local_name=local_name, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, flags=u_flags)
+        usermgr.modify_user(uid, pw_hash, name=name, local_name=local_name, email=email, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, desc=desc, flags=u_flags)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:

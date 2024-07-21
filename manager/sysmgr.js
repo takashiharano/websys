@@ -20,10 +20,13 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:10em;'},
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
+  {key: 'email', label: 'Email', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
-  {key: 'group', label: 'Groups', style: 'min-width:15em;'},
-  {key: 'privs', label: 'Privileges', style: 'min-width:10em;'},
-  {key: 'desc', label: 'Description', style: 'min-width:15em;'},
+  {key: 'group', label: 'Groups', style: 'min-width:5em;'},
+  {key: 'privs', label: 'Privileges', style: 'min-width:5em;'},
+  {key: 'info1', label: 'Info1', style: 'min-width:5em;'},
+  {key: 'info2', label: 'Info2', style: 'min-width:5em;'},
+  {key: 'desc', label: 'Description', style: 'min-width:10em;'},
   {key: 'flags', label: 'Flags'},
   {key: 'status_info.login_failed_count', label: 'Fail', sort: false},
   {key: 'status_info.sessions', label: 'S'},
@@ -216,8 +219,8 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
       var srtDef = sysmgr.USER_LIST_COLUMNS[sortIdx];
-      var desc = (sortOrder == 2);
-      items = sysmgr.sortList(items, srtDef.key, desc, srtDef.meta);
+      var isDesc = (sortOrder == 2);
+      items = sysmgr.sortList(items, srtDef.key, isDesc, srtDef.meta);
     }
   }
 
@@ -225,8 +228,9 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
     var uid = item.uid;
-    var name = item.name.replace(/ /g, '&nbsp');
-    var local_name = item.local_name.replace(/ /g, '&nbsp');
+    var name = item.name;
+    var local_name = item.local_name;
+    var email = item.email;
     var statusInfo = item.status_info;
     var loginFailedCount = statusInfo.login_failed_count;
     var loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
@@ -237,10 +241,12 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
     var createdDate = sysmgr.getDateTimeString(item.created_at, sysmgr.INSEC);
     var updatedDate = sysmgr.getDateTimeString(item.updated_at, sysmgr.INSEC);
     var pwChangedDate = sysmgr.getDateTimeString(statusInfo.pw_changed_at, sysmgr.INSEC);
+    var info1 = item.info1;
+    var info2 = item.info2;
     var desc = (item.desc ? item.desc : '');
     var escDesc = util.escHtml(desc);
     var dispDesc = '<span style="display:inline-block;width:100%;overflow:hidden;text-overflow:ellipsis;"';
-    if (util.lenW(desc) > 35) {
+    if (util.lenW(desc) > 15) {
       dispDesc += ' data-tooltip="' + escDesc + '"';
     }
     dispDesc += '>' + escDesc + '</span>';
@@ -249,16 +255,24 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
 
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
     var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + uid + '</span>';
+    var dispFullname = sysmgr.buildCopyableLabel(name);
+    var dispLocalFullname = sysmgr.buildCopyableLabel(local_name);
+    var dispEmail = sysmgr.buildCopyableLabel(email);
+    var dispInfo1 = sysmgr.buildCopyableLabel(info1);
+    var dispInfo2 = sysmgr.buildCopyableLabel(info2);
 
     htmlList += '<tr class="item-list">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
-    htmlList += '<td class="item-list">' + name + '</td>';
-    htmlList += '<td class="item-list">' + local_name + '</td>';
+    htmlList += '<td class="item-list">' + dispFullname + '</td>';
+    htmlList += '<td class="item-list">' + dispLocalFullname + '</td>';
+    htmlList += '<td class="item-list">' + dispEmail + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
     htmlList += '<td class="item-list">' + item.group + '</td>';
     htmlList += '<td class="item-list">' + item.privs + '</td>';
-    htmlList += '<td class="item-list" style="max-width:20em">' + dispDesc + '</td>';
+    htmlList += '<td class="item-list">' + dispInfo1 + '</td>';
+    htmlList += '<td class="item-list">' + dispInfo2 + '</td>';
+    htmlList += '<td class="item-list" style="max-width:15em;">' + dispDesc + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + item.flags + '</td>';
 
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
@@ -291,6 +305,14 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
   html += '</div>';
 
   sysmgr.drawListContent(html);
+};
+
+sysmgr.buildCopyableLabel = function(s) {
+  if (!s) s = '';
+  var v = s.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
+  var label = s.replace(/ /g, '&nbsp;');
+  var r = '<span class="pseudo-link" onclick="sysmgr.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</span>';
+  return r;
 };
 
 sysmgr.buildLedHtml = function(now, ts, inSec, active) {
@@ -611,7 +633,7 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   if (uid && (uid != currentUid)) {
     html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="sysmgr.deleteUser(\'' + uid + '\');">DEL</button></div>';
   }
-  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:290px;text-align:left;">';
+  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:400px;height:360px;text-align:left;">';
 
   html += '<table class="edit-table">';
   html += '  <tr>';
@@ -627,6 +649,10 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   html += '    <td><input type="text" id="local_name" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
+  html += '    <td>Email</td>';
+  html += '    <td><input type="text" id="email" style="width:100%;"></td>';
+  html += '  </tr>';
+  html += '  <tr>';
   html += '    <td>isAdmin</td>';
   html += '    <td><input type="checkbox" id="isadmin">';
   html += '    </td>';
@@ -638,6 +664,14 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   html += '  <tr>';
   html += '    <td>Privileges</td>';
   html += '    <td><input type="text" id="privs" style="width:100%;"></td>';
+  html += '  </tr>';
+  html += '  <tr>';
+  html += '    <td>Info1</td>';
+  html += '    <td><input type="text" id="info1" style="width:100%;"></td>';
+  html += '  </tr>';
+  html += '  <tr>';
+  html += '    <td>Info2</td>';
+  html += '    <td><input type="text" id="info2" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Description</td>';
@@ -663,7 +697,7 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   html += '  </tr>';
   html += '</table>';
 
-  html += '<div style="margin-top:24px;text-align:center;">';
+  html += '<div style="margin-top:40px;text-align:center;">';
   html += '<button onclick="sysmgr.saveUserInfo();">OK</button>'
   html += '<button style="margin-left:8px;" onclick="sysmgr.userEditWindow.close();">Cancel</button>'
   html += '</div>';
@@ -677,9 +711,9 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
     pos: 'c',
     closeButton: true,
     width: 500,
-    height: 380,
-    minWidth: 480,
-    minHeight: 360,
+    height: 460,
+    minWidth: 500,
+    minHeight: 460,
     scale: 1,
     hidden: false,
     modal: false,
@@ -749,9 +783,12 @@ sysmgr.setUserInfoToEditor = function(info) {
   }
   $el('#name').value = info.name;
   $el('#local_name').value = info.local_name;
+  $el('#email').value = info.email;
   $el('#isadmin').checked = info.is_admin;
   $el('#group').value = info.group;
   $el('#privs').value = info.privs;
+  $el('#info1').value = info.info1;
+  $el('#info2').value = info.info2;
   $el('#desc').value = (info.desc ? info.desc : '');
   $el('#flags').value = info.flags;
 };
@@ -761,9 +798,12 @@ sysmgr.clearUserInfoEditor = function() {
     uid: '',
     name: '',
     local_name: '',
+    email: '',
     is_admin: false,
     group: '',
     privs: '',
+    info1: '',
+    info2: '',
     desc: '',
     flags: ''
   };
@@ -783,9 +823,12 @@ sysmgr.addUser = function() {
   var uid = $el('#uid').value;
   var name = $el('#name').value;
   var local_name = $el('#local_name').value;
+  var email = $el('#email').value;
   var isAdmin = ($el('#isadmin').checked ? 'true' : 'false');
   var group = $el('#group').value;
   var privs = $el('#privs').value;
+  var info1 = $el('#info1').value;
+  var info2 = $el('#info2').value;
   var desc = $el('#desc').value;
   var flags = $el('#flags').value.trim();
   var pw1 = $el('#pw1').value;
@@ -838,9 +881,12 @@ sysmgr.addUser = function() {
     uid: uid,
     name: name,
     local_name: local_name,
+    email: email,
     admin: isAdmin,
     group: group,
     privs: privs,
+    info1: info1,
+    info2: info2,
     desc: desc,
     flags: flags,
     pw: pw
@@ -863,9 +909,12 @@ sysmgr.updateUser = function() {
   var uid = $el('#uid').value;
   var name = $el('#name').value;
   var local_name = $el('#local_name').value;
+  var email = $el('#email').value;
   var isAdmin = ($el('#isadmin').checked ? 'true' : 'false');
   var group = $el('#group').value;
   var privs = $el('#privs').value;
+  var info1 = $el('#info1').value;
+  var info2 = $el('#info2').value;
   var desc = $el('#desc').value;
   var flags = $el('#flags').value;
   var pw1 = $el('#pw1').value;
@@ -882,9 +931,12 @@ sysmgr.updateUser = function() {
     uid: uid,
     name: name,
     local_name: local_name,
+    email: email,
     admin: isAdmin,
     group: group,
     privs: privs,
+    info1: info1,
+    info2: info2,
     desc: desc,
     flags: flags
   };
@@ -1331,6 +1383,20 @@ sysmgr.onUserEditWindowClose = function() {
 sysmgr.onGroupEditWindowClose = function() {
   sysmgr.groupEditWindow = null;
   sysmgr.groupEditMode = null;
+};
+
+sysmgr.copy = function(s) {
+  util.copy(s);
+  var o = {pos: 'pointer'};
+  sysmgr.showInfotip('Copied', 1000, o);
+};
+
+sysmgr.showInfotip = function(m, d, o) {
+  if (!o) o = {};
+  o.style = {
+    'font-size': '14px'
+  };
+  util.infotip.show(m, d, o);
 };
 
 $onCtrlS = function(e) {

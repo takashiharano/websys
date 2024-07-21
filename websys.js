@@ -658,9 +658,12 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
   var nameL = dbg.getOptVal(arg, 'nlocal');
+  var email = dbg.getOptVal(arg, 'email');
   var admin = dbg.getOptVal(arg, 'admin');
   var group = dbg.getOptVal(arg, 'g');
   var privs = dbg.getOptVal(arg, 'privs');
+  var info1 = dbg.getOptVal(arg, 'info1');
+  var info2 = dbg.getOptVal(arg, 'info2');
   var desc = dbg.getOptVal(arg, 'desc');
   var flags = dbg.getOptVal(arg, 'flags');
   if (!p) p = '';
@@ -688,6 +691,15 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     }
     param.local_name = nameL;
   }
+  if (email) {
+    try {
+      email = eval(email);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.email = email;
+  }
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
   }
@@ -708,6 +720,24 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
       return;
     }
     param.privs = privs;
+  }
+  if (info1) {
+    try {
+      info1 = eval(info1);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.info1 = info1;
+  }
+  if (info2) {
+    try {
+      info2 = eval(info2);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.info2 = info2;
   }
   if (desc) {
     try {
@@ -746,6 +776,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var p = dbg.getOptVal(arg, 'p');
   var name = dbg.getOptVal(arg, 'n');
   var nameL = dbg.getOptVal(arg, 'nlocal');
+  var email = dbg.getOptVal(arg, 'email');
   var admin = dbg.getOptVal(arg, 'admin');
   var group = dbg.getOptVal(arg, 'g');
   var agroup = dbg.getOptVal(arg, 'aG');
@@ -753,6 +784,8 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var privs = dbg.getOptVal(arg, 'privs');
   var aprivs = dbg.getOptVal(arg, 'aPriv');
   var rprivs = dbg.getOptVal(arg, 'rPriv');
+  var info1 = dbg.getOptVal(arg, 'info1');
+  var info2 = dbg.getOptVal(arg, 'info2');
   var desc = dbg.getOptVal(arg, 'desc');
 
   if (!uid || (admin && (admin != 'true') && (admin != 'false'))) {
@@ -781,6 +814,15 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       return;
     }
     param.local_name = nameL;
+  }
+  if (email) {
+    try {
+      email = eval(email);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.email = email;
   }
   if (p) {
     var pw = websys.getUserPwHash(uid, p);
@@ -842,6 +884,24 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       return;
     }
     param.rprivs = rprivs;
+  }
+  if (info1) {
+    try {
+      info1 = eval(info1);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.info1 = info1;
+  }
+  if (info2) {
+    try {
+      info1 = eval(info2);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.info2 = info2;
   }
   if (desc) {
     try {

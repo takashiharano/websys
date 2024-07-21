@@ -29,9 +29,12 @@ USER_DATA_FIELDS = [
     {'key': 'uid'},
     {'key': 'name'},
     {'key': 'local_name'},
+    {'key': 'email'},
     {'key': 'is_admin', 'data_type': 'bool'},
     {'key': 'group'},
     {'key': 'privs'},
+    {'key': 'info1'},
+    {'key': 'info2'},
     {'key': 'desc'},
     {'key': 'flags', 'data_type': 'int'},
     {'key': 'created_at', 'data_type': 'float'},
@@ -46,8 +49,8 @@ USER_DATA_FIELDS_FOR_GUEST = [
 GUEST_DATA_FIELDS = USER_DATA_FIELDS + USER_DATA_FIELDS_FOR_GUEST
 
 # User data format
-# #uid	name	local_name	is_admin	group	privs	desc	flags	created_at	updated_at
-# admin	Admin	ADMIN	1	g1	p1	Description	0	1721446496.789123	1721446496.789123
+# #uid	name	local_name	is_admin	group	privs	info1	info2	desc	flags	created_at	updated_at
+# admin	Admin	ADMIN	1	g1	p1	Info1	Info2	Description	0	1721446496.789123	1721446496.789123
 
 # Object structure
 # users
@@ -56,9 +59,12 @@ GUEST_DATA_FIELDS = USER_DATA_FIELDS + USER_DATA_FIELDS_FOR_GUEST
 #     "uid": "root",
 #     "name": "root",
 #     "local_name": "root_L",
+#     "email": "user@host",
 #     "is_admin": true,
 #     "group": "GROUP1 GROUP2",
 #     "privs": "PRIVILEGE1 PRIVILEGE2",
+#     "info1": "Info1",
+#     "info2": "Info2",
 #     "desc": "Description",
 #     "flags": 0,
 #     "created_at": 1667047612.967891,
@@ -73,9 +79,12 @@ GUEST_DATA_FIELDS = USER_DATA_FIELDS + USER_DATA_FIELDS_FOR_GUEST
 #     "uid": "123456",
 #     "name": "GUEST",
 #     "local_name": "GUEST_L",
+#     "email": "",
 #     "is_admin": true,
 #     "group": "GROUP1",
 #     "privs": "",
+#     "info1": "",
+#     "info2": "",
 #     "desc": "Description",
 #     "flags": 0,
 #     "created_at": 1706947022.714497
@@ -266,15 +275,16 @@ def count_sessions_per_user():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', privs='', desc='', flags=None):
+def add_user(uid, pw, name=None, local_name=None, email=None, is_admin=False, group='', privs='', info1='', info2='', desc='', flags=None):
+    now = util.get_timestamp()
     users = get_all_user_info()
+
     if users is None:
         users = {}
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
-    now = util.get_timestamp()
-    user = create_new_user(now, uid, name, local_name, is_admin, group, privs, desc, flags, is_guest=False, expires_at=0)
+    user = create_new_user(now, uid, name, local_name, email, is_admin, group, privs, info1, info2, desc, flags)
 
     users[uid] = user
     save_users(users)
@@ -283,7 +293,7 @@ def create_user(uid, pw, name=None, local_name=None, is_admin=False, group='', p
 
     return user
 
-def create_new_user(timestamp, uid, name=None, local_name=None, is_admin=False, group='', privs='', desc='', flags=None, is_guest=False, expires_at=0):
+def create_new_user(timestamp, uid, name=None, local_name=None, email='', is_admin=False, group='', privs='', info1='', info2='', desc='', flags=None):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
@@ -295,23 +305,22 @@ def create_new_user(timestamp, uid, name=None, local_name=None, is_admin=False, 
         'uid': uid,
         'name': name,
         'local_name': local_name,
+        'email': email,
         'is_admin': is_admin,
         'group': group,
         'privs': privs,
+        'info1': info1,
+        'info2': info2,
         'desc': desc,
         'flags': u_flags,
         'created_at': timestamp,
         'updated_at': timestamp
     }
 
-    if is_guest:
-        user['is_guest'] = True
-        user['expires_at'] = expires_at
-
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, desc=None, flags=None):
+def modify_user(uid, pw=None, name=None, local_name=None, email=None, is_admin=None, group=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, desc=None, flags=None):
     now = util.get_timestamp()
     is_guest = False
 
@@ -335,6 +344,10 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
 
     if local_name is not None:
         user['local_name'] = local_name
+        updated = True
+
+    if email is not None:
+        user['email'] = email
         updated = True
 
     if is_admin is not None:
@@ -363,6 +376,14 @@ def modify_user(uid, pw=None, name=None, local_name=None, is_admin=None, group=N
 
     if rprivs is not None:
         user['privs'] = common.remove_item_value(user['privs'], rprivs)
+        updated = True
+
+    if info1 is not None:
+        user['info1'] = info1
+        updated = True
+
+    if info2 is not None:
+        user['info2'] = info2
         updated = True
 
     if desc is not None:
@@ -448,6 +469,7 @@ def get_guest_user_info(uid):
 
 # Create a guest user
 def add_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
+    now = util.get_timestamp()
     users = get_all_user_info()
 
     guest_users = get_all_guest_user_info()
@@ -472,9 +494,9 @@ def add_guest(uid=None, uid_len=6, valid_min=30, group='', privs='', desc=''):
     name = 'GUEST' + str(gid)
     local_name = name
 
-    now = util.get_timestamp()
-    expires_at = now + valid_min * 60
-    user = create_new_user(now, new_uid, name, local_name, is_admin=False, group=group, privs=privs, desc=desc, flags=0, is_guest=True, expires_at=expires_at)
+    user = create_new_user(now, new_uid, name, local_name, is_admin=False, group=group, privs=privs, desc=desc, flags=0)
+    user['is_guest'] = True
+    user['expires_at'] = now + valid_min * 60
 
     guest_users[new_uid] = user
     save_guest_users(guest_users)
