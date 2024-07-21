@@ -15,15 +15,42 @@ import logger
 import common
 import sessionmgr
 
-USER_LIST_FILE_PATH = websysconf.USER_LIST_FILE_PATH
-GUEST_USER_LIST_FILE_PATH = websysconf.GUEST_USER_LIST_FILE_PATH
+USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users.txt'
+GUEST_USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users_guest.txt'
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
+PASSWORD_LIST_FILE_PATH = websysconf.PASSWORD_LIST_FILE_PATH
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 
 U_FLG_NEED_PW_CHANGE = 1
 U_FLG_DISABLED = 1 << 1
+U_FLG_INVALID_DATA = 1 << 7
 
-# users.json
+USER_DATA_FIELDS = [
+    {'key': 'uid'},
+    {'key': 'name'},
+    {'key': 'local_name'},
+    {'key': 'is_admin', 'data_type': 'bool'},
+    {'key': 'group'},
+    {'key': 'privs'},
+    {'key': 'desc'},
+    {'key': 'flags', 'data_type': 'int'},
+    {'key': 'created_at', 'data_type': 'float'},
+    {'key': 'updated_at', 'data_type': 'float'}
+]
+
+USER_DATA_FIELDS_FOR_GUEST = [
+    {'key': 'is_guest', 'data_type': 'bool'},
+    {'key': 'expires_at', 'data_type': 'float'}
+]
+
+GUEST_DATA_FIELDS = USER_DATA_FIELDS + USER_DATA_FIELDS_FOR_GUEST
+
+# User data format
+# #uid	name	local_name	is_admin	group	privs	desc	flags	created_at	updated_at
+# admin	Admin	ADMIN	1	g1	p1	Description	0	1721446496.789123	1721446496.789123
+
+# Object structure
+# users
 # {
 #   "root": {
 #     "uid": "root",
@@ -39,8 +66,8 @@ U_FLG_DISABLED = 1 << 1
 #   },
 #   ...
 # }
-
-# users_guest.json
+#
+# users_guest
 # {
 #   "123456": {
 #     "uid": "123456",
@@ -77,7 +104,7 @@ def get_user_info(uid, guest=True):
 
 # get all user info
 def get_all_user_info(extra_info=False):
-    users = common.load_dict(USER_LIST_FILE_PATH)
+    users = load_all_users()
     if not extra_info:
         return users
 
@@ -94,7 +121,137 @@ def get_all_user_info(extra_info=False):
 
     return users
 
-#---
+def load_all_users():
+    users = _load_all_users(USER_LIST_FILE_PATH, USER_DATA_FIELDS)
+    return users
+
+def load_all_guest_users():
+    users = _load_all_users(GUEST_USER_LIST_FILE_PATH, GUEST_DATA_FIELDS)
+    return users
+
+#----
+def _load_all_users(path, data_fields):
+    users_list = util.read_text_file_as_list(path)
+    users = {}
+    for i in range(len(users_list)):
+        user_text = users_list[i]
+        if not util.is_comment(user_text, '#'):
+            result = _parse_field_values(user_text, data_fields)
+
+            user = result['values']
+            if result['has_error']:
+                user['flags'] |= U_FLG_INVALID_DATA
+            else:
+                user['flags'] &= ~U_FLG_INVALID_DATA
+
+            uid = user['uid']
+            users[uid] = user
+    return users
+
+#------------------------------------------------------------------------------
+def _parse_field_values(fields_text, data_fields):
+    text_values = fields_text.split('\t')
+
+    has_error = False
+    values = {}
+    for i in range(len(data_fields)):
+        field = data_fields[i]
+        key = field['key']
+        index = i
+        data_type = 'str'
+        as_true = '1'
+
+        if 'data_type' in field:
+            data_type = field['data_type']
+            if 'data_type' == 'bool':
+                if 'as_true' in field:
+                    as_true = field['as_true']
+
+        value = _get_field_value(text_values, index, data_type, as_true)
+
+        values[key] = value['value']
+        if value['status'] != 'OK':
+            has_error = True
+
+    result = {
+        'values': values,
+        'has_error': False
+    }
+
+    if has_error:
+        result['has_error'] = True
+        common.write_error_file(fields_text)
+
+    return result
+
+def _get_field_value(values, index, data_type='str', as_true='1'):
+    status = 'OK'
+    try:
+        value = values[index]
+        if data_type == 'int':
+            value = int(value)
+        elif data_type == 'float':
+            value = float(value)
+        elif data_type == 'bool':
+            value = True if value == as_true else False
+    except Exception as e:
+        logger.write_system_log('ERROR', '-', 'common._get_field_value() index=' + str(index) + ' : ' + str(e))
+        status = 'ERROR'
+        value = _get_invalid_value(data_type)
+    return {'status': status, 'value': value}
+
+def _get_invalid_value(data_type):
+    values = {
+        'str': '',
+        'int': 0,
+        'float': 0,
+        'bool': False
+    }
+    if data_type in values:
+        return values[data_type]
+    return None
+
+#------------------------------------------------------------------------------
+def save_to_file(path, data_dict, fields):
+    header = _build_data_header(fields)
+    s = header + '\n'
+    for data_key in data_dict:
+        data = data_dict[data_key]
+        for i in range(len(fields)):
+            field = fields[i]
+            key = field['key']
+            data_type = 'str'
+            if 'data_type' in field:
+                data_type = field['data_type']
+            if i > 0:
+                s += '\t'
+            s += _to_field_value_text(data, key, data_type)
+        s += '\n'
+    util.write_text_file(path, s)
+
+def _build_data_header(fields):
+    s = '#'
+    for i in range(len(fields)):
+        field = fields[i]
+        key = field['key']
+        if i > 0:
+            s += '\t'
+        s += key
+    return s
+
+def _to_field_value_text(values, key, data_type='str'):
+    if key not in values:
+        return ''
+    value = values[key]
+    if data_type == 'int':
+        value = str(value)
+    elif data_type == 'float':
+        value = str(value)
+    elif data_type == 'bool':
+        value = '1' if value else '0'
+    return value
+
+#------------------------------------------------------------------------------
 def count_sessions_per_user():
     user_sessions = {}
     sessions = sessionmgr.get_all_sessions_info()
@@ -252,7 +409,7 @@ def delete_user(uid):
 
 # Save Users
 def save_users(users):
-    util.save_dict(USER_LIST_FILE_PATH, users, indent=2)
+    save_to_file(USER_LIST_FILE_PATH, users, USER_DATA_FIELDS)
 
 def delete_user_dir(uid):
     path = USER_ROOT_PATH + '/' + uid
@@ -263,7 +420,7 @@ def delete_user_dir(uid):
 #------------------------------------------------------------------------------
 # Get all guest user
 def get_all_guest_user_info(extra_info=False):
-    users = common.load_dict(GUEST_USER_LIST_FILE_PATH)
+    users = load_all_guest_users()
     if not extra_info:
         return users
 
@@ -359,7 +516,7 @@ def delete_guest_user(uid):
 
 # Save Guest Users
 def save_guest_users(users):
-    util.save_dict(GUEST_USER_LIST_FILE_PATH, users, indent=2)
+    save_to_file(GUEST_USER_LIST_FILE_PATH, users, GUEST_DATA_FIELDS)
 
 #----------------------------------------------------------
 def is_admin(user_info):
@@ -397,7 +554,7 @@ def has_privilege(user_info, priv_name):
 # Password
 #------------------------------------------------------------------------------
 def get_password_list():
-    path = websysconf.PASSWORD_LIST_FILE_PATH
+    path = PASSWORD_LIST_FILE_PATH
     pw_list = util.read_text_file_as_list(path)
     return pw_list
 
@@ -417,7 +574,7 @@ def get_password_list_as_dict():
     return pws
 
 def save_password_list(pw_list):
-    path = websysconf.PASSWORD_LIST_FILE_PATH
+    path = PASSWORD_LIST_FILE_PATH
     util.write_text_file_from_list(path, pw_list)
 
 def get_user_password(uid):
