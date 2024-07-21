@@ -51,6 +51,7 @@ sysmgr.userEditMode = null;
 sysmgr.groupEditMode = null;
 sysmgr.tmrId = 0;
 sysmgr.interval = 0;
+sysmgr.userListScrollTop = 0;
 
 $onReady = function() {
   util.clock('#clock');
@@ -64,6 +65,7 @@ sysmgr.onSysReady = function() {
 };
 
 sysmgr.reload = function() {
+  sysmgr.userListScrollTop = 0;
   sysmgr.reloadUserInfo();
   sysmgr.getGroupList();
 };
@@ -78,6 +80,7 @@ sysmgr.queueNextUpdateSessionInfo = function() {
 };
 
 sysmgr.updateSessionInfo = function() {
+  sysmgr.userListScrollTop = $el('#user-list').scrollTop;
   sysmgr.interval = 1;
   sysmgr.reloadUserInfo();
 };
@@ -154,7 +157,8 @@ sysmgr.getUserListCb = function(xhr, res, req) {
   }
   sysmgr.userList = userList;
   var listStatus = sysmgr.listStatus;
-  sysmgr.drawList(userList, listStatus.sortIdx, listStatus.sortOrder);
+  sysmgr.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
+  $el('#user-list').scrollTop = sysmgr.userListScrollTop;
 };
 
 sysmgr.elapsedSinceLastAccess = function(now, t) {
@@ -212,7 +216,7 @@ sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
   return html;
 };
 
-sysmgr.drawList = function(items, sortIdx, sortOrder) {
+sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
   var now = util.now();
   var currentUid = websys.getUserId();
 
@@ -300,13 +304,12 @@ sysmgr.drawList = function(items, sortIdx, sortOrder) {
   }
 
   var htmlHead = sysmgr.buildListHeader(sysmgr.USER_LIST_COLUMNS, sortIdx, sortOrder);
-  var html = '<div style="width:100%;max-height:400px;overflow:auto;">';
+  var html = '';
   html += '<table>';
   html += htmlHead + htmlList; 
   html += '</table>';
-  html += '</div>';
 
-  sysmgr.drawListContent(html);
+  sysmgr.drawUserListContent(html);
 };
 
 sysmgr.buildCopyableLabel = function(s) {
@@ -564,7 +567,7 @@ sysmgr.getTimeSlot = function(h, hh, mm) {
   return -1;
 };
 
-sysmgr.drawListContent = function(html) {
+sysmgr.drawUserListContent = function(html) {
   $el('#user-list').innerHTML = html;
 };
 
@@ -574,7 +577,7 @@ sysmgr.sortItemList = function(sortIdx, sortOrder) {
   }
   sysmgr.listStatus.sortIdx = sortIdx;
   sysmgr.listStatus.sortOrder = sortOrder;
-  sysmgr.drawList(sysmgr.userList, sortIdx, sortOrder);
+  sysmgr.drawUserList(sysmgr.userList, sortIdx, sortOrder);
 };
 
 sysmgr.confirmLogoutSession = function(uid, sid) {

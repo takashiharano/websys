@@ -44,7 +44,7 @@ def build_main_screen(context):
 <button onclick="sysmgr.newUser();">+</button>
 <button onclick="sysmgr.reloadUserInfo();">RELOAD</button>
 </div>
-<div id="user-list"></div>
+<div id="user-list" style="width:100%;max-height:400px;overflow:auto;"></div>
 
 <pre style="margin-top:10px;">Sessions
 <div id="session-list"></div></pre>
