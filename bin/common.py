@@ -102,3 +102,106 @@ def write_error_file(s):
     t = util.get_datetime_str()
     s = '---\n[' + t + ']\n' + s
     util.append_text_file(path, s)
+
+#------------------------------------------------------------------------------
+def parse_tsv_field_values(fields_text, data_fields_def):
+    text_values = fields_text.split('\t')
+
+    has_error = False
+    values = {}
+    for i in range(len(data_fields_def)):
+        field = data_fields_def[i]
+        key = field['key']
+        index = i
+        data_type = 'str'
+        as_true = '1'
+
+        if 'data_type' in field:
+            data_type = field['data_type']
+            if 'data_type' == 'bool':
+                if 'as_true' in field:
+                    as_true = field['as_true']
+
+        value = _get_field_value(text_values, index, data_type, as_true)
+
+        values[key] = value['value']
+        if value['status'] != 'OK':
+            has_error = True
+
+    result = {
+        'values': values,
+        'has_error': False
+    }
+
+    if has_error:
+        result['has_error'] = True
+        common.write_error_file(fields_text)
+
+    return result
+
+def _get_field_value(values, index, data_type='str', as_true='1'):
+    status = 'OK'
+    try:
+        value = values[index]
+        if data_type == 'int':
+            value = int(value)
+        elif data_type == 'float':
+            value = float(value)
+        elif data_type == 'bool':
+            value = True if value == as_true else False
+    except Exception as e:
+        logger.write_system_log('ERROR', '-', 'common._get_field_value() index=' + str(index) + ' : ' + str(e))
+        status = 'ERROR'
+        value = _get_invalid_value(data_type)
+    return {'status': status, 'value': value}
+
+def _get_invalid_value(data_type):
+    values = {
+        'str': '',
+        'int': 0,
+        'float': 0,
+        'bool': False
+    }
+    if data_type in values:
+        return values[data_type]
+    return None
+
+#------------------------------------------------------------------------------
+def save_to_tsv_file(path, data_dict, fields):
+    header = _build_data_header(fields)
+    s = header + '\n'
+    for data_key in data_dict:
+        data = data_dict[data_key]
+        for i in range(len(fields)):
+            field = fields[i]
+            key = field['key']
+            data_type = 'str'
+            if 'data_type' in field:
+                data_type = field['data_type']
+            if i > 0:
+                s += '\t'
+            s += _to_field_value_text(data, key, data_type)
+        s += '\n'
+    util.write_text_file(path, s)
+
+def _build_data_header(fields):
+    s = '#'
+    for i in range(len(fields)):
+        field = fields[i]
+        key = field['key']
+        if i > 0:
+            s += '\t'
+        s += key
+    return s
+
+def _to_field_value_text(values, key, data_type='str'):
+    if key not in values:
+        return ''
+    value = values[key]
+    if data_type == 'int':
+        value = str(value)
+    elif data_type == 'float':
+        value = str(value)
+    elif data_type == 'bool':
+        value = '1' if value else '0'
+    return value

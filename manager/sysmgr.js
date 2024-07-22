@@ -1142,6 +1142,7 @@ sysmgr.drawGroupList = function(list) {
   html += '<table>';
   html += '<tr class="item-list-header">';
   html += '<th class="item-list" style="min-width:10em;">GID</th>';
+  html += '<th class="item-list" style="min-width:15em;">Name</th>';
   html += '<th class="item-list" style="min-width:20em;">Prvileges</th>';
   html += '<th class="item-list" style="min-width:20em;">Description</th>';
   html += '<th class="item-list">Created</th>';
@@ -1151,6 +1152,7 @@ sysmgr.drawGroupList = function(list) {
   for (var i = 0; i < list.length; i++) {
     var group = list[i];
     var gid = group.gid;
+    var name = group.name;
     var privs = (group.privs ? group.privs : '');
     var desc = (group.desc ? group.desc : '');
     var createdDate = sysmgr.getDateTimeString(group.created_at, sysmgr.INSEC);
@@ -1160,6 +1162,7 @@ sysmgr.drawGroupList = function(list) {
 
     html += '<tr class="item-list ' + clz + '">';
     html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysmgr.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + gid + '</span></td>';
+    html += '<td class="item-list">' + name + '</td>';
     html += '<td class="item-list">' + privs + '</td>';
     html += '<td class="item-list">' + desc + '</td>';
     html += '<td class="item-list">' + createdDate + '</td>';
@@ -1196,7 +1199,7 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
   html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="sysmgr.deleteGroup(\'' + gid + '\');">DEL</button></div>';
-  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:110px;text-align:left;">';
+  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:120px;text-align:left;">';
 
   html += '<table>';
   html += '  <tr>';
@@ -1204,6 +1207,10 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
   html += '    <td style="width:256px;">';
   html += '      <input type="text" id="gid" style="width:100%;">';
   html += '    </td>';
+  html += '  </tr>';
+  html += '  <tr>';
+  html += '    <td>Name</td>';
+  html += '    <td><input type="text" id="group-name" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Privileges</td>';
@@ -1229,9 +1236,9 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
     pos: 'c',
     closeButton: true,
     width: 480,
-    height: 200,
+    height: 240,
     minWidth: 480,
-    minHeight: 360,
+    minHeight: 240,
     scale: 1,
     hidden: false,
     modal: false,
@@ -1258,9 +1265,15 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
 
 //-----------------------------------------------------------------------------
 sysmgr.addGroup = function() {
-  var gid = $el('#gid').value;
+  var gid = $el('#gid').value.trim();
+  var name = $el('#group-name').value;
   var privs = $el('#group-privs').value;
   var desc = $el('#group-desc').value;
+
+  if (!gid) {
+    sysmgr.showInfotip('Group ID is required.', 2000);
+    return;
+  }
 
   clnsRes = sysmgr.cleansePrivileges(privs);
   if (clnsRes.msg) {
@@ -1271,6 +1284,7 @@ sysmgr.addGroup = function() {
 
   var params = {
     gid: gid,
+    name: name,
     privs: privs,
     desc: desc
   };
@@ -1290,11 +1304,13 @@ sysmgr.addGroupCb = function(xhr, res) {
 //-----------------------------------------------------------------------------
 sysmgr.updateGroup = function() {
   var gid = $el('#gid').value;
+  var name = $el('#group-name').value;
   var privs = $el('#group-privs').value;
   var desc = $el('#group-desc').value;
 
   var params = {
     gid: gid,
+    name: name,
     privs: privs,
     desc: desc
   };
@@ -1360,6 +1376,7 @@ sysmgr.setGroupInfoToEditor = function(info) {
     $el('#gid').disabled = false;
     $el('#gid').removeClass('edit-disabled');
   }
+  $el('#group-name').value = info.name;
   $el('#group-privs').value = info.privs;
   $el('#group-desc').value = (info.desc ? info.desc : '');
 };
@@ -1367,6 +1384,7 @@ sysmgr.setGroupInfoToEditor = function(info) {
 sysmgr.clearGroupInfoEditor = function() {
   var info = {
     gid: '',
+    name: '',
     privs: '',
     desc: ''
   };

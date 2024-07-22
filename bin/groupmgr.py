@@ -15,14 +15,30 @@ import common
 
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
 
-# group.json
+GROUP_DATA_FIELDS = [
+    {'key': 'gid'},
+    {'key': 'name'},
+    {'key': 'privs'},
+    {'key': 'desc'},
+    {'key': 'created_at', 'data_type': 'float'},
+    {'key': 'updated_at', 'data_type': 'float'}
+]
+
+# Object structure
+# group
 # {
 #   "g1": {
-#     "privs": "kb.write"
+#     "gid": "g1",
+#     "name": "Group1",
+#     "privs": "p1 p2",
+#     "desc": "foo"
 #   },
 #   "g2": {
-#     "privs": "kb.read kb.export"
-#   }
+#     "gid": "g2",
+#     "name": "Group2",
+#     "privs": "p1",
+#     "desc": "bar"
+#   },
 # }
 
 # get group info
@@ -37,7 +53,7 @@ def get_group_info(gid):
 
 # get all group info
 def get_all_group_info():
-    groups = common.load_dict(GROUPS_FILE_PATH)
+    groups = load_all_groups(GROUPS_FILE_PATH, GROUP_DATA_FIELDS)
     return groups
 
 # get all group info list
@@ -55,7 +71,7 @@ def get_group_list():
     return group_list
 
 # Add a group
-def add_group(gid, privs='', desc='', status=None):
+def add_group(gid, name='', privs='', desc='', status=None):
     groups = get_all_group_info()
     if groups is None:
         groups = {}
@@ -67,6 +83,7 @@ def add_group(gid, privs='', desc='', status=None):
 
     group = {
         'gid': gid,
+        'name': name,
         'privs': privs,
         'desc': desc,
         'created_at': now,
@@ -78,7 +95,7 @@ def add_group(gid, privs='', desc='', status=None):
     return group
 
 # Modify a group
-def modify_group(gid, privs=None, aprivs=None, rprivs=None, desc=None):
+def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None):
     now = util.get_timestamp()
 
     groups = get_all_group_info()
@@ -90,6 +107,10 @@ def modify_group(gid, privs=None, aprivs=None, rprivs=None, desc=None):
     group = groups[gid]
 
     updated = False
+    if name is not None:
+        group['name'] = name
+        updated = True
+
     if privs is not None:
         group['privs'] = privs
         updated = True
@@ -124,10 +145,6 @@ def delete_group(gid):
     save_groups(groups)
     return True
 
-# Save Groups
-def save_groups(groups):
-    util.save_dict(GROUPS_FILE_PATH, groups, indent=2)
-
 def get_group_privileges(gid):
     privs = None
     group = get_group_info(gid)
@@ -139,3 +156,21 @@ def get_group_privileges(gid):
 def has_privilege_in_group(gid, priv_name):
     group = get_group_info(gid)
     return common.has_item(group, 'privs', priv_name)
+
+#------------------------------------------------------------------------------
+# Load Groups
+def load_all_groups(path, data_fields_def):
+    tsv_text_list = util.read_text_file_as_list(path)
+    obj = {}
+    for i in range(len(tsv_text_list)):
+        text_line = tsv_text_list[i]
+        if not util.is_comment(text_line, '#'):
+            result = common.parse_tsv_field_values(text_line, data_fields_def)
+            data = result['values']
+            gid = data['gid']
+            obj[gid] = data
+    return obj
+
+# Save Groups
+def save_groups(groups):
+    common.save_to_tsv_file(GROUPS_FILE_PATH, groups, GROUP_DATA_FIELDS)

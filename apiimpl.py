@@ -625,6 +625,7 @@ def cmd_addgroup(context):
         return
 
     gid = web.get_request_param('gid')
+    name = web.get_request_param('name', '')
     p_privs = web.get_request_param('privs')
     desc = web.get_request_param('desc', '')
 
@@ -639,7 +640,7 @@ def cmd_addgroup(context):
         privs = privs.strip()
 
     try:
-        groupmgr.add_group(gid, privs=privs, desc=desc)
+        groupmgr.add_group(gid, name=name, privs=privs, desc=desc)
         logger.write_event_log(context, 'ADD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:
@@ -670,6 +671,7 @@ def cmd_modgroup(context):
     rprivs = None
     desc = None
 
+    name = web.get_request_param('name')
     p_privs = web.get_request_param('privs')
     if p_privs is not None:
         privs = p_privs
@@ -682,7 +684,7 @@ def cmd_modgroup(context):
     desc = web.get_request_param('desc', '')
 
     try:
-        groupmgr.modify_group(gid, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc)
+        groupmgr.modify_group(gid, name=name, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc)
         logger.write_event_log(context, 'MOD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:

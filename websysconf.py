@@ -13,7 +13,7 @@ DATA_DIR = util.get_relative_path(__file__, '../../private/websys')
 LOCK_FILE_PATH = DATA_DIR + '/lock'
 USER_ROOT_PATH = DATA_DIR + '/users'
 PASSWORD_LIST_FILE_PATH = DATA_DIR + '/userspw.txt'
-GROUPS_FILE_PATH = DATA_DIR + '/groups.json'
+GROUPS_FILE_PATH = DATA_DIR + '/groups.txt'
 LOG_FILE_PATH = DATA_DIR + '/logs/websys.log'
 
 ALGOTRITHM = 'SHA-256'

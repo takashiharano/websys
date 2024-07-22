@@ -1021,11 +1021,21 @@ websys.cmdAddGroup = function(arg, tbl, echo) {
     dbg.printUsage(tbl.help);
     return;
   }
+  var name = dbg.getOptVal(arg, 'name');
   var privs = dbg.getOptVal(arg, 'privs');
   var param = {
     cmd: 'addgroup',
     gid: gid
   };
+  if (name) {
+    try {
+      name = eval(name);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.name = name;
+  }
   if (privs) {
     try {
       privs = eval(privs);
@@ -1052,6 +1062,7 @@ websys.cmdAddGroup.cb = function(xhr, res) {
  */
 websys.cmdModGroup = function(arg, tbl, echo) {
   var gid = dbg.getOptVal(arg, '')[0];
+  var name = dbg.getOptVal(arg, 'name');
   var privs = dbg.getOptVal(arg, 'privs');
   var aprivs = dbg.getOptVal(arg, 'aPriv');
   var rprivs = dbg.getOptVal(arg, 'rPriv');
@@ -1066,6 +1077,15 @@ websys.cmdModGroup = function(arg, tbl, echo) {
     cmd: 'modgroup',
     gid: gid
   };
+  if (name) {
+    try {
+      name = eval(name);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.name = name;
+  }
   if (privs) {
     try {
       privs = eval(privs);
