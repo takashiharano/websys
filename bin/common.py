@@ -135,7 +135,7 @@ def parse_tsv_field_values(fields_text, data_fields_def):
 
     if has_error:
         result['has_error'] = True
-        common.write_error_file(fields_text)
+        write_error_file(fields_text)
 
     return result
 
