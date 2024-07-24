@@ -46,8 +46,8 @@ sysmgr.listStatus = {
 sysmgr.userList = [];
 sysmgr.sessions = null;
 sysmgr.userEditWindow = null;
-sysmgr.groupEditWindow = null;
 sysmgr.userEditMode = null;
+sysmgr.groupEditWindow = null;
 sysmgr.groupEditMode = null;
 sysmgr.tmrId = 0;
 sysmgr.interval = 0;
@@ -304,10 +304,7 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
   }
 
   var htmlHead = sysmgr.buildListHeader(sysmgr.USER_LIST_COLUMNS, sortIdx, sortOrder);
-  var html = '';
-  html += '<table>';
-  html += htmlHead + htmlList; 
-  html += '</table>';
+  var html = '<table>' + htmlHead + htmlList + '</table>';
 
   sysmgr.drawUserListContent(html);
 };
@@ -493,47 +490,87 @@ sysmgr.startElapsedCounter = function(param) {
   var o = {zero: true};
   util.timecounter.start(param.timeId, param.laTime, o);
 };
-sysmgr.buildTimeLine = function(now, lastAccessedTime) {
-  var mn = util.getMidnightTimestamp(now);
-  var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
-  var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
-  var tmp = nowHHMM.split(':');
-  var nowHH = tmp[0];
-  var nowMM = tmp[1];
-  var accDateTime = util.getDateTimeString(lastAccessedTime, '%YYYY-%MM-%DD %HH:%mm');
-  var accTime = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
-  var accYYYYMMDD = util.getDateTimeString(lastAccessedTime, '%YYYY%MM%DD');
-  var accHHMM = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
-  tmp = accHHMM.split(':');
-  var accHH = tmp[0];
-  var accMM = tmp[1];
 
-  var html = '<span style="cursor:default;">';
-  html += '<span class="timeline-span">';
-  var f = false;
-  for (var i = 0; i <= 23; i++) {
-    if ((i == 0) && (lastAccessedTime < mn)) {
-      html += '</span><span style="color:#d66;" data-tooltip="' + accDateTime + '">&lt;</span>';
-      html += '<span class="timeline-span">';
-    } else {
-      html += '|';
-    }
-    for (var j = 0; j < 4; j++) {
-      var s = '-';
-      if ((accYYYYMMDD == nowYYYYMMDD) && (sysmgr.inTheTimeSlot(i, j, accHH, accMM))) {
-        s = '</span><span style="color:#0f0;" data-tooltip="' + accTime + '">*</span><span class="timeline-span">';
-      }
-      html += s;
-      if (sysmgr.inTheTimeSlot(i, j, nowHH, nowMM)) {
-        html += '<span style="opacity:0.5;">';
-        f = true;
-      }
-    }
+sysmgr.buildTimeLine = function(now, lastAccessedTime) {
+  var accYearDateTime = util.getDateTimeString(lastAccessedTime, '%YYYY-%MM-%DD %HH:%mm');
+  var accDateTime = util.getDateTimeString(lastAccessedTime, '%W %MM/%DD %HH:%mm');
+  var accTime = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
+  var accTp = sysmgr.getTimePosition(now, lastAccessedTime);
+  var nowTp = sysmgr.getTimePosition(now, now);
+  var hrBlk = 5;
+  var ttlPs = hrBlk * 24;
+  var dispAccDateTime = ' ' + accDateTime + ' ';
+  var dispAccTime = ' ' + accTime + ' ';
+  var tmPos = 0;
+  var remains = ttlPs - (accTp + dispAccTime.length);
+
+  if (remains == 0) {
+    dispAccTime = ' ' + accTime;
+  } else if (remains < 0) {
+    tmPos = accTp - dispAccTime.length;
   }
+
+  var html = '<span class="timeline-span">';
+
+  var s;
+  var f = false;
+  for (var i = 0; i <= ttlPs; i++) {
+    if (!f && (i > nowTp)) {
+      html += '<span class="timeline-forward">';
+      f = true;
+    }
+
+    if ((i == 0) && (accTp == -1)) {
+      s = '<span class="timeline-acc-ind-past" data-tooltip="' + accYearDateTime + '">&lt;</span>';
+      s += '<span class="timeline-acc-ind-time">' + dispAccDateTime + '</san>';
+      html += s;
+      i += dispAccDateTime.length;
+      continue;
+    } else if ((tmPos > 0) && (i == tmPos)) {
+      html += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
+      i += (dispAccTime.length - 1);
+      continue;
+    } else if (i % hrBlk == 0) {
+      html += '|';
+      continue;
+    }
+
+    s = '';
+    if (i == accTp) {
+      s += '<span class="timeline-acc-ind" data-tooltip="' + accTime + '">*</span>';
+      if (tmPos == 0) {
+        s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
+        i += dispAccTime.length;
+      }
+    } else {
+      s += '-';
+    }
+    html += s;
+  }
+
   if (f) html += '</span>';
   html += '</span>';
-  html += '</span>';
   return html;
+};
+
+sysmgr.getTimePosition = function(now, timestamp) {
+  var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
+  var accYYYYMMDD = util.getDateTimeString(timestamp, '%YYYY%MM%DD');
+  var accHHMM = util.getDateTimeString(timestamp, '%HH:%mm');
+  var wk = accHHMM.split(':');
+  var accHH = wk[0];
+  var accMM = wk[1];
+  var p = 0;
+  for (var i = 0; i <= 23; i++) {
+    p++;
+    for (var j = 0; j < 4; j++) {
+      if ((accYYYYMMDD == nowYYYYMMDD) && (sysmgr.inTheTimeSlot(i, j, accHH, accMM))) {
+        return p;
+      }
+      p++;
+    }
+  }
+  return -1;
 };
 
 sysmgr.inTheTimeSlot = function(h, qM, hh, mm) {

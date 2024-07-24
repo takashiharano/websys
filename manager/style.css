@@ -174,7 +174,24 @@ tr.item-list:hover {
 }
 
 .timeline-span {
-  opacity: 0.6;
+  color: #aaa;
+  cursor: default;
+}
+
+.timeline-forward {
+  color: #777;
+}
+
+.timeline-acc-ind {
+  color: #0f0;
+}
+
+.timeline-acc-ind-past {
+  color: #d66;
+}
+
+.timeline-acc-ind-time {
+  color: #ccc;
 }
 
 #user-list {
