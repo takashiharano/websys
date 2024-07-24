@@ -502,11 +502,8 @@ sysmgr.buildTimeLine = function(now, lastAccessedTime) {
   var dispAccDateTime = ' ' + accDateTime + ' ';
   var dispAccTime = ' ' + accTime + ' ';
   var tmPos = 0;
-  var remains = ttlPs - (accTp + dispAccTime.length);
 
-  if (remains == 0) {
-    dispAccTime = ' ' + accTime;
-  } else if (remains < 0) {
+  if (accTp > dispAccTime.length) {
     tmPos = accTp - dispAccTime.length;
   }
 
