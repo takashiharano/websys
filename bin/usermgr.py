@@ -573,7 +573,7 @@ def parse_int(s):
 # User status
 #------------------------------------------------------------------------------
 DEFAULT_STATUS_INFO = {
-    'last_accessed': 0,
+    'last_access': 0,
     'last_login': 0,
     'last_logout': 0,
     'pw_changed_at': 0,

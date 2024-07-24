@@ -69,7 +69,7 @@ def proc_get_session_list(context):
 #   "host": "hostname",
 #   "ua": "Mozilla/5.0",
 #   "is_guest": False,
-#   "last_accessed": {
+#   "last_access": {
 #    "time": 1234567890.123456,
 #    "tz": "+0900",
 #    "addr": "::1",
@@ -83,18 +83,18 @@ def get_sorted_session_list():
     sessions = sessionmgr.get_all_sessions_info()
     users = usermgr.get_all_user_info()
 
-    last_accessed_time_list = []
+    last_access_time_list = []
     for sid in sessions:
         session = sessions[sid]
-        last_accessed_time_list.append(session['last_accessed']['time'])
+        last_access_time_list.append(session['last_access']['time'])
 
-    last_accessed_time_list.sort(reverse=True)
+    last_access_time_list.sort(reverse=True)
     new_list = []
-    for i in range(len(last_accessed_time_list)):
-        time = last_accessed_time_list[i]
+    for i in range(len(last_access_time_list)):
+        time = last_access_time_list[i]
         for sid in sessions:
             session = sessions[sid]
-            if session['last_accessed']['time'] == time:
+            if session['last_access']['time'] == time:
                 uid = session['uid']
                 user_name = _get_user_fullname(users, uid)
                 session['user_name'] = user_name

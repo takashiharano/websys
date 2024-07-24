@@ -30,7 +30,7 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'flags', label: 'Flags'},
   {key: 'status_info.login_failed_count', label: 'Fail', sort: false},
   {key: 'status_info.sessions', label: 'S'},
-  {key: 'status_info.last_accessed', label: 'Last Accessed'},
+  {key: 'status_info.last_access', label: 'Last Access'},
   {key: 'status_info.last_login', label: 'Last Login'},
   {key: 'status_info.last_logout', label: 'Last Logout'},
   {key: 'created_at', label: 'Created'},
@@ -150,8 +150,8 @@ sysmgr.getUserListCb = function(xhr, res, req) {
   for (var uid in users) {
     var user = users[uid];
     var statusInfo = user.status_info;
-    var lastAccessedDate = statusInfo.last_accessed;
-    var dt = sysmgr.elapsedSinceLastAccess(now, lastAccessedDate);
+    var lastAccessDate = statusInfo.last_access;
+    var dt = sysmgr.elapsedSinceLastAccess(now, lastAccessDate);
     user.elapsed = dt;
     userList.push(user);
   }
@@ -239,7 +239,7 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
     var loginFailedCount = statusInfo.login_failed_count;
     var loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
     var sessions = statusInfo.sessions;
-    var lastAccessedDate = sysmgr.getDateTimeString(statusInfo.last_accessed, sysmgr.INSEC);
+    var lastAccessDate = sysmgr.getDateTimeString(statusInfo.last_access, sysmgr.INSEC);
     var lastLoginDate = sysmgr.getDateTimeString(statusInfo.last_login, sysmgr.INSEC);
     var lastLogoutDate = sysmgr.getDateTimeString(statusInfo.last_logout, sysmgr.INSEC);
     var createdDate = sysmgr.getDateTimeString(item.created_at, sysmgr.INSEC);
@@ -255,7 +255,7 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
     }
     dispDesc += '>' + escDesc + '</span>';
     var active = (sessions > 0);
-    var led = sysmgr.buildLedHtml(now, statusInfo.last_accessed, sysmgr.INSEC, active);
+    var led = sysmgr.buildLedHtml(now, statusInfo.last_access, sysmgr.INSEC, active);
 
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
     var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + uid + '</span>';
@@ -294,7 +294,7 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
     htmlList += '</td>';
 
     htmlList += '<td class="item-list" style="text-align:right;">' + sessions + '</td>';
-    htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessedDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastLogoutDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
@@ -333,7 +333,7 @@ sysmgr.buildLedHtml = function(now, ts, inSec, active) {
     }
   }
   var dt = sysmgr.getDateTimeString(tMs);
-  var html = '<span class="led" style="color:' + ledColor + ';" data-tooltip="Last accessed: ' + dt + '"></span>';
+  var html = '<span class="led" style="color:' + ledColor + ';" data-tooltip="Last access: ' + dt + '"></span>';
   return html;
 };
 
@@ -382,7 +382,7 @@ sysmgr.drawSessionList = function(sessions) {
   html += '<td>UID</td>';
   html += '<td>Name</td>';
   html += '<td><span style="margin-left:8px;">Session</span></td>';
-  html += '<td>Last Accessed</td>';
+  html += '<td>Last Access</td>';
   html += '<td style="min-width:98px;"">Elapsed</td>';
   html += '<td style="font-weight:normal;">' + sysmgr.buildTimeLineHeader(now) + '</td>';
   html += '<td>Addr</td>';
@@ -451,7 +451,7 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var uid = session.uid;
   var name = session.user_name;
   var loginT = session.created_time;
-  var la = session.last_accessed;
+  var la = session.last_access;
   var laTime = la['time'];
   if (sysmgr.INSEC) laTime = Math.floor(laTime * 1000);
   var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
@@ -491,11 +491,11 @@ sysmgr.startElapsedCounter = function(param) {
   util.timecounter.start(param.timeId, param.laTime, o);
 };
 
-sysmgr.buildTimeLine = function(now, lastAccessedTime) {
-  var accYearDateTime = util.getDateTimeString(lastAccessedTime, '%YYYY-%MM-%DD %HH:%mm');
-  var accDateTime = util.getDateTimeString(lastAccessedTime, '%W %MM/%DD %HH:%mm');
-  var accTime = util.getDateTimeString(lastAccessedTime, '%HH:%mm');
-  var accTp = sysmgr.getTimePosition(now, lastAccessedTime);
+sysmgr.buildTimeLine = function(now, lastAccessTime) {
+  var accYearDateTime = util.getDateTimeString(lastAccessTime, '%YYYY-%MM-%DD %HH:%mm');
+  var accDateTime = util.getDateTimeString(lastAccessTime, '%W %MM/%DD %HH:%mm');
+  var accTime = util.getDateTimeString(lastAccessTime, '%HH:%mm');
+  var accTp = sysmgr.getTimePosition(now, lastAccessTime);
   var nowTp = sysmgr.getTimePosition(now, now);
   var hrBlk = 5;
   var ttlPs = hrBlk * 24;

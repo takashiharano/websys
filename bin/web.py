@@ -208,7 +208,7 @@ def _on_access(context, allow_guest):
     uid = session_info['uid']
     user_info = usermgr.get_user_info(uid)
 
-    session_info = sessionmgr.update_last_accessed_info(uid, sid)
+    session_info = sessionmgr.update_last_access_info(uid, sid)
     sessionmgr.set_current_session_info_to_global(session_info)
     authorized = authmgr.auth(allow_guest)
 

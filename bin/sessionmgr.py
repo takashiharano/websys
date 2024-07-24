@@ -61,7 +61,7 @@ def get_user_sessions(uid):
 #   "host": "hostname",
 #   "ua": "Mozilla/5.0",
 #   "is_guest": False,
-#   "last_accessed": {
+#   "last_access": {
 #    "time": 1234567890.123456,
 #    "tz": "+0900",
 #    "addr": "::1",
@@ -158,7 +158,7 @@ def create_session_info(uid, is_guest=False):
         'host': host,
         'ua': useragent,
         'is_guest': is_guest,
-        'last_accessed': {
+        'last_access': {
             'time': now,
             'tz': tz,
             'addr': addr,
@@ -189,7 +189,7 @@ def _trim_sessions(sessions, num_of_sessions):
     time_list = []
     for sid in sessions:
         session = sessions[sid]
-        t = session['last_accessed']['time']
+        t = session['last_access']['time']
         time_list.append(t)
 
     time_list.sort(reverse=True)
@@ -197,7 +197,7 @@ def _trim_sessions(sessions, num_of_sessions):
     trimmed_sessions = {}
     for sid in sessions:
         session = sessions[sid]
-        t = session['last_accessed']['time']
+        t = session['last_access']['time']
         if _in_top_n(time_list, num_of_sessions, t):
             trimmed_sessions[sid] = session
         else:
@@ -222,9 +222,9 @@ def generate_session_id(uid):
     return sid
 
 #----------------------------------------------------------
-# Update last accessed info
+# Update last access info
 #----------------------------------------------------------
-def update_last_accessed_info(uid, sid):
+def update_last_access_info(uid, sid):
     now = util.get_timestamp()
     addr = web.get_ip_addr()
     host = web.get_host_name()
@@ -247,24 +247,24 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
 
     session = sessions[sid]
     uid = session['uid']
-    last_accessed = session['last_accessed']
+    last_access = session['last_access']
 
-    prev_time = last_accessed['time']
+    prev_time = last_access['time']
 
-    last_accessed['time'] = time
+    last_access['time'] = time
     if tz is not None:
-        last_accessed['tz'] = tz
+        last_access['tz'] = tz
     if addr is not None:
-        last_accessed['addr'] = addr
+        last_access['addr'] = addr
     if host is not None:
-        last_accessed['host'] = host
+        last_access['host'] = host
     if ua is not None:
-        last_accessed['ua'] = ua
+        last_access['ua'] = ua
 
     elapsed = time - prev_time
     if elapsed > MIN_FILE_UPDATE_INTERVAL_SEC:
         save_user_sessions_to_file(uid, sessions)
-        usermgr.update_user_status_info(uid, 'last_accessed', time)
+        usermgr.update_user_status_info(uid, 'last_access', time)
 
     return session
 
@@ -298,7 +298,7 @@ def write_logout_log(session, status='OK'):
     addr = '-'
     host = '-'
     ua = ''
-    la_info = session['last_accessed']
+    la_info = session['last_access']
     if 'ua' in la_info:
         ua = la_info['ua']
 
@@ -332,7 +332,7 @@ def clear_expired_sessions(uid, sessions, now):
     for sid in sessions:
         session = sessions[sid]
         try:
-            last_access_time = session['last_accessed']['time']
+            last_access_time = session['last_access']['time']
             if round(now - last_access_time) <= SESSION_TIMEOUT_SEC:
                 new_sessions[sid] = session
             else:

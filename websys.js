@@ -563,13 +563,13 @@ websys.cmdSessions.cb = function(xhr, res, req) {
 
 websys.buildSessinInfo = function(info, flgA) {
   var brwC = util.getBrowserInfo(info.ua);
-  var brwL = util.getBrowserInfo(info.last_accessed.ua);
+  var brwL = util.getBrowserInfo(info.last_access.ua);
 
   var s = '';
   s += 'uid     : ' + info.uid + (info.is_guest ? ' (GUEST)' : '') + '\n';
   s += 'sid     : ' + info.sid + '\n';
-  s += 'time    : ' + util.getDateTimeString(info.last_accessed.time) + ' <span style="color:#ccc;">' + info.last_accessed.tz + '\n';
-  s += 'host    : ' + info.last_accessed.addr + '  ' + info.last_accessed.host + '\n';
+  s += 'time    : ' + util.getDateTimeString(info.last_accesstime) + ' <span style="color:#ccc;">' + info.last_access.tz + '\n';
+  s += 'host    : ' + info.last_access.addr + '  ' + info.last_access.host + '\n';
   s += 'ua      : ' + brwL.name + ' ' + brwL.version + '\n';
   s += '</span>';
   if (flgA) {
