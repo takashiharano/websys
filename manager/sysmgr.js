@@ -2,20 +2,21 @@
  * Copyright (c) 2023 Takashi Harano
  */
 var sysmgr = {};
-sysmgr.INSEC = true;
-sysmgr.dialogFgColor = '#fff';
-sysmgr.dialogBgColor = '#1e1e1e';
-sysmgr.dialogTitleFgColor = '#fff';
-sysmgr.dialogTitleBgColor = 'linear-gradient(150deg, rgba(0,32,255,0.8),rgba(0,82,255,0.8))';
+var scnjs = sysmgr;
+scnjs.INSEC = true;
+scnjs.dialogFgColor = '#fff';
+scnjs.dialogBgColor = '#1e1e1e';
+scnjs.dialogTitleFgColor = '#fff';
+scnjs.dialogTitleBgColor = 'linear-gradient(150deg, rgba(0,32,255,0.8),rgba(0,82,255,0.8))';
 
-sysmgr.LED_COLORS = [
+scnjs.LED_COLORS = [
   {t: 10 * util.MINUTE, color: '#0f0'},
   {t: 3 * util.HOUR, color: '#cc0'},
   {t: 0, color: '#a44'},
 ];
 
-sysmgr.INTERVAL = 60000;
-sysmgr.USER_LIST_COLUMNS = [
+scnjs.INTERVAL = 60000;
+scnjs.USER_LIST_COLUMNS = [
   {key: 'elapsed', label: ''},
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'name', label: 'Full Name', style: 'min-width:10em;'},
@@ -38,54 +39,54 @@ sysmgr.USER_LIST_COLUMNS = [
   {key: 'status_info.pw_changed_at', label: 'PwChanged'}
 ];
 
-sysmgr.listStatus = {
+scnjs.listStatus = {
   sortIdx: 0,
   sortOrder: 1
 };
 
-sysmgr.userList = [];
-sysmgr.sessions = null;
-sysmgr.userEditWindow = null;
-sysmgr.userEditMode = null;
-sysmgr.groupEditWindow = null;
-sysmgr.groupEditMode = null;
-sysmgr.tmrId = 0;
-sysmgr.interval = 0;
-sysmgr.userListScrollTop = 0;
+scnjs.userList = [];
+scnjs.sessions = null;
+scnjs.userEditWindow = null;
+scnjs.userEditMode = null;
+scnjs.groupEditWindow = null;
+scnjs.groupEditMode = null;
+scnjs.tmrId = 0;
+scnjs.interval = 0;
+scnjs.userListScrollTop = 0;
 
 $onReady = function() {
   util.clock('#clock');
   $el('#user-list').innerHTML = '<span class="progdot">Loading</span>';
-  sysmgr.drawGroupStatus('<span class="progdot">Loading</span>');
+  scnjs.drawGroupStatus('<span class="progdot">Loading</span>');
 };
 
-sysmgr.onSysReady = function() {
-  sysmgr.reload();
-  sysmgr.queueNextUpdateSessionInfo();
+scnjs.onSysReady = function() {
+  scnjs.reload();
+  scnjs.queueNextUpdateSessionInfo();
 };
 
-sysmgr.reload = function() {
-  sysmgr.userListScrollTop = 0;
-  sysmgr.reloadUserInfo();
-  sysmgr.getGroupList();
+scnjs.reload = function() {
+  scnjs.userListScrollTop = 0;
+  scnjs.reloadUserInfo();
+  scnjs.getGroupList();
 };
 
-sysmgr.reloadUserInfo = function() {
-  sysmgr.getUserList();
-  sysmgr.getSessionList();
+scnjs.reloadUserInfo = function() {
+  scnjs.getUserList();
+  scnjs.getSessionList();
 };
 
-sysmgr.queueNextUpdateSessionInfo = function() {
-  sysmgr.tmrId = setTimeout(sysmgr.updateSessionInfo, sysmgr.INTERVAL);
+scnjs.queueNextUpdateSessionInfo = function() {
+  scnjs.tmrId = setTimeout(scnjs.updateSessionInfo, scnjs.INTERVAL);
 };
 
-sysmgr.updateSessionInfo = function() {
-  sysmgr.userListScrollTop = $el('#user-list').scrollTop;
-  sysmgr.interval = 1;
-  sysmgr.reloadUserInfo();
+scnjs.updateSessionInfo = function() {
+  scnjs.userListScrollTop = $el('#user-list').scrollTop;
+  scnjs.interval = 1;
+  scnjs.reloadUserInfo();
 };
 
-sysmgr.callApi = function(act, params, cb) {
+scnjs.callApi = function(act, params, cb) {
   if (!params) params = {};
   var data = {act: act};
   if (params) {
@@ -99,10 +100,10 @@ sysmgr.callApi = function(act, params, cb) {
     data: data,
     responseType: 'json'
   };
-  sysmgr.http(req, cb);
+  scnjs.http(req, cb);
 };
 
-sysmgr.execCmd = function(act, params, cb) {
+scnjs.execCmd = function(act, params, cb) {
   if (!params) params = {};
   var data = {cmd: act};
   if (params) {
@@ -116,15 +117,15 @@ sysmgr.execCmd = function(act, params, cb) {
     data: data,
     responseType: 'json'
   };
-  sysmgr.http(req, cb);
+  scnjs.http(req, cb);
 };
 
-sysmgr.http = function(req, cb) {
+scnjs.http = function(req, cb) {
   req.cb = cb;
   websys.http(req);
 };
 
-sysmgr.showInfotip = function(m, d) {
+scnjs.showInfotip = function(m, d) {
   var opt = {
     style: {
       'font-size': '14px'
@@ -133,15 +134,15 @@ sysmgr.showInfotip = function(m, d) {
   util.infotip.show(m, d, opt);
 };
 
-sysmgr.getUserList = function() {
-  sysmgr.callApi('get_user_list', null, sysmgr.getUserListCb);
+scnjs.getUserList = function() {
+  scnjs.callApi('get_user_list', null, scnjs.getUserListCb);
 };
-sysmgr.getUserListCb = function(xhr, res, req) {
+scnjs.getUserListCb = function(xhr, res, req) {
   if (res.status == 'FORBIDDEN') {
     location.href = location.href;
     return;
   } else if (res.status != 'OK') {
-    sysmgr.showInfotip(res.status);
+    scnjs.showInfotip(res.status);
     return;
   }
   var now = util.now();
@@ -151,23 +152,23 @@ sysmgr.getUserListCb = function(xhr, res, req) {
     var user = users[uid];
     var statusInfo = user.status_info;
     var lastAccessDate = statusInfo.last_access;
-    var dt = sysmgr.elapsedSinceLastAccess(now, lastAccessDate);
+    var dt = scnjs.elapsedSinceLastAccess(now, lastAccessDate);
     user.elapsed = dt;
     userList.push(user);
   }
-  sysmgr.userList = userList;
-  var listStatus = sysmgr.listStatus;
-  sysmgr.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
-  $el('#user-list').scrollTop = sysmgr.userListScrollTop;
+  scnjs.userList = userList;
+  var listStatus = scnjs.listStatus;
+  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
+  $el('#user-list').scrollTop = scnjs.userListScrollTop;
 };
 
-sysmgr.elapsedSinceLastAccess = function(now, t) {
-  if (sysmgr.INSEC) t = Math.floor(t * 1000);
+scnjs.elapsedSinceLastAccess = function(now, t) {
+  if (scnjs.INSEC) t = Math.floor(t * 1000);
   var dt = now - t;
   return dt;
 };
 
-sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
+scnjs.buildListHeader = function(columns, sortIdx, sortOrder) {
   var html = '<tr class="item-list-header">';
   for (var i = 0; i < columns.length; i++) {
     var column = columns[i];
@@ -187,7 +188,7 @@ sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
     }
 
     var sortButton = '<span class="sort-button" ';
-    sortButton += ' onclick="sysmgr.sortItemList(' + i + ', ' + nextSortType + ');"';
+    sortButton += ' onclick="scnjs.sortItemList(' + i + ', ' + nextSortType + ');"';
     sortButton += '>';
     sortButton += '<span';
     if (sortAscClz) {
@@ -216,15 +217,15 @@ sysmgr.buildListHeader = function(columns, sortIdx, sortOrder) {
   return html;
 };
 
-sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
+scnjs.drawUserList = function(items, sortIdx, sortOrder) {
   var now = util.now();
   var currentUid = websys.getUserId();
 
   if (sortIdx >= 0) {
     if (sortOrder > 0) {
-      var srtDef = sysmgr.USER_LIST_COLUMNS[sortIdx];
+      var srtDef = scnjs.USER_LIST_COLUMNS[sortIdx];
       var isDesc = (sortOrder == 2);
-      items = sysmgr.sortList(items, srtDef.key, isDesc);
+      items = scnjs.sortList(items, srtDef.key, isDesc);
     }
   }
 
@@ -239,12 +240,12 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
     var loginFailedCount = statusInfo.login_failed_count;
     var loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
     var sessions = statusInfo.sessions;
-    var lastAccessDate = sysmgr.getDateTimeString(statusInfo.last_access, sysmgr.INSEC);
-    var lastLoginDate = sysmgr.getDateTimeString(statusInfo.last_login, sysmgr.INSEC);
-    var lastLogoutDate = sysmgr.getDateTimeString(statusInfo.last_logout, sysmgr.INSEC);
-    var createdDate = sysmgr.getDateTimeString(item.created_at, sysmgr.INSEC);
-    var updatedDate = sysmgr.getDateTimeString(item.updated_at, sysmgr.INSEC);
-    var pwChangedDate = sysmgr.getDateTimeString(statusInfo.pw_changed_at, sysmgr.INSEC);
+    var lastAccessDate = scnjs.getDateTimeString(statusInfo.last_access, scnjs.INSEC);
+    var lastLoginDate = scnjs.getDateTimeString(statusInfo.last_login, scnjs.INSEC);
+    var lastLogoutDate = scnjs.getDateTimeString(statusInfo.last_logout, scnjs.INSEC);
+    var createdDate = scnjs.getDateTimeString(item.created_at, scnjs.INSEC);
+    var updatedDate = scnjs.getDateTimeString(item.updated_at, scnjs.INSEC);
+    var pwChangedDate = scnjs.getDateTimeString(statusInfo.pw_changed_at, scnjs.INSEC);
     var info1 = item.info1;
     var info2 = item.info2;
     var desc = (item.desc ? item.desc : '');
@@ -255,15 +256,15 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
     }
     dispDesc += '>' + escDesc + '</span>';
     var active = (sessions > 0);
-    var led = sysmgr.buildLedHtml(now, statusInfo.last_access, sysmgr.INSEC, active);
+    var led = scnjs.buildLedHtml(now, statusInfo.last_access, scnjs.INSEC, active);
 
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
-    var dispUid = cInd + '<span class="pseudo-link link-button" onclick="sysmgr.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + uid + '</span>';
-    var dispFullname = sysmgr.buildCopyableLabel(name);
-    var dispLocalFullname = sysmgr.buildCopyableLabel(local_name);
-    var dispEmail = sysmgr.buildCopyableLabel(email);
-    var dispInfo1 = sysmgr.buildCopyableLabel(info1);
-    var dispInfo2 = sysmgr.buildCopyableLabel(info2);
+    var dispUid = cInd + '<span class="pseudo-link link-button" onclick="scnjs.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + uid + '</span>';
+    var dispFullname = scnjs.buildCopyableLabel(name);
+    var dispLocalFullname = scnjs.buildCopyableLabel(local_name);
+    var dispEmail = scnjs.buildCopyableLabel(email);
+    var dispInfo1 = scnjs.buildCopyableLabel(info1);
+    var dispInfo2 = scnjs.buildCopyableLabel(info2);
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
@@ -284,10 +285,10 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
     if (loginFailedCount > 0) {
       var clz = 'pseudo-link';
-      if ((sysmgr.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= sysmgr.websysconf.LOGIN_FAILURE_MAX)) {
+      if ((scnjs.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= scnjs.websysconf.LOGIN_FAILURE_MAX)) {
         clz += ' text-red';
       }
-      htmlList += '<span class="' + clz + '" data-tooltip="Last failed: ' + loginFailedTime + '" onclick="sysmgr.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
+      htmlList += '<span class="' + clz + '" data-tooltip="Last failed: ' + loginFailedTime + '" onclick="scnjs.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
     } else {
       htmlList += '';
     }
@@ -303,22 +304,22 @@ sysmgr.drawUserList = function(items, sortIdx, sortOrder) {
     htmlList += '</tr>';
   }
 
-  var htmlHead = sysmgr.buildListHeader(sysmgr.USER_LIST_COLUMNS, sortIdx, sortOrder);
+  var htmlHead = scnjs.buildListHeader(scnjs.USER_LIST_COLUMNS, sortIdx, sortOrder);
   var html = '<table>' + htmlHead + htmlList + '</table>';
 
-  sysmgr.drawUserListContent(html);
+  scnjs.drawUserListContent(html);
 };
 
-sysmgr.buildCopyableLabel = function(s) {
+scnjs.buildCopyableLabel = function(s) {
   if (!s) s = '';
   var v = s.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
   var label = s.replace(/ /g, '&nbsp;');
-  var r = '<span class="pseudo-link" onclick="sysmgr.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</span>';
+  var r = '<span class="pseudo-link" onclick="scnjs.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</span>';
   return r;
 };
 
-sysmgr.buildLedHtml = function(now, ts, inSec, active) {
-  var COLORS = sysmgr.LED_COLORS;
+scnjs.buildLedHtml = function(now, ts, inSec, active) {
+  var COLORS = scnjs.LED_COLORS;
   var tMs = ts;
   if (inSec) tMs = Math.floor(tMs * 1000);
   var elapsed = now - tMs;
@@ -332,12 +333,12 @@ sysmgr.buildLedHtml = function(now, ts, inSec, active) {
       }
     }
   }
-  var dt = sysmgr.getDateTimeString(tMs);
+  var dt = scnjs.getDateTimeString(tMs);
   var html = '<span class="led" style="color:' + ledColor + ';" data-tooltip="Last access: ' + dt + '"></span>';
   return html;
 };
 
-sysmgr.getDateTimeString = function(ts, inSec) {
+scnjs.getDateTimeString = function(ts, inSec) {
   var tMs = ts;
   if (inSec) tMs = Math.floor(tMs * 1000);
   var s = '---------- --:--:--.---';
@@ -347,33 +348,33 @@ sysmgr.getDateTimeString = function(ts, inSec) {
   return s;
 };
 
-sysmgr.getSessionList = function() {
-  if (sysmgr.tmrId > 0) {
-    clearTimeout(sysmgr.tmrId);
-    sysmgr.tmrId = 0;
-    sysmgr.interval = 1;
+scnjs.getSessionList = function() {
+  if (scnjs.tmrId > 0) {
+    clearTimeout(scnjs.tmrId);
+    scnjs.tmrId = 0;
+    scnjs.interval = 1;
   }
-  sysmgr.callApi('get_session_list', null, sysmgr.getSessionListCb);
+  scnjs.callApi('get_session_list', null, scnjs.getSessionListCb);
 };
-sysmgr.getSessionListCb = function(xhr, res, req) {
+scnjs.getSessionListCb = function(xhr, res, req) {
   if (res.status == 'FORBIDDEN') {
     location.href = location.href;
     return;
   } else if (res.status != 'OK') {
-    sysmgr.showInfotip(res.status);
+    scnjs.showInfotip(res.status);
     return;
   }
   var sessions = res.body;
-  sysmgr.sessions = sessions;
-  sysmgr.drawSessionList(sessions);
+  scnjs.sessions = sessions;
+  scnjs.drawSessionList(sessions);
 
-  if (sysmgr.interval) {
-    sysmgr.interval = 0;
-    sysmgr.queueNextUpdateSessionInfo();
+  if (scnjs.interval) {
+    scnjs.interval = 0;
+    scnjs.queueNextUpdateSessionInfo();
   }
 };
 
-sysmgr.drawSessionList = function(sessions) {
+scnjs.drawSessionList = function(sessions) {
   var now = util.now();
   var html = '<div style="width:100%;max-height:400px;overflow:auto;">';
   html += '<table>';
@@ -383,19 +384,19 @@ sysmgr.drawSessionList = function(sessions) {
   html += '<td>Name</td>';
   html += '<td><span style="margin-left:8px;">Session</span></td>';
   html += '<td>Last Access</td>';
-  html += '<td style="min-width:98px;"">Elapsed</td>';
-  html += '<td style="font-weight:normal;">' + sysmgr.buildTimeLineHeader(now) + '</td>';
+  html += '<td style="min-width:98px;">Elapsed</td>';
+  html += '<td style="font-weight:normal;">' + scnjs.buildTimeLineHeader(now) + '</td>';
   html += '<td>Addr</td>';
   html += '<td>User-Agent</td>';
   html += '<td>Logged in</td>';
   html += '</tr>';
-  html += sysmgr.buildSessionInfoHtml(sessions, now);
+  html += scnjs.buildSessionInfoHtml(sessions, now);
   html += '</table>';
   html += '</div>';
   $el('#session-list').innerHTML = html;
 };
 
-sysmgr.buildTimeLineHeader = function(now) {
+scnjs.buildTimeLineHeader = function(now) {
   var currentInd = '<span class="blink1 text-skyblue">v</span>';
 
   var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
@@ -406,7 +407,7 @@ sysmgr.buildTimeLineHeader = function(now) {
 
   var html = '';
   for (var i = 0; i <= 23; i++) {
-    var ts = sysmgr.getTimeSlot(i, nowHH, nowMM);
+    var ts = scnjs.getTimeSlot(i, nowHH, nowMM);
     var v = false;
     if (i < 10) {
       if (ts == 0) {
@@ -436,24 +437,24 @@ sysmgr.buildTimeLineHeader = function(now) {
   return html;
 };
 
-sysmgr.buildSessionInfoHtml = function(sessions, now) {
+scnjs.buildSessionInfoHtml = function(sessions, now) {
   var html = '';
   if (!sessions) return html;
   var mn = util.getMidnightTimestamp(now);
   for (var i = 0; i < sessions.length; i++) {
     var session = sessions[i];
-    html += sysmgr.buildSessionInfoOne(session, now, mn);
+    html += scnjs.buildSessionInfoOne(session, now, mn);
   }
   return html;
 };
-sysmgr.buildSessionInfoOne = function(session, now, mn) {
+scnjs.buildSessionInfoOne = function(session, now, mn) {
   var cSid = websys.getSessionId();
   var uid = session.uid;
   var name = session.user_name;
   var loginT = session.created_time;
   var la = session.last_access;
   var laTime = la['time'];
-  if (sysmgr.INSEC) laTime = Math.floor(laTime * 1000);
+  if (scnjs.INSEC) laTime = Math.floor(laTime * 1000);
   var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var laTimeStr = util.getDateTimeString(laTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var sid = session['sid'];
@@ -462,12 +463,12 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   var addr = la['addr'];
   var brws = util.getBrowserInfo(la['ua']);
   var ua = brws.name + ' ' + brws.version;
-  var led = sysmgr.buildLedHtml(now, laTime, false, true);
-  var ssidLink = '<span class="pseudo-link link-button" onclick="sysmgr.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
+  var led = scnjs.buildLedHtml(now, laTime, false, true);
+  var ssidLink = '<span class="pseudo-link link-button" onclick="scnjs.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
   var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
   var timeId = 'tm-' + sid7;
   var tmspan = '<span id="' + timeId + '"></span>'
-  var timeline = sysmgr.buildTimeLine(now, laTime);
+  var timeline = scnjs.buildTimeLine(now, laTime);
 
   var html = '';
   html += '<tr class="item-list">';
@@ -483,20 +484,20 @@ sysmgr.buildSessionInfoOne = function(session, now, mn) {
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '</tr>';
 
-  setTimeout(sysmgr.startElapsedCounter, 0, {timeId: '#' + timeId, laTime: laTime});
+  setTimeout(scnjs.startElapsedCounter, 0, {timeId: '#' + timeId, laTime: laTime});
   return html;
 };
-sysmgr.startElapsedCounter = function(param) {
+scnjs.startElapsedCounter = function(param) {
   var o = {zero: true};
   util.timecounter.start(param.timeId, param.laTime, o);
 };
 
-sysmgr.buildTimeLine = function(now, lastAccessTime) {
+scnjs.buildTimeLine = function(now, lastAccessTime) {
   var accYearDateTime = util.getDateTimeString(lastAccessTime, '%YYYY-%MM-%DD %HH:%mm');
   var accDateTime = util.getDateTimeString(lastAccessTime, '%W %MM/%DD %HH:%mm');
   var accTime = util.getDateTimeString(lastAccessTime, '%HH:%mm');
-  var accTp = sysmgr.getTimePosition(now, lastAccessTime);
-  var nowTp = sysmgr.getTimePosition(now, now);
+  var accTp = scnjs.getTimePosition(now, lastAccessTime);
+  var nowTp = scnjs.getTimePosition(now, now);
   var hrBlk = 5;
   var ttlPs = hrBlk * 24;
   var dispAccDateTime = ' ' + accDateTime + ' ';
@@ -553,7 +554,7 @@ sysmgr.buildTimeLine = function(now, lastAccessTime) {
   return html;
 };
 
-sysmgr.getTimePosition = function(now, timestamp) {
+scnjs.getTimePosition = function(now, timestamp) {
   var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
   var accYYYYMMDD = util.getDateTimeString(timestamp, '%YYYY%MM%DD');
   var accHHMM = util.getDateTimeString(timestamp, '%HH:%mm');
@@ -564,7 +565,7 @@ sysmgr.getTimePosition = function(now, timestamp) {
   for (var i = 0; i <= 23; i++) {
     p++;
     for (var j = 0; j < 4; j++) {
-      if ((accYYYYMMDD == nowYYYYMMDD) && (sysmgr.inTheTimeSlot(i, j, accHH, accMM))) {
+      if ((accYYYYMMDD == nowYYYYMMDD) && (scnjs.inTheTimeSlot(i, j, accHH, accMM))) {
         return p;
       }
       p++;
@@ -573,7 +574,7 @@ sysmgr.getTimePosition = function(now, timestamp) {
   return -1;
 };
 
-sysmgr.inTheTimeSlot = function(h, qM, hh, mm) {
+scnjs.inTheTimeSlot = function(h, qM, hh, mm) {
   if (hh == h) {
     if ((qM == 0) && (mm < 15)) {
       return true;
@@ -587,7 +588,7 @@ sysmgr.inTheTimeSlot = function(h, qM, hh, mm) {
   }
   return false;
 };
-sysmgr.getTimeSlot = function(h, hh, mm) {
+scnjs.getTimeSlot = function(h, hh, mm) {
   if (h == hh) {
     if (mm == 0) {
       return 0;
@@ -604,20 +605,20 @@ sysmgr.getTimeSlot = function(h, hh, mm) {
   return -1;
 };
 
-sysmgr.drawUserListContent = function(html) {
+scnjs.drawUserListContent = function(html) {
   $el('#user-list').innerHTML = html;
 };
 
-sysmgr.sortItemList = function(sortIdx, sortOrder) {
+scnjs.sortItemList = function(sortIdx, sortOrder) {
   if (sortOrder > 2) {
     sortOrder = 0;
   }
-  sysmgr.listStatus.sortIdx = sortIdx;
-  sysmgr.listStatus.sortOrder = sortOrder;
-  sysmgr.drawUserList(sysmgr.userList, sortIdx, sortOrder);
+  scnjs.listStatus.sortIdx = sortIdx;
+  scnjs.listStatus.sortOrder = sortOrder;
+  scnjs.drawUserList(scnjs.userList, sortIdx, sortOrder);
 };
 
-sysmgr.confirmLogoutSession = function(uid, sid) {
+scnjs.confirmLogoutSession = function(uid, sid) {
   var cSid = websys.getSessionId();
   var ssid = util.snip(sid, 7, 7, '..');
   var currentUid = websys.getUserId();
@@ -631,56 +632,56 @@ sysmgr.confirmLogoutSession = function(uid, sid) {
   m += '\n';
   m += 'sid: ' + sid;
   m += '</div>';
-  util.confirm(m, sysmgr.logoutSession, {data: sid});
+  util.confirm(m, scnjs.logoutSession, {data: sid});
 };
-sysmgr.logoutSession = function(sid) {
+scnjs.logoutSession = function(sid) {
   var params = {
     sid: sid
   };
-  sysmgr.execCmd('logout', params, sysmgr.logoutSessionCb);
+  scnjs.execCmd('logout', params, scnjs.logoutSessionCb);
 };
-sysmgr.logoutSessionCb = function(xhr, res) {
-  sysmgr.showInfotip(res.status);
-  sysmgr.reloadUserInfo();
+scnjs.logoutSessionCb = function(xhr, res) {
+  scnjs.showInfotip(res.status);
+  scnjs.reloadUserInfo();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.newUser = function() {
-  sysmgr.editUser(null);
+scnjs.newUser = function() {
+  scnjs.editUser(null);
 };
 
-sysmgr.editUser = function(uid) {
+scnjs.editUser = function(uid) {
   var mode = (uid ? 'edit' : 'new');
-  sysmgr.userEditMode = mode;
-  if (!sysmgr.userEditWindow) {
-    sysmgr.userEditWindow = sysmgr.openUserInfoEditorWindow(mode, uid);
+  scnjs.userEditMode = mode;
+  if (!scnjs.userEditWindow) {
+    scnjs.userEditWindow = scnjs.openUserInfoEditorWindow(mode, uid);
   }
-  sysmgr.clearUserInfoEditor();
+  scnjs.clearUserInfoEditor();
   if (mode == 'edit') {
     var params = {
       uid: uid
     };
-    sysmgr.execCmd('user', params, sysmgr.GetUserInfoCb);
+    scnjs.execCmd('user', params, scnjs.GetUserInfoCb);
   } else {
     $el('#flags').value = '1';
     $el('#uid').focus();
   }
 };
 
-sysmgr.openUserInfoEditorWindow = function(mode, uid) {
+scnjs.openUserInfoEditorWindow = function(mode, uid) {
   var currentUid = websys.getUserId();
 
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
   if (uid && (uid != currentUid)) {
-    html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="sysmgr.deleteUser(\'' + uid + '\');">DEL</button></div>';
+    html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="scnjs.deleteUser(\'' + uid + '\');">DEL</button></div>';
   }
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:400px;height:360px;text-align:left;">';
 
   html += '<table class="edit-table">';
   html += '  <tr>';
   html += '    <td>UID</td>';
-  html += '    <td><input type="text" id="uid" style="width:100%;" onblur="sysmgr.onUidBlur();"></td>';
+  html += '    <td><input type="text" id="uid" style="width:100%;" onblur="scnjs.onUidBlur();"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Full name</td>';
@@ -740,8 +741,8 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   html += '</table>';
 
   html += '<div style="margin-top:40px;text-align:center;">';
-  html += '<button onclick="sysmgr.saveUserInfo();">OK</button>'
-  html += '<button style="margin-left:8px;" onclick="sysmgr.userEditWindow.close();">Cancel</button>'
+  html += '<button onclick="scnjs.saveUserInfo();">OK</button>'
+  html += '<button style="margin-left:8px;" onclick="scnjs.userEditWindow.close();">Cancel</button>'
   html += '</div>';
 
   html += '</div>';
@@ -762,17 +763,17 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
     title: {
       text: ((mode == 'new') ? 'New' : 'Edit') +' User',
       style: {
-        color: sysmgr.dialogTitleFgColor,
-        background: sysmgr.dialogTitleBgColor
+        color: scnjs.dialogTitleFgColor,
+        background: scnjs.dialogTitleBgColor
       }
     },
     body: {
       style: {
-        color: sysmgr.dialogFgColor,
-        background: sysmgr.dialogBgColor
+        color: scnjs.dialogFgColor,
+        background: scnjs.dialogBgColor
       }
     },
-    onclose: sysmgr.onUserEditWindowClose,
+    onclose: scnjs.onUserEditWindowClose,
     content: html
   };
 
@@ -780,17 +781,17 @@ sysmgr.openUserInfoEditorWindow = function(mode, uid) {
   return win;
 };
 
-sysmgr.onUidBlur = function() {
+scnjs.onUidBlur = function() {
   var name = $el('#name').value;
   if (name) return;
   var uid = $el('#uid').value;
   if (uid.match()) {
-    name = sysmgr.mail2name(uid);
+    name = scnjs.mail2name(uid);
   }
   $el('#name').value = name;
 };
 
-sysmgr.mail2name = function(m) {
+scnjs.mail2name = function(m) {
   var a = m.split('@');
   a = a[0].split('.');
   if (a.length == 1) return a[0];
@@ -804,16 +805,16 @@ sysmgr.mail2name = function(m) {
   return s;
 };
 
-sysmgr.GetUserInfoCb = function(xhr, res) {
+scnjs.GetUserInfoCb = function(xhr, res) {
   if (res.status != 'OK') {
-    sysmgr.showInfotip(res.status);
+    scnjs.showInfotip(res.status);
     return;
   }
   var info = res.body;
-  sysmgr.setUserInfoToEditor(info);
+  scnjs.setUserInfoToEditor(info);
 };
 
-sysmgr.setUserInfoToEditor = function(info) {
+scnjs.setUserInfoToEditor = function(info) {
   var uid = info.uid;
   $el('#uid').value = uid;
   if (uid) {
@@ -835,7 +836,7 @@ sysmgr.setUserInfoToEditor = function(info) {
   $el('#flags').value = info.flags;
 };
 
-sysmgr.clearUserInfoEditor = function() {
+scnjs.clearUserInfoEditor = function() {
   var info = {
     uid: '',
     name: '',
@@ -849,19 +850,19 @@ sysmgr.clearUserInfoEditor = function() {
     desc: '',
     flags: ''
   };
-  sysmgr.setUserInfoToEditor(info);
+  scnjs.setUserInfoToEditor(info);
 };
 
-sysmgr.saveUserInfo = function() {
-  if (sysmgr.userEditMode == 'new') {
-    sysmgr.addUser();
+scnjs.saveUserInfo = function() {
+  if (scnjs.userEditMode == 'new') {
+    scnjs.addUser();
   } else {
-    sysmgr.updateUser();
+    scnjs.updateUser();
   }
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.addUser = function() {
+scnjs.addUser = function() {
   var uid = $el('#uid').value;
   var name = $el('#name').value;
   var local_name = $el('#local_name').value;
@@ -876,44 +877,44 @@ sysmgr.addUser = function() {
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
 
-  var clnsRes = sysmgr.cleanseUsername(uid);
+  var clnsRes = scnjs.cleanseUsername(uid);
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   uid = clnsRes.val;
 
-  clnsRes = sysmgr.cleanseFullName(name);
+  clnsRes = scnjs.cleanseFullName(name);
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   name = clnsRes.val;
 
-  clnsRes = sysmgr.cleanseFullName(local_name);
+  clnsRes = scnjs.cleanseFullName(local_name);
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   local_name = clnsRes.val;
 
-  clnsRes = sysmgr.cleanseGroups(group);
+  clnsRes = scnjs.cleanseGroups(group);
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   group = clnsRes.val;
 
-  clnsRes = sysmgr.cleansePrivileges(privs);
+  clnsRes = scnjs.cleansePrivileges(privs);
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   privs = clnsRes.val;
 
-  clnsRes = sysmgr.cleansePW(pw1, pw2, 'new');
+  clnsRes = scnjs.cleansePW(pw1, pw2, 'new');
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   var pw = clnsRes.val;
@@ -934,20 +935,20 @@ sysmgr.addUser = function() {
     pw: pw
   };
 
-  sysmgr.execCmd('useradd', params, sysmgr.updateUserCb);
+  scnjs.execCmd('useradd', params, scnjs.updateUserCb);
 };
 
-sysmgr.addUserCb = function(xhr, res) {
-  sysmgr.showInfotip(res.status);
+scnjs.addUserCb = function(xhr, res) {
+  scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
   }
-  sysmgr.userEditWindow.close();
-  sysmgr.getUserList();
+  scnjs.userEditWindow.close();
+  scnjs.getUserList();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.updateUser = function() {
+scnjs.updateUser = function() {
   var uid = $el('#uid').value;
   var name = $el('#name').value;
   var local_name = $el('#local_name').value;
@@ -962,9 +963,9 @@ sysmgr.updateUser = function() {
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
 
-  var clnsRes = sysmgr.cleansePW(pw1, pw2, 'edit');
+  var clnsRes = scnjs.cleansePW(pw1, pw2, 'edit');
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   var pw = clnsRes.val;
@@ -987,75 +988,75 @@ sysmgr.updateUser = function() {
     params.pw = websys.getUserPwHash(uid, pw);
   }
 
-  sysmgr.execCmd('usermod', params, sysmgr.updateUserCb);
+  scnjs.execCmd('usermod', params, scnjs.updateUserCb);
 };
 
-sysmgr.updateUserCb = function(xhr, res) {
-  sysmgr.showInfotip(res.status);
+scnjs.updateUserCb = function(xhr, res) {
+  scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
   }
-  sysmgr.userEditWindow.close();
-  sysmgr.getUserList();
+  scnjs.userEditWindow.close();
+  scnjs.getUserList();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.deleteUser = function(uid) {
+scnjs.deleteUser = function(uid) {
   var opt = {
     data: uid
   };
-  util.confirm('Delete ' + uid + ' ?', sysmgr._deleteUser, opt);
+  util.confirm('Delete ' + uid + ' ?', scnjs._deleteUser, opt);
 };
-sysmgr._deleteUser = function(uid) {
+scnjs._deleteUser = function(uid) {
   if (!uid) {
     return;
   }
-  if (sysmgr.userEditWindow) {
-    sysmgr.userEditWindow.close();
+  if (scnjs.userEditWindow) {
+    scnjs.userEditWindow.close();
   }
   var params = {
     uid: uid
   };
-  sysmgr.execCmd('userdel', params, sysmgr.deleteUserCb);
+  scnjs.execCmd('userdel', params, scnjs.deleteUserCb);
 };
 
-sysmgr.deleteUserCb = function(xhr, res) {
+scnjs.deleteUserCb = function(xhr, res) {
   if (res.status != 'OK') {
-    sysmgr.showInfotip(res.status);
+    scnjs.showInfotip(res.status);
     return;
   }
-  sysmgr.showInfotip('OK');
-  sysmgr.getUserList();
+  scnjs.showInfotip('OK');
+  scnjs.getUserList();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.confirmClearLoginFailedCount = function(uid) {
+scnjs.confirmClearLoginFailedCount = function(uid) {
   var opt = {
     data: uid
   };
-  util.confirm('Clear failure count for ' + uid + ' ?', sysmgr.clearLoginFailedCount, opt);
+  util.confirm('Clear failure count for ' + uid + ' ?', scnjs.clearLoginFailedCount, opt);
 };
-sysmgr.clearLoginFailedCount = function(uid) {
+scnjs.clearLoginFailedCount = function(uid) {
   if (!uid) {
     return;
   }
   var params = {
     uid: uid
   };
-  sysmgr.execCmd('unlockuser', params, sysmgr.clearLoginFailedCountCb);
+  scnjs.execCmd('unlockuser', params, scnjs.clearLoginFailedCountCb);
 };
 
-sysmgr.clearLoginFailedCountCb = function(xhr, res) {
+scnjs.clearLoginFailedCountCb = function(xhr, res) {
   if (res.status != 'OK') {
-    sysmgr.showInfotip(res.status);
+    scnjs.showInfotip(res.status);
     return;
   }
-  sysmgr.showInfotip('OK');
-  sysmgr.getUserList();
+  scnjs.showInfotip('OK');
+  scnjs.getUserList();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.sortList = function(itemList, sortKey, isDesc) {
+scnjs.sortList = function(itemList, sortKey, isDesc) {
   var items = util.copyObject(itemList);
   var srcList = items;
   var asNum = true;
@@ -1064,7 +1065,7 @@ sysmgr.sortList = function(itemList, sortKey, isDesc) {
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.cleanseCommon = function(s) {
+scnjs.cleanseCommon = function(s) {
   s = s.trim();
   s = s.replace(/\t/g, ' ');
   var res = {
@@ -1074,8 +1075,8 @@ sysmgr.cleanseCommon = function(s) {
   return res;
 };
 
-sysmgr.cleanseUsername = function(s) {
-  var res = sysmgr.cleanseCommon(s);
+scnjs.cleanseUsername = function(s) {
+  var res = scnjs.cleanseCommon(s);
   if (res.msg) {
     return res;
   }
@@ -1089,8 +1090,8 @@ sysmgr.cleanseUsername = function(s) {
   return res;
 };
 
-sysmgr.cleanseFullName = function(s) {
-  var res = sysmgr.cleanseCommon(s);
+scnjs.cleanseFullName = function(s) {
+  var res = scnjs.cleanseCommon(s);
   if (res.msg) {
     return res;
   }
@@ -1101,8 +1102,8 @@ sysmgr.cleanseFullName = function(s) {
   return res;
 };
 
-sysmgr.cleanseLocalFullName = function(s) {
-  var res = sysmgr.cleanseCommon(s);
+scnjs.cleanseLocalFullName = function(s) {
+  var res = scnjs.cleanseCommon(s);
   if (res.msg) {
     return res;
   }
@@ -1113,7 +1114,7 @@ sysmgr.cleanseLocalFullName = function(s) {
   return res;
 };
 
-sysmgr.cleansePW = function(pw1, pw2, mode) {
+scnjs.cleansePW = function(pw1, pw2, mode) {
   var msg = null;
   if (mode == 'new') {
     if (pw1 == '') {
@@ -1132,8 +1133,8 @@ sysmgr.cleansePW = function(pw1, pw2, mode) {
   return res;
 };
 
-sysmgr.cleanseGroups = function(s) {
-  var res = sysmgr.cleanseCommon(s);
+scnjs.cleanseGroups = function(s) {
+  var res = scnjs.cleanseCommon(s);
   if (res.msg) {
     return res;
   }
@@ -1145,8 +1146,8 @@ sysmgr.cleanseGroups = function(s) {
   return res;
 };
 
-sysmgr.cleansePrivileges = function(s) {
-  var res = sysmgr.cleanseCommon(s);
+scnjs.cleansePrivileges = function(s) {
+  var res = scnjs.cleanseCommon(s);
   if (res.msg) {
     return res;
   }
@@ -1159,22 +1160,22 @@ sysmgr.cleansePrivileges = function(s) {
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.drawGroupStatus = function(s) {
+scnjs.drawGroupStatus = function(s) {
   $el('#groups-status').innerHTML = s;
 };
 
-sysmgr.getGroupList = function() {
-  sysmgr.callApi('get_group_list', null, sysmgr.getGroupListCb);
+scnjs.getGroupList = function() {
+  scnjs.callApi('get_group_list', null, scnjs.getGroupListCb);
 };
-sysmgr.getGroupListCb = function(xhr, res) {
+scnjs.getGroupListCb = function(xhr, res) {
   if (res.status == 'OK') {
-    sysmgr.drawGroupStatus('');
+    scnjs.drawGroupStatus('');
     var list = res.body.group_list;
-    sysmgr.drawGroupList(list);
+    scnjs.drawGroupList(list);
   }
 };
 
-sysmgr.drawGroupList = function(list) {
+scnjs.drawGroupList = function(list) {
   var html = '<div style="width:100%;max-height:300px;overflow:auto;">';
   html += '<table>';
   html += '<tr class="item-list-header">';
@@ -1192,13 +1193,13 @@ sysmgr.drawGroupList = function(list) {
     var name = group.name;
     var privs = (group.privs ? group.privs : '');
     var desc = (group.desc ? group.desc : '');
-    var createdDate = sysmgr.getDateTimeString(group.created_at, sysmgr.INSEC);
-    var updatedDate = sysmgr.getDateTimeString(group.updated_at, sysmgr.INSEC);
+    var createdDate = scnjs.getDateTimeString(group.created_at, scnjs.INSEC);
+    var updatedDate = scnjs.getDateTimeString(group.updated_at, scnjs.INSEC);
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
     html += '<tr class="item-list ' + clz + '">';
-    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="sysmgr.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + gid + '</span></td>';
+    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="scnjs.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + gid + '</span></td>';
     html += '<td class="item-list">' + name + '</td>';
     html += '<td class="item-list">' + privs + '</td>';
     html += '<td class="item-list">' + desc + '</td>';
@@ -1212,30 +1213,30 @@ sysmgr.drawGroupList = function(list) {
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.newGroup = function() {
-  sysmgr.editGroup(null);
+scnjs.newGroup = function() {
+  scnjs.editGroup(null);
 };
 
-sysmgr.editGroup = function(gid) {
-  sysmgr.groupEditMode = (gid ? 'edit' : 'new');
-  if (!sysmgr.groupEditWindow) {
-    sysmgr.groupEditWindow = sysmgr.openGroupInfoEditorWindow(sysmgr.groupEditMode, gid);
+scnjs.editGroup = function(gid) {
+  scnjs.groupEditMode = (gid ? 'edit' : 'new');
+  if (!scnjs.groupEditWindow) {
+    scnjs.groupEditWindow = scnjs.openGroupInfoEditorWindow(scnjs.groupEditMode, gid);
   }
-  sysmgr.clearGroupInfoEditor();
+  scnjs.clearGroupInfoEditor();
   if (gid) {
     var params = {
       gid: gid
     };
-    sysmgr.execCmd('group', params, sysmgr.getGroupInfoCb);
+    scnjs.execCmd('group', params, scnjs.getGroupInfoCb);
   } else {
     $el('#gid').focus();
   }
 };
 
-sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
+scnjs.openGroupInfoEditorWindow = function(mode, gid) {
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
-  html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="sysmgr.deleteGroup(\'' + gid + '\');">DEL</button></div>';
+  html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="scnjs.deleteGroup(\'' + gid + '\');">DEL</button></div>';
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:120px;text-align:left;">';
 
   html += '<table>';
@@ -1260,8 +1261,8 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
   html += '</table>';
 
   html += '<div style="margin-top:24px;text-align:center;">';
-  html += '<button onclick="sysmgr.saveGroupInfo();">OK</button>'
-  html += '<button style="margin-left:8px;" onclick="sysmgr.groupEditWindow.close();">Cancel</button>'
+  html += '<button onclick="scnjs.saveGroupInfo();">OK</button>'
+  html += '<button style="margin-left:8px;" onclick="scnjs.groupEditWindow.close();">Cancel</button>'
   html += '</div>';
 
   html += '</div>';
@@ -1282,17 +1283,17 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
     title: {
       text: ((mode == 'new') ? 'New' : 'Edit') +' Group',
       style: {
-        color: sysmgr.dialogTitleFgColor,
-        background: sysmgr.dialogTitleBgColor
+        color: scnjs.dialogTitleFgColor,
+        background: scnjs.dialogTitleBgColor
       }
     },
     body: {
       style: {
-        color: sysmgr.dialogFgColor,
-        background: sysmgr.dialogBgColor
+        color: scnjs.dialogFgColor,
+        background: scnjs.dialogBgColor
       }
     },
-    onclose: sysmgr.onGroupEditWindowClose,
+    onclose: scnjs.onGroupEditWindowClose,
     content: html
   };
 
@@ -1301,20 +1302,20 @@ sysmgr.openGroupInfoEditorWindow = function(mode, gid) {
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.addGroup = function() {
+scnjs.addGroup = function() {
   var gid = $el('#gid').value.trim();
   var name = $el('#group-name').value;
   var privs = $el('#group-privs').value;
   var desc = $el('#group-desc').value;
 
   if (!gid) {
-    sysmgr.showInfotip('Group ID is required.', 2000);
+    scnjs.showInfotip('Group ID is required.', 2000);
     return;
   }
 
-  clnsRes = sysmgr.cleansePrivileges(privs);
+  clnsRes = scnjs.cleansePrivileges(privs);
   if (clnsRes.msg) {
-    sysmgr.showInfotip(clnsRes.msg, 2000);
+    scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
   privs = clnsRes.val;
@@ -1326,20 +1327,20 @@ sysmgr.addGroup = function() {
     desc: desc
   };
 
-  sysmgr.execCmd('addgroup', params, sysmgr.addGroupCb);
+  scnjs.execCmd('addgroup', params, scnjs.addGroupCb);
 };
 
-sysmgr.addGroupCb = function(xhr, res) {
-  sysmgr.showInfotip(res.status);
+scnjs.addGroupCb = function(xhr, res) {
+  scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
   }
-  sysmgr.groupEditWindow.close();
-  sysmgr.getGroupList();
+  scnjs.groupEditWindow.close();
+  scnjs.getGroupList();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.updateGroup = function() {
+scnjs.updateGroup = function() {
   var gid = $el('#gid').value;
   var name = $el('#group-name').value;
   var privs = $el('#group-privs').value;
@@ -1352,58 +1353,58 @@ sysmgr.updateGroup = function() {
     desc: desc
   };
 
-  sysmgr.execCmd('modgroup', params, sysmgr.updateGroupCb);
+  scnjs.execCmd('modgroup', params, scnjs.updateGroupCb);
 };
 
-sysmgr.updateGroupCb = function(xhr, res) {
-  sysmgr.showInfotip(res.status);
+scnjs.updateGroupCb = function(xhr, res) {
+  scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
   }
-  sysmgr.groupEditWindow.close();
-  sysmgr.getGroupList();
+  scnjs.groupEditWindow.close();
+  scnjs.getGroupList();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.deleteGroup = function(gid) {
+scnjs.deleteGroup = function(gid) {
   var opt = {
     data: gid
   };
-  util.confirm('Delete ' + gid + ' ?', sysmgr._deleteGroup, opt);
+  util.confirm('Delete ' + gid + ' ?', scnjs._deleteGroup, opt);
 };
-sysmgr._deleteGroup = function(gid) {
+scnjs._deleteGroup = function(gid) {
   if (!gid) {
     return;
   }
-  if (sysmgr.groupEditWindow) {
-    sysmgr.groupEditWindow.close();
+  if (scnjs.groupEditWindow) {
+    scnjs.groupEditWindow.close();
   }
   var params = {
     gid: gid
   };
-  sysmgr.execCmd('delgroup', params, sysmgr.deleteGroupCb);
+  scnjs.execCmd('delgroup', params, scnjs.deleteGroupCb);
 };
 
-sysmgr.deleteGroupCb = function(xhr, res) {
+scnjs.deleteGroupCb = function(xhr, res) {
   if (res.status != 'OK') {
-    sysmgr.showInfotip(res.status);
+    scnjs.showInfotip(res.status);
     return;
   }
-  sysmgr.showInfotip('OK');
-  sysmgr.getGroupList();
+  scnjs.showInfotip('OK');
+  scnjs.getGroupList();
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.getGroupInfoCb = function(xhr, res) {
+scnjs.getGroupInfoCb = function(xhr, res) {
   if (res.status != 'OK') {
-    sysmgr.showInfotip(res.status);
+    scnjs.showInfotip(res.status);
     return;
   }
   var info = res.body;
-  sysmgr.setGroupInfoToEditor(info);
+  scnjs.setGroupInfoToEditor(info);
 };
 
-sysmgr.setGroupInfoToEditor = function(info) {
+scnjs.setGroupInfoToEditor = function(info) {
   var gid = info.gid;
   $el('#gid').value = gid;
   if (gid) {
@@ -1418,42 +1419,42 @@ sysmgr.setGroupInfoToEditor = function(info) {
   $el('#group-desc').value = (info.desc ? info.desc : '');
 };
 
-sysmgr.clearGroupInfoEditor = function() {
+scnjs.clearGroupInfoEditor = function() {
   var info = {
     gid: '',
     name: '',
     privs: '',
     desc: ''
   };
-  sysmgr.setGroupInfoToEditor(info);
+  scnjs.setGroupInfoToEditor(info);
 };
 
-sysmgr.saveGroupInfo = function() {
-  if (sysmgr.groupEditMode == 'new') {
-    sysmgr.addGroup();
+scnjs.saveGroupInfo = function() {
+  if (scnjs.groupEditMode == 'new') {
+    scnjs.addGroup();
   } else {
-    sysmgr.updateGroup();
+    scnjs.updateGroup();
   }
 };
 
 //-----------------------------------------------------------------------------
-sysmgr.onUserEditWindowClose = function() {
-  sysmgr.userEditWindow = null;
-  sysmgr.userEditMode = null;
+scnjs.onUserEditWindowClose = function() {
+  scnjs.userEditWindow = null;
+  scnjs.userEditMode = null;
 };
 
-sysmgr.onGroupEditWindowClose = function() {
-  sysmgr.groupEditWindow = null;
-  sysmgr.groupEditMode = null;
+scnjs.onGroupEditWindowClose = function() {
+  scnjs.groupEditWindow = null;
+  scnjs.groupEditMode = null;
 };
 
-sysmgr.copy = function(s) {
+scnjs.copy = function(s) {
   util.copy(s);
   var o = {pos: 'pointer'};
-  sysmgr.showInfotip('Copied', 1000, o);
+  scnjs.showInfotip('Copied', 1000, o);
 };
 
-sysmgr.showInfotip = function(m, d, o) {
+scnjs.showInfotip = function(m, d, o) {
   if (!o) o = {};
   o.style = {
     'font-size': '14px'
@@ -1465,5 +1466,5 @@ $onCtrlS = function(e) {
 };
 
 $onBeforeUnload = function(e) {
-  if ((sysmgr.userEditWindow) || (sysmgr.groupEditWindow)) e.returnValue = '';
+  if ((scnjs.userEditWindow) || (scnjs.groupEditWindow)) e.returnValue = '';
 };
