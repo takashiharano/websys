@@ -494,7 +494,7 @@ scnjs.startElapsedCounter = function(param) {
 
 scnjs.buildTimeLine = function(now, lastAccessTime) {
   var accYearDateTime = util.getDateTimeString(lastAccessTime, '%YYYY-%MM-%DD %HH:%mm');
-  var accDateTime = util.getDateTimeString(lastAccessTime, '%W %MM/%DD %HH:%mm');
+  var accDateTime = util.getDateTimeString(lastAccessTime, '%W %DD %MMM %HH:%mm');
   var accTime = util.getDateTimeString(lastAccessTime, '%HH:%mm');
   var accTp = scnjs.getTimePosition(now, lastAccessTime);
   var nowTp = scnjs.getTimePosition(now, now);
