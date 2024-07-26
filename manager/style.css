@@ -173,6 +173,30 @@ tr.item-list:hover {
   background: #101010 !important;
 }
 
+.led-color-green {
+  color: #0f0;
+}
+
+.led-color-yellow {
+  color: #cc0;
+}
+
+.led-color-red {
+  color: #a44;
+}
+
+.led-color-gray {
+  color: #888;
+}
+
+.warn-red {
+  color: #f44;
+}
+
+.you {
+  color: #2af;
+}
+
 .timeline-span {
   color: #aaa;
   cursor: default;
