@@ -56,7 +56,7 @@ def build_main_screen(context):
 <button onclick="sysmgr.getGroupList();">RELOAD</button>
 <span id="groups-status" style="margin-left:8px;"></span><br>
 </div>
-<div id="group-list" style="width:100%;max-height:300px;overflow:auto;></div>
+<div id="group-list" style="width:100%;max-height:300px;overflow:auto;"></div>
 </div>
 
 </div>
