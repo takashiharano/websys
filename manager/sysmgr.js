@@ -462,7 +462,7 @@ scnjs.buildSessionInfoOne = function(session, now, mn) {
   var ssidLink = '<span class="pseudo-link link-button" onclick="scnjs.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
   var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
   var timeId = 'tm-' + sid7;
-  var tmspan = '<span id="' + timeId + '"></span>'
+  var tmspan = '<span id="' + timeId + '"></span>';
 
   var slotTimestampHistories = session['timeline_log'];
   var timeline = scnjs.buildTimeLine(now, laTime, slotTimestampHistories);
@@ -546,7 +546,8 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
 scnjs.getPosList4History = function(now, slotTimestampHistories) {
   var posList = [];
   for (var i = 0; i < slotTimestampHistories.length; i++) {
-    var t = slotTimestampHistories[i] * 1000;
+    var t = slotTimestampHistories[i];
+    if (scnjs.INSEC) t *= 1000;
     var p = scnjs.getTimePosition(now, t);
     if (p >= 0) {
       posList.push(p);
