@@ -76,6 +76,16 @@ def proc_get_session_list(context):
     web.send_result_json('OK', body=sessions)
 
 def ger_timeline_logs_by_session(sessions):
+    now = util.now()
+
+    p_target_offset = get_request_param('offset', '0')
+    target_offset = int(p_target_offset)
+
+    tm = now - util.DAY * target_offset
+    mn_timestamp = util.get_midnight_timestamp(tm)
+    target_from = mn_timestamp
+    target_to = mn_timestamp + util.DAY
+
     users = {}
     for i in range(len(sessions)):
         session = sessions[i]
@@ -100,7 +110,9 @@ def ger_timeline_logs_by_session(sessions):
             if sid not in timeline_logs_by_session:
                 timeline_logs_by_session[sid] = []
             time = values['time']
-            timeline_logs_by_session[sid].append(time)
+
+            if target_from <= time and time < target_to:
+                timeline_logs_by_session[sid].append(time)
 
     return timeline_logs_by_session
 
