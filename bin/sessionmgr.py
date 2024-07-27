@@ -284,19 +284,18 @@ def load_user_timeline_log(uid):
 
 def write_user_timeline_log(uid, sid, time):
     TIME_SLOT_MIN = 15
-    MAX_LOG_LIES = 1000
+    MAX_LOG_LINES = 1000
     logs = load_user_timeline_log(uid)
 
-    # trim the records
-    if len(logs) > 0:
-        max = (MAX_LOG_LIES - 1) * -1
-        logs = logs[max:]
+    rb = util.RingBuffer(MAX_LOG_LINES)
+    for i in range(len(logs)):
+        rb.add(logs[i])
 
     time_slot_sec = TIME_SLOT_MIN * 60
     current_time_slot_sec = int(time / time_slot_sec) * time_slot_sec
 
-    for i in reversed(range(0, len(logs))):
-        line = logs[i]
+    for i in range(rb.size):
+        line = rb.get_reversed(i)
         values = get_timeline_log_field_values(line)
 
         if values['sid'] == sid:
@@ -305,8 +304,9 @@ def write_user_timeline_log(uid, sid, time):
                 return
 
     text = str(current_time_slot_sec) + '\t' + sid
-    logs.append(text)
+    rb.add(text)
 
+    logs = rb.get_all()
     path = get_user_timeline_log_file_path(uid)
     util.write_text_file_from_list(path, logs)
 
