@@ -52,8 +52,6 @@ scnjs.groupEditWindow = null;
 scnjs.groupEditMode = null;
 scnjs.tmrId = 0;
 scnjs.interval = 0;
-scnjs.userListScroll = {x: 0, y: 0};
-scnjs.sessionListScroll = {x: 0, y: 0};
 
 $onReady = function() {
   util.clock('#clock');
@@ -67,8 +65,6 @@ scnjs.onSysReady = function() {
 };
 
 scnjs.reload = function() {
-  scnjs.userListScroll = {x: 0, y: 0};
-  scnjs.sessionListScroll = {x: 0, y: 0};
   scnjs.reloadUserInfo();
   scnjs.getGroupList();
 };
@@ -83,10 +79,6 @@ scnjs.queueNextUpdateSessionInfo = function() {
 };
 
 scnjs.updateSessionInfo = function() {
-  scnjs.userListScroll.y = $el('#user-list').scrollTop;
-  scnjs.userListScroll.x = $el('#user-list').scrollLeft;
-  scnjs.sessionListScroll.y = $el('#session-list').scrollTop;
-  scnjs.sessionListScroll.x = $el('#session-list').scrollLeft;
   scnjs.interval = 1;
   scnjs.reloadUserInfo();
 };
@@ -164,8 +156,6 @@ scnjs.getUserListCb = function(xhr, res, req) {
   scnjs.userList = userList;
   var listStatus = scnjs.listStatus;
   scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
-  $el('#user-list').scrollTop = scnjs.userListScroll.y;
-  $el('#user-list').scrollLeft = scnjs.userListScroll.x;
 };
 
 scnjs.elapsedSinceLastAccess = function(now, t) {
