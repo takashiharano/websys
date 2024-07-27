@@ -57,7 +57,52 @@ def proc_get_session_list(context):
         return
 
     sessions = get_sorted_session_list()
+
+    p_logs = get_request_param('logs')
+    if p_logs == '1':
+        timeline_logs = ger_timeline_logs_by_session(sessions)
+
+        for i in range(len(sessions)):
+            session = sessions[i]
+            sid = session['sid']
+
+            if sid in timeline_logs:
+                logs = timeline_logs[sid]
+            else:
+                logs = []
+
+            session['timeline_log'] = logs
+
     web.send_result_json('OK', body=sessions)
+
+def ger_timeline_logs_by_session(sessions):
+    users = {}
+    for i in range(len(sessions)):
+        session = sessions[i]
+        uid = session['uid']
+        users[uid] = 1
+
+    # {
+    #   sid: [
+    #     time,
+    #     time
+    #     ...
+    #   ].
+    #   ...
+    # }
+    timeline_logs_by_session = {}
+    for uid in users:
+        logs = sessionmgr.get_user_timeline_log(uid)
+        for i in range(len(logs)):
+            line = logs[i]
+            values = sessionmgr.get_timeline_log_field_values(line)
+            sid = values['sid']
+            if sid not in timeline_logs_by_session:
+                timeline_logs_by_session[sid] = []
+            time = values['time']
+            timeline_logs_by_session[sid].append(time)
+
+    return timeline_logs_by_session
 
 # [
 #  {
@@ -77,7 +122,8 @@ def proc_get_session_list(context):
 #    "ua": "Mozilla/5.0",
 #    "user_name": "John Doe"
 #   }
-#  }
+#  },
+#  ...
 # ]
 def get_sorted_session_list():
     sessions = sessionmgr.get_all_sessions_info()

@@ -265,8 +265,60 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
     if elapsed > MIN_FILE_UPDATE_INTERVAL_SEC:
         save_user_sessions_to_file(uid, sessions)
         usermgr.update_user_status_info(uid, 'last_access', time)
+        write_user_timeline_log(uid, sid, time)
 
     return session
+
+#------------------------------------------------------------------------------
+def get_user_timeline_log_file_path(uid):
+    return  USER_ROOT_PATH + '/' + uid + '/timeline.log'
+
+def get_user_timeline_log(uid):
+    logs = load_user_timeline_log(uid)
+    return logs
+
+def load_user_timeline_log(uid):
+    path = get_user_timeline_log_file_path(uid)
+    logs = util.read_text_file_as_list(path)
+    return logs
+
+def write_user_timeline_log(uid, sid, time):
+    TIME_SLOT_MIN = 15
+    MAX_LOG_LIES = 1000
+    logs = load_user_timeline_log(uid)
+
+    # trim the records
+    if len(logs) > 0:
+        max = (MAX_LOG_LIES - 1) * -1
+        logs = logs[max:]
+
+    time_slot_sec = TIME_SLOT_MIN * 60
+    current_time_slot_sec = int(time / time_slot_sec) * time_slot_sec
+
+    for i in reversed(range(0, len(logs))):
+        line = logs[i]
+        values = get_timeline_log_field_values(line)
+
+        if values['sid'] == sid:
+            elapsed_from_latest = time - values['time']
+            if elapsed_from_latest <= time_slot_sec:
+                return
+
+    text = str(current_time_slot_sec) + '\t' + sid
+    logs.append(text)
+
+    path = get_user_timeline_log_file_path(uid)
+    util.write_text_file_from_list(path, logs)
+
+def get_timeline_log_field_values(line):
+    values = {'time': 0, 'sid': ''}
+    try:
+        wk = line.split('\t')
+        values['time'] = int(wk[0])
+        values['sid'] = wk[1]
+    except:
+        pass
+    return values
 
 #----------------------------------------------------------
 # Clear session
