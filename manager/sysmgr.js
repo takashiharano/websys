@@ -52,7 +52,8 @@ scnjs.groupEditWindow = null;
 scnjs.groupEditMode = null;
 scnjs.tmrId = 0;
 scnjs.interval = 0;
-scnjs.userListScrollTop = 0;
+scnjs.userListScroll = {x: 0, y: 0};
+scnjs.sessionListScroll = {x: 0, y: 0};
 
 $onReady = function() {
   util.clock('#clock');
@@ -66,7 +67,8 @@ scnjs.onSysReady = function() {
 };
 
 scnjs.reload = function() {
-  scnjs.userListScrollTop = 0;
+  scnjs.userListScroll = {x: 0, y: 0};
+  scnjs.sessionListScroll = {x: 0, y: 0};
   scnjs.reloadUserInfo();
   scnjs.getGroupList();
 };
@@ -81,7 +83,10 @@ scnjs.queueNextUpdateSessionInfo = function() {
 };
 
 scnjs.updateSessionInfo = function() {
-  scnjs.userListScrollTop = $el('#user-list').scrollTop;
+  scnjs.userListScroll.y = $el('#user-list').scrollTop;
+  scnjs.userListScroll.x = $el('#user-list').scrollLeft;
+  scnjs.sessionListScroll.y = $el('#session-list').scrollTop;
+  scnjs.sessionListScroll.x = $el('#session-list').scrollLeft;
   scnjs.interval = 1;
   scnjs.reloadUserInfo();
 };
@@ -159,7 +164,8 @@ scnjs.getUserListCb = function(xhr, res, req) {
   scnjs.userList = userList;
   var listStatus = scnjs.listStatus;
   scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
-  $el('#user-list').scrollTop = scnjs.userListScrollTop;
+  $el('#user-list').scrollTop = scnjs.userListScroll.y;
+  $el('#user-list').scrollLeft = scnjs.userListScroll.x;
 };
 
 scnjs.elapsedSinceLastAccess = function(now, t) {
@@ -307,7 +313,7 @@ scnjs.drawUserList = function(items, sortIdx, sortOrder) {
   var htmlHead = scnjs.buildListHeader(scnjs.USER_LIST_COLUMNS, sortIdx, sortOrder);
   var html = '<table>' + htmlHead + htmlList + '</table>';
 
-  scnjs.drawUserListContent(html);
+  $el('#user-list').innerHTML = html;
 };
 
 scnjs.buildCopyableLabel = function(s) {
@@ -377,8 +383,7 @@ scnjs.getSessionListCb = function(xhr, res, req) {
 
 scnjs.drawSessionList = function(sessions) {
   var now = util.now();
-  var html = '<div style="width:100%;max-height:400px;overflow:auto;">';
-  html += '<table>';
+  var html = '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
   html += '<td>UID</td>';
@@ -393,7 +398,6 @@ scnjs.drawSessionList = function(sessions) {
   html += '</tr>';
   html += scnjs.buildSessionInfoHtml(sessions, now);
   html += '</table>';
-  html += '</div>';
   $el('#session-list').innerHTML = html;
 };
 
@@ -624,10 +628,6 @@ scnjs.getTimeSlot = function(h, hh, mm) {
     }
   }
   return -1;
-};
-
-scnjs.drawUserListContent = function(html) {
-  $el('#user-list').innerHTML = html;
 };
 
 scnjs.sortItemList = function(sortIdx, sortOrder) {
@@ -1197,8 +1197,7 @@ scnjs.getGroupListCb = function(xhr, res) {
 };
 
 scnjs.drawGroupList = function(list) {
-  var html = '<div style="width:100%;max-height:300px;overflow:auto;">';
-  html += '<table>';
+  var html = '<table>';
   html += '<tr class="item-list-header">';
   html += '<th class="item-list" style="min-width:10em;">GID</th>';
   html += '<th class="item-list" style="min-width:15em;">Name</th>';
@@ -1229,7 +1228,6 @@ scnjs.drawGroupList = function(list) {
     html += '</tr>';
   }
   html += '</table>';
-  html += '</div>';
   $el('#group-list').innerHTML = html;
 };
 
