@@ -499,7 +499,6 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   var ttlPs = hrBlk * 24;
   var dispAccDateTime = ' ' + accDateTime + ' ';
   var dispAccTime = ' ' + accTime + ' ';
-  var tmPos = 0;
   var remains = ttlPs - (accTp + dispAccTime.length);
 
   var tsPosList = scnjs.getPosList4History(now, slotTimestampHistories);
@@ -527,10 +526,8 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
     s = '';
     if (i == accTp) {
       s += '<span class="timeline-acc-ind" data-tooltip="' + accTime + '">*</span>';
-      if (tmPos == 0) {
-        s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
-        i += dispAccTime.length;
-      }
+      s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
+      i += dispAccTime.length;
     } else {
       if (tsPosList.includes(i)) {
         s += '<span class="timeline-acc-ind timeline-acc-ind-past">*</span>';
