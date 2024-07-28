@@ -29,8 +29,8 @@ scnjs.USER_LIST_COLUMNS = [
   {key: 'info2', label: 'Info2', style: 'min-width:5em;'},
   {key: 'desc', label: 'Description', style: 'min-width:5em;'},
   {key: 'flags', label: 'Flags'},
-  {key: 'status_info.login_failed_count', label: 'Fail', sort: false},
   {key: 'status_info.sessions', label: 'S'},
+  {key: 'status_info.login_failed_count', label: 'E'},
   {key: 'status_info.last_access', label: 'Last Access'},
   {key: 'status_info.last_login', label: 'Last Login'},
   {key: 'status_info.last_logout', label: 'Last Logout'},
@@ -313,6 +313,20 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     dispInfo1 = scnjs.buildCopyableLabel(info1, dispInfo1);
     dispInfo2 = scnjs.buildCopyableLabel(info2, dispInfo2);
 
+    var failedCount = '<td class="item-list" style="text-align:right;width:1.5em;">';
+    if (loginFailedCount > 0) {
+      var clz = 'pseudo-link';
+      if ((scnjs.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= scnjs.websysconf.LOGIN_FAILURE_MAX)) {
+        clz += ' login-locked';
+      } else {
+        clz += ' text-red';
+      }
+      failedCount += '<span class="' + clz + '" data-tooltip="Last failed: ' + loginFailedTime + '" onclick="scnjs.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
+    } else {
+      failedCount += '';
+    }
+    failedCount += '</td>';
+
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
     htmlList += '<tr class="item-list ' + clz + '">';
@@ -328,22 +342,8 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     htmlList += '<td class="item-list">' + dispInfo2 + '</td>';
     htmlList += '<td class="item-list" style="max-width:15em;">' + dispDesc + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + item.flags + '</td>';
-
-    htmlList += '<td class="item-list" style="text-align:center;width:1.5em;">';
-    if (loginFailedCount > 0) {
-      var clz = 'pseudo-link';
-      if ((scnjs.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= scnjs.websysconf.LOGIN_FAILURE_MAX)) {
-        clz += ' login-locked';
-      } else {
-        clz += ' text-red';
-      }
-      htmlList += '<span class="' + clz + '" data-tooltip="Last failed: ' + loginFailedTime + '" onclick="scnjs.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';
-    } else {
-      htmlList += '';
-    }
-    htmlList += '</td>';
-
     htmlList += '<td class="item-list" style="text-align:right;">' + sessions + '</td>';
+    htmlList += failedCount;
     htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastLogoutDate + '</td>';
