@@ -35,26 +35,22 @@ def build_main_screen(context):
 <body>
 <div id="body1">
 
-<div style="margin-top:2px;margin-bottom:8px;">
-<span id="clock"></span>
-</div>
-
-<div style="margin-bottom:4px;">
+<div style="margin-top:4px;margin-bottom:4px;">
 <b>Users</b><br>
 <button onclick="sysmgr.newUser();">+</button>
-<button onclick="sysmgr.reloadUserInfo();">RELOAD</button>
+<button onclick="sysmgr.reloadUserInfo();">Reload</button>
 <span style="margin-left:16px;">Search: <input type="text" id="search-text" style="width:150px;" oninput="scnjs.onSearchInput(this);"></apan>
 </div>
 <div id="user-list" style="width:100%;max-height:400px;overflow:auto;"></div>
 
-<pre style="margin-top:10px;">Sessions
+<pre style="margin-top:10px;"><span>Sessions</span><span style="margin-left:24px;"><span id="clock"></span></span>
 <div id="session-list" style="width:100%;max-height:250px;overflow:auto;"></div></pre>
 
 <div style="display:inline-block;margin-top:20px;margin-bottom:40px;">
 <div style="margin-bottom:4px;">
 <b>Groups</b><br>
 <button onclick="sysmgr.newGroup();">+</button>
-<button onclick="sysmgr.getGroupList();">RELOAD</button>
+<button onclick="sysmgr.getGroupList();">Reload</button>
 <span id="groups-status" style="margin-left:8px;"></span><br>
 </div>
 <div id="group-list" style="width:100%;max-height:300px;overflow:auto;"></div>

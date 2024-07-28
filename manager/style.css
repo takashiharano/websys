@@ -85,6 +85,7 @@ button, input[type="button"], input[type="submit"] {
   color: #fff;
   background: #06c;
   font-size: 12px;
+  font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
   transition: all 0.2s ease;
 }
 button:hover, input[type="button"]:hover, input[type="submit"]:hover {
@@ -229,3 +230,7 @@ tr.item-list:hover {
 #user-list {
   font-size: 12px;
 }
+
+#clock {
+  color: #add396;
+]
