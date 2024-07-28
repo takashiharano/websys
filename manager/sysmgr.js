@@ -333,6 +333,8 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     if (loginFailedCount > 0) {
       var clz = 'pseudo-link';
       if ((scnjs.websysconf.LOGIN_FAILURE_MAX > 0) && (loginFailedCount >= scnjs.websysconf.LOGIN_FAILURE_MAX)) {
+        clz += ' login-locked';
+      } else {
         clz += ' text-red';
       }
       htmlList += '<span class="' + clz + '" data-tooltip="Last failed: ' + loginFailedTime + '" onclick="scnjs.confirmClearLoginFailedCount(\'' + uid + '\');">' + loginFailedCount + '</span>';

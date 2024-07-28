@@ -114,6 +114,11 @@ button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
   color: #0af;
 }
 
+.login-locked {
+  color: #f44;
+  font-weight: bold;
+}
+
 .item-list-header {
   background: #06c;
 }
