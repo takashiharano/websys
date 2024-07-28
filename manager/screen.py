@@ -43,6 +43,7 @@ def build_main_screen(context):
 <b>Users</b><br>
 <button onclick="sysmgr.newUser();">+</button>
 <button onclick="sysmgr.reloadUserInfo();">RELOAD</button>
+<span style="margin-left:16px;">Search: <input type="text" id="search-text" style="width:150px;" oninput="scnjs.onSearchInput(this);"></apan>
 </div>
 <div id="user-list" style="width:100%;max-height:400px;overflow:auto;"></div>
 

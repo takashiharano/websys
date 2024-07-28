@@ -213,7 +213,30 @@ scnjs.buildListHeader = function(columns, sortIdx, sortOrder) {
   return html;
 };
 
-scnjs.drawUserList = function(items, sortIdx, sortOrder) {
+scnjs.onSearchInput = function(el) {
+  scnjs.filterUserList(el.value);
+};
+
+scnjs.clearSeachKey = function() {
+  var elId = '#search-text';
+  if ($el(elId).value) {
+    $el(elId).value = '';
+    scnjs.onSearchInput($el(elId));
+  }
+};
+
+scnjs.filterUserList = function(filter) {
+  var userList = scnjs.userList;
+  var listStatus = scnjs.listStatus;
+  scnjs._drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, filter);
+};
+
+scnjs.drawUserList = function(userList, sortIdx, sortOrder) {
+  var filter = $el('#search-text').value;
+  scnjs._drawUserList(userList, sortIdx, sortOrder, filter);
+};
+
+scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
   var now = util.now();
   var currentUid = websys.getUserId();
 
@@ -225,13 +248,18 @@ scnjs.drawUserList = function(items, sortIdx, sortOrder) {
     }
   }
 
+  var filterCaseSensitive = false;
+
   var htmlList = '';
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
+    if (!scnjs.filterUserByKeyword(item, filter, filterCaseSensitive)) continue;
     var uid = item.uid;
     var name = item.name;
     var local_name = item.local_name;
     var email = item.email;
+    var groups = item.group;
+    var privs = item.privs;
     var statusInfo = item.status_info;
     var loginFailedCount = statusInfo.login_failed_count;
     var loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
@@ -245,22 +273,44 @@ scnjs.drawUserList = function(items, sortIdx, sortOrder) {
     var info1 = item.info1;
     var info2 = item.info2;
     var desc = (item.desc ? item.desc : '');
+
     var escDesc = util.escHtml(desc);
     var dispDesc = '<span style="display:inline-block;width:100%;overflow:hidden;text-overflow:ellipsis;"';
     if (util.lenW(desc) > 15) {
       dispDesc += ' data-tooltip="' + escDesc + '"';
     }
     dispDesc += '>' + escDesc + '</span>';
+
     var active = (sessions > 0);
     var led = scnjs.buildLedHtml(now, statusInfo.last_access, scnjs.INSEC, active);
-
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
-    var dispUid = cInd + '<span class="pseudo-link link-button" onclick="scnjs.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + uid + '</span>';
-    var dispFullname = scnjs.buildCopyableLabel(name);
-    var dispLocalFullname = scnjs.buildCopyableLabel(local_name);
-    var dispEmail = scnjs.buildCopyableLabel(email);
-    var dispInfo1 = scnjs.buildCopyableLabel(info1);
-    var dispInfo2 = scnjs.buildCopyableLabel(info2);
+
+    var dispUid = uid;
+    var dispFullname = name;
+    var dispLocalFullname = local_name;
+    var dispEmail = email;
+    var dispGroups = groups;
+    var dispPrivs = privs;
+    var dispInfo1 = info1;
+    var dispInfo2 = info2;
+
+    if (filter) {
+      dispUid = scnjs.highlightKeyword(uid, filter, filterCaseSensitive);
+      dispFullname = scnjs.highlightKeyword(name, filter, filterCaseSensitive);
+      dispLocalFullname = scnjs.highlightKeyword(local_name, filter, filterCaseSensitive);
+      dispEmail = scnjs.highlightKeyword(email, filter, filterCaseSensitive);
+      dispGroups = scnjs.highlightKeyword(groups, filter, filterCaseSensitive);
+      dispPrivs = scnjs.highlightKeyword(privs, filter, filterCaseSensitive);
+      dispInfo1 = scnjs.highlightKeyword(info1, filter, filterCaseSensitive);
+      dispInfo2 = scnjs.highlightKeyword(info2, filter, filterCaseSensitive);
+    }
+
+    dispUid = cInd + '<span class="pseudo-link link-button" onclick="scnjs.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
+    dispFullname = scnjs.buildCopyableLabel(name, dispFullname);
+    dispLocalFullname = scnjs.buildCopyableLabel(local_name, dispLocalFullname);
+    dispEmail = scnjs.buildCopyableLabel(email, dispEmail);
+    dispInfo1 = scnjs.buildCopyableLabel(info1, dispInfo1);
+    dispInfo2 = scnjs.buildCopyableLabel(info2, dispInfo2);
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
@@ -271,8 +321,8 @@ scnjs.drawUserList = function(items, sortIdx, sortOrder) {
     htmlList += '<td class="item-list">' + dispLocalFullname + '</td>';
     htmlList += '<td class="item-list">' + dispEmail + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
-    htmlList += '<td class="item-list">' + item.group + '</td>';
-    htmlList += '<td class="item-list">' + item.privs + '</td>';
+    htmlList += '<td class="item-list">' + dispGroups + '</td>';
+    htmlList += '<td class="item-list">' + dispPrivs + '</td>';
     htmlList += '<td class="item-list">' + dispInfo1 + '</td>';
     htmlList += '<td class="item-list">' + dispInfo2 + '</td>';
     htmlList += '<td class="item-list" style="max-width:15em;">' + dispDesc + '</td>';
@@ -306,11 +356,50 @@ scnjs.drawUserList = function(items, sortIdx, sortOrder) {
   $el('#user-list').innerHTML = html;
 };
 
-scnjs.buildCopyableLabel = function(s) {
-  if (!s) s = '';
-  var v = s.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
-  var label = s.replace(/ /g, '&nbsp;');
-  var r = '<span class="pseudo-link" onclick="scnjs.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</span>';
+scnjs.highlightKeyword = function(v, filter, fltCase) {
+  if (!fltCase) filter = filter.toLowerCase();
+  try {
+    var pos = (fltCase ? v.indexOf(filter) : v.toLowerCase().indexOf(filter));
+    if (pos != -1) {
+      var key = v.slice(pos, pos + filter.length);
+      var hl = '<span class="search-highlight">' + key + '</span>';
+      v = v.replace(key, hl, 'ig');
+    }
+  } catch (e) {}
+  return v;
+}
+
+scnjs.filterUserByKeyword = function(item, key, fltCase) {
+  if (!key) return true;
+  var targets = [];
+  targets.push(item.uid);
+  targets.push(item.name);
+  targets.push(item.local_name);
+  targets.push(item.email);
+  targets.push(item.group);
+  targets.push(item.privs);
+  targets.push(item.info1);
+  targets.push(item.info2);
+  return scnjs.filterByKeyword(targets, key, fltCase);
+};
+scnjs.filterByKeyword = function(targets, key, fltCase) {
+  var flg = (fltCase ? 'g' : 'gi');
+  for (var i = 0; i < targets.length; i++) {
+    var v = targets[i];
+    try {
+      var re = new RegExp(key, flg);
+      var r = re.exec(v);
+      if (r != null) return true;
+    } catch (e) {}
+  }
+  return false;
+};
+
+scnjs.buildCopyableLabel = function(v, s) {
+  if (!s) s = v;
+  var v = v.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
+  var label = s;
+  var r = '<pre class="pseudo-link" onclick="scnjs.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</pre>';
   return r;
 };
 
@@ -1456,6 +1545,12 @@ scnjs.showInfotip = function(m, d, o) {
     'font-size': '14px'
   };
   util.infotip.show(m, d, o);
+};
+
+$onEscKey = function(e) {
+  if ($el('#search-text').hasFocus()) {
+    scnjs.clearSeachKey();
+  }
 };
 
 $onCtrlS = function(e) {

@@ -222,6 +222,10 @@ tr.item-list:hover {
   color: #ccc;
 }
 
+.search-highlight {
+  background: rgba(128,128,128,0.5) !important;
+}
+
 #user-list {
   font-size: 12px;
 }
