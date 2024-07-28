@@ -284,7 +284,7 @@ def cmd_useradd(context):
     email = web.get_request_param('email')
     pw = web.get_request_param('pw')
     p_admin = web.get_request_param('admin')
-    p_group = web.get_request_param('group', '')
+    p_groups = web.get_request_param('groups', '')
     p_privs = web.get_request_param('privs')
     info1 = web.get_request_param('info1', '')
     info2 = web.get_request_param('info2', '')
@@ -310,11 +310,11 @@ def cmd_useradd(context):
     if p_admin is not None:
         is_admin = p_admin == 'true'
 
-    group = ''
-    if p_group is not None:
-        group = p_group
-        group = util.replace(group, r'\s{2,}', ' ')
-        group = group.strip()
+    groups = ''
+    if p_groups is not None:
+        groups = p_groups
+        groups = util.replace(groups, r'\s{2,}', ' ')
+        groups = groups.strip()
 
     privs = ''
     if p_privs is not None:
@@ -326,7 +326,7 @@ def cmd_useradd(context):
         p_flags = None
 
     try:
-        usermgr.add_user(uid, pw_hash, name=name, local_name=local_name, email=email, is_admin=is_admin, group=group, privs=privs, info1=info1, info2=info2, desc=desc, flags=p_flags)
+        usermgr.add_user(uid, pw_hash, name=name, local_name=local_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, desc=desc, flags=p_flags)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -364,7 +364,7 @@ def cmd_usermod(context):
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     is_admin = None
-    group = None
+    groups = None
     agroup = None
     rgroup = None
     privs = None
@@ -379,11 +379,11 @@ def cmd_usermod(context):
         if p_admin is not None:
             is_admin = p_admin == 'true'
 
-        p_group = web.get_request_param('group')
-        if p_group is not None:
-            group = p_group
-            group = util.replace(group, r'\s{2,}', ' ')
-            group = group.strip()
+        p_groups = web.get_request_param('groups')
+        if p_groups is not None:
+            groups = p_groups
+            groups = util.replace(groups, r'\s{2,}', ' ')
+            groups = groups.strip()
 
         agroup = _get_optional_param_by_list('agroup')
         rgroup = _get_optional_param_by_list('rgroup')
@@ -405,7 +405,7 @@ def cmd_usermod(context):
             u_flags = p_flags
 
     try:
-        usermgr.modify_user(uid, pw_hash, name=name, local_name=local_name, email=email, is_admin=is_admin, group=group, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, desc=desc, flags=u_flags)
+        usermgr.modify_user(uid, pw_hash, name=name, local_name=local_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, desc=desc, flags=u_flags)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -486,12 +486,12 @@ def cmd_gencode(context):
     if p_id is not None:
         id = p_id
 
-    p_group = web.get_request_param('group')
-    group = ''
-    if p_group is not None:
-        group = p_group
-        group = util.replace(group, r'\s{2,}', ' ')
-        group = group.strip()
+    p_groups = web.get_request_param('groups')
+    groups = ''
+    if p_groups is not None:
+        groups = p_groups
+        groups = util.replace(groups, r'\s{2,}', ' ')
+        groups = groups.strip()
 
     p_privs = web.get_request_param('privs')
     privs = ''
@@ -501,7 +501,7 @@ def cmd_gencode(context):
         privs = privs.strip()
 
     try:
-        uid = usermgr.add_guest(uid=id, valid_min=valid_min, group=group, privs=privs)
+        uid = usermgr.add_guest(uid=id, valid_min=valid_min, groups=groups, privs=privs)
     except Exception as e:
         status = str(e)
 

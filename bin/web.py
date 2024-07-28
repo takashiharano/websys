@@ -68,7 +68,7 @@ class WebContext:
     #   "name": "root", # guest: "GUEST"
     #   "local_name": "root_L", # guest: "GUEST_L"
     #   "is_admin": true,
-    #   "group": "GROUP1 GROUP2",
+    #   "groups": "GROUP1 GROUP2",
     #   "privs": "PRIVILEGE1 PRIVILEGE2",
     #   "desc": "Description",
     #   "status": 0,
@@ -130,10 +130,10 @@ class WebContext:
         if user_info is None:
             return []
 
-        if 'group' not in user_info:
+        if 'groups' not in user_info:
             return []
 
-        groups = user_info['group']
+        groups = user_info['groups']
         group_list = groups.split(' ')
         return group_list
 

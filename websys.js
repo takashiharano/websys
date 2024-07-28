@@ -146,15 +146,15 @@ websys.gencode = function(arg, tbl, echo) {
     param['validtime'] = valid;
   }
 
-  var group = dbg.getOptVal(arg, 'g');
-  if (group) {
+  var groups = dbg.getOptVal(arg, 'g');
+  if (groups) {
     try {
-      group = eval(group);
+      groups = eval(groups);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.group = group;
+    param.groups = groups;
   }
 
   var privs = dbg.getOptVal(arg, 'privs');
@@ -660,7 +660,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var nameL = dbg.getOptVal(arg, 'nlocal');
   var email = dbg.getOptVal(arg, 'email');
   var admin = dbg.getOptVal(arg, 'admin');
-  var group = dbg.getOptVal(arg, 'g');
+  var groups = dbg.getOptVal(arg, 'g');
   var privs = dbg.getOptVal(arg, 'privs');
   var info1 = dbg.getOptVal(arg, 'info1');
   var info2 = dbg.getOptVal(arg, 'info2');
@@ -703,14 +703,14 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
   }
-  if (group) {
+  if (groups) {
     try {
-      group = eval(group);
+      groups = eval(groups);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.group = group;
+    param.groups = groups;
   }
   if (privs) {
     try {
@@ -778,7 +778,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var nameL = dbg.getOptVal(arg, 'nlocal');
   var email = dbg.getOptVal(arg, 'email');
   var admin = dbg.getOptVal(arg, 'admin');
-  var group = dbg.getOptVal(arg, 'g');
+  var groups = dbg.getOptVal(arg, 'g');
   var agroup = dbg.getOptVal(arg, 'aG');
   var rgroup = dbg.getOptVal(arg, 'rG');
   var privs = dbg.getOptVal(arg, 'privs');
@@ -831,14 +831,14 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   if (admin) {
     param.admin = (admin == 'true' ? 'true' : 'false');
   }
-  if (group) {
+  if (groups) {
     try {
-      group = eval(group);
+      groups = eval(groups);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.group = group;
+    param.groups = groups;
   }
   if (agroup) {
     try {

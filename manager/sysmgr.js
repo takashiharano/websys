@@ -23,7 +23,7 @@ scnjs.USER_LIST_COLUMNS = [
   {key: 'local_name', label: 'Local Full Name', style: 'min-width:10em;'},
   {key: 'email', label: 'Email', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
-  {key: 'group', label: 'Groups', style: 'min-width:5em;'},
+  {key: 'groups', label: 'Groups', style: 'min-width:5em;'},
   {key: 'privs', label: 'Privileges', style: 'min-width:5em;'},
   {key: 'info1', label: 'Info1', style: 'min-width:5em;'},
   {key: 'info2', label: 'Info2', style: 'min-width:5em;'},
@@ -57,6 +57,7 @@ $onReady = function() {
   util.clock('#clock');
   $el('#user-list').innerHTML = '<span class="progdot">Loading</span>';
   scnjs.drawGroupStatus('<span class="progdot">Loading</span>');
+  $el('#search-text').focus();
 };
 
 scnjs.onSysReady = function() {
@@ -258,7 +259,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     var name = item.name;
     var local_name = item.local_name;
     var email = item.email;
-    var groups = item.group;
+    var groups = item.groups;
     var privs = item.privs;
     var statusInfo = item.status_info;
     var loginFailedCount = statusInfo.login_failed_count;
@@ -376,7 +377,7 @@ scnjs.filterUserByKeyword = function(item, key, fltCase) {
   targets.push(item.name);
   targets.push(item.local_name);
   targets.push(item.email);
-  targets.push(item.group);
+  targets.push(item.groups);
   targets.push(item.privs);
   targets.push(item.info1);
   targets.push(item.info2);
@@ -537,6 +538,7 @@ scnjs.buildSessionInfoOne = function(session, now, mn) {
   var name = session.user_name;
   var loginT = session.created_time;
   var la = session.last_access;
+  var ua = la['ua'];
   var laTime = la['time'];
   if (scnjs.INSEC) laTime = Math.floor(laTime * 1000);
   var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
@@ -545,7 +547,7 @@ scnjs.buildSessionInfoOne = function(session, now, mn) {
   var ssid = util.snip(sid, 7, 3, '..');
   var sid7 = util.snip(sid, 7, 0, '');
   var addr = la['addr'];
-  var brws = util.getBrowserInfo(la['ua']);
+  var brws = util.getBrowserInfo(ua);
   var ua = brws.name + ' ' + brws.version;
   var led = scnjs.buildLedHtml(now, laTime, false, true);
   var ssidLink = '<span class="pseudo-link link-button" onclick="scnjs.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
@@ -789,7 +791,7 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Groups</td>';
-  html += '    <td><input type="text" id="group" style="width:100%;"></td>';
+  html += '    <td><input type="text" id="groups" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Privileges</td>';
@@ -915,7 +917,7 @@ scnjs.setUserInfoToEditor = function(info) {
   $el('#local_name').value = info.local_name;
   $el('#email').value = info.email;
   $el('#isadmin').checked = info.is_admin;
-  $el('#group').value = info.group;
+  $el('#groups').value = info.groups;
   $el('#privs').value = info.privs;
   $el('#info1').value = info.info1;
   $el('#info2').value = info.info2;
@@ -930,7 +932,7 @@ scnjs.clearUserInfoEditor = function() {
     local_name: '',
     email: '',
     is_admin: false,
-    group: '',
+    groups: '',
     privs: '',
     info1: '',
     info2: '',
@@ -955,7 +957,7 @@ scnjs.addUser = function() {
   var local_name = $el('#local_name').value;
   var email = $el('#email').value;
   var isAdmin = ($el('#isadmin').checked ? 'true' : 'false');
-  var group = $el('#group').value;
+  var groups = $el('#groups').value;
   var privs = $el('#privs').value;
   var info1 = $el('#info1').value;
   var info2 = $el('#info2').value;
@@ -985,12 +987,12 @@ scnjs.addUser = function() {
   }
   local_name = clnsRes.val;
 
-  clnsRes = scnjs.cleanseGroups(group);
+  clnsRes = scnjs.cleanseGroups(groups);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
-  group = clnsRes.val;
+  groups = clnsRes.val;
 
   clnsRes = scnjs.cleansePrivileges(privs);
   if (clnsRes.msg) {
@@ -1013,7 +1015,7 @@ scnjs.addUser = function() {
     local_name: local_name,
     email: email,
     admin: isAdmin,
-    group: group,
+    groups: groups,
     privs: privs,
     info1: info1,
     info2: info2,
@@ -1041,7 +1043,7 @@ scnjs.updateUser = function() {
   var local_name = $el('#local_name').value;
   var email = $el('#email').value;
   var isAdmin = ($el('#isadmin').checked ? 'true' : 'false');
-  var group = $el('#group').value;
+  var groups = $el('#groups').value;
   var privs = $el('#privs').value;
   var info1 = $el('#info1').value;
   var info2 = $el('#info2').value;
@@ -1063,7 +1065,7 @@ scnjs.updateUser = function() {
     local_name: local_name,
     email: email,
     admin: isAdmin,
-    group: group,
+    groups: groups,
     privs: privs,
     info1: info1,
     info2: info2,
