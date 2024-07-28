@@ -622,11 +622,7 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
       s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
       i += dispAccTime.length;
     } else {
-      if (tsPosList.includes(i)) {
-        s += '<span class="timeline-acc-ind timeline-acc-ind-past">*</span>';
-      } else {
-        s += '-';
-      }
+      s += scnjs.getTimeslotInd(tsPosList, i);
     }
     html += s;
   }
@@ -636,6 +632,21 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   return html;
 };
 
+scnjs.getTimeslotInd = function(tsPosList, pos) {
+  var s = '-';
+  for (var i = 0; i < tsPosList.length; i++) {
+    var tsPos = tsPosList[i];
+    var p = tsPos.p;
+    if (p == pos) {
+      var t = tsPos.t;
+      var tt = util.getDateTimeString(t, '%HH:%mm');
+      s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + tt + '">*</span>';
+      break;
+    }
+  }
+  return s;
+};
+
 scnjs.getPosList4History = function(now, slotTimestampHistories) {
   var posList = [];
   for (var i = 0; i < slotTimestampHistories.length; i++) {
@@ -643,7 +654,7 @@ scnjs.getPosList4History = function(now, slotTimestampHistories) {
     if (scnjs.INSEC) t *= 1000;
     var p = scnjs.getTimePosition(now, t);
     if (p >= 0) {
-      posList.push(p);
+      posList.push({p: p, t: t});
     }
   }
   return posList;
