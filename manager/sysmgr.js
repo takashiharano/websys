@@ -354,6 +354,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
     htmlList += '</tr>';
   }
+
   var listInfo = 'count = ' + count;
   if (count == 0) {
     listInfo = '<div style="margin-top:8px;margin-bottom:40px;">- DATA NOT FOUND -</div>';

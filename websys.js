@@ -84,7 +84,7 @@ websys.changePw = function() {
 websys._changePw = function(uid, p) {
   var pw = websys.getUserPwHash(uid, p);
   var param = {
-    cmd: 'usermod',
+    cmd: 'passwd',
     uid: uid,
     pw: pw
   };

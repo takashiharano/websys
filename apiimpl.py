@@ -450,7 +450,7 @@ def cmd_passwd(context):
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     try:
-        usermgr.modify_user(uid, pw_hash)
+        usermgr.modify_user(uid, pw_hash, chg_pw=True)
         status = 'OK'
         logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + uid)
     except Exception as e:

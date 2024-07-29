@@ -217,7 +217,7 @@ def create_new_user(timestamp, uid, name=None, local_name=None, email='', is_adm
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, local_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, desc=None, flags=None):
+def modify_user(uid, pw=None, name=None, local_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, desc=None, flags=None, chg_pw=False):
     now = util.get_timestamp()
     is_guest = False
 
@@ -298,7 +298,8 @@ def modify_user(uid, pw=None, name=None, local_name=None, email=None, is_admin=N
 
     if pw is not None:
         save_user_password(uid, pw)
-        user['flags'] = unset_user_flag(user['flags'], U_FLG_NEED_PW_CHANGE)
+        if chg_pw:
+            user['flags'] = unset_user_flag(user['flags'], U_FLG_NEED_PW_CHANGE)
         update_user_status_info(uid, 'pw_changed_at', now)
 
     if updated:
