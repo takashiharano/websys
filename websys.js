@@ -8,7 +8,7 @@ websys.ST_LOGIN_PW = 2;
 websys.ST_CHANGE_PW = 3;
 
 websys.U_FLG_NEED_PW_CHANGE = 1;
-websys.U_FLG_DISABLED = 1 << 1;
+websys.U_FLG_DISABLED = 1 << 2;
 
 websys.sendEncKey = 1;
 websys.recvEncKey = 7;
