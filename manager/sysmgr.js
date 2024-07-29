@@ -251,10 +251,12 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
 
   var filterCaseSensitive = false;
 
+  var count = 0;
   var htmlList = '';
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
     if (!scnjs.filterUserByKeyword(item, filter, filterCaseSensitive)) continue;
+    count++;
     var uid = item.uid;
     var name = item.name;
     var local_name = item.local_name;
@@ -352,9 +354,14 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
     htmlList += '</tr>';
   }
+  var listInfo = 'count = ' + count;
+  if (count == 0) {
+    listInfo = '<div style="margin-top:8px;margin-bottom:40px;">- DATA NOT FOUND -</div>';
+  }
 
   var htmlHead = scnjs.buildListHeader(scnjs.USER_LIST_COLUMNS, sortIdx, sortOrder);
   var html = '<table>' + htmlHead + htmlList + '</table>';
+  html += '<div style="margin-bottom:4px;" class="list-info">' + listInfo + '</div>';
 
   $el('#user-list').innerHTML = html;
 };
