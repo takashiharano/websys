@@ -203,6 +203,10 @@ tr.item-list:hover {
   color: #2af;
 }
 
+.timeline-head {
+  vertical-align: bottom;
+}
+
 .timeline-span {
   color: #aaa;
   cursor: default;
@@ -226,6 +230,14 @@ tr.item-list:hover {
 
 .timeline-acc-ind-time {
   color: #ccc;
+}
+
+.wday-sat {
+  color: #aed;
+}
+
+.wday-sun {
+  color: #fa7;
 }
 
 .search-highlight {

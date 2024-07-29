@@ -27,6 +27,9 @@ GROUPS_DATA_FILE_PATH = DATA_DIR + 'groups.json'
 def get_request_param(key, default=None):
     return web.get_request_param(key, default=default)
 
+def get_request_param_as_int(key):
+    return web.get_request_param_as_int(key)
+
 def send_result_json(status, body=None):
     web.send_result_json(status, body)
 
@@ -60,7 +63,8 @@ def proc_get_session_list(context):
 
     p_logs = get_request_param('logs')
     if p_logs == '1':
-        timeline_logs = ger_timeline_logs_by_session(sessions)
+        p_offset = get_request_param_as_int('offset')
+        timeline_logs = ger_timeline_logs_by_session(sessions, p_offset)
 
         for i in range(len(sessions)):
             session = sessions[i]
@@ -75,11 +79,8 @@ def proc_get_session_list(context):
 
     web.send_result_json('OK', body=sessions)
 
-def ger_timeline_logs_by_session(sessions):
+def ger_timeline_logs_by_session(sessions, target_offset):
     now = util.now()
-
-    p_target_offset = get_request_param('offset', '0')
-    target_offset = int(p_target_offset)
 
     tm = now - util.DAY * target_offset
     mn_timestamp = util.get_midnight_timestamp(tm)

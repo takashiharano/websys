@@ -52,6 +52,7 @@ scnjs.groupEditWindow = null;
 scnjs.groupEditMode = null;
 scnjs.tmrId = 0;
 scnjs.interval = 0;
+scnjs.timelineOffset = 0;
 
 $onReady = function() {
   util.clock('#clock');
@@ -444,13 +445,26 @@ scnjs.getDateTimeString = function(ts, inSec) {
   return s;
 };
 
+scnjs.getSessionListN = function() {
+  scnjs.timelineOffset = $el('#timeline-offset').value | 0;
+  scnjs.getSessionList();
+};
+scnjs.getSessionListPrev = function() {
+  scnjs.timelineOffset++;
+  scnjs.getSessionList();
+};
+scnjs.getSessionListNext = function() {
+  scnjs.timelineOffset--;
+  if (scnjs.timelineOffset < 0) scnjs.timelineOffset = 0;
+  scnjs.getSessionList();
+};
 scnjs.getSessionList = function() {
   if (scnjs.tmrId > 0) {
     clearTimeout(scnjs.tmrId);
     scnjs.tmrId = 0;
     scnjs.interval = 1;
   }
-  var param = {logs: '1'};
+  var param = {logs: '1', offset: scnjs.timelineOffset};
   scnjs.callApi('get_session_list', param, scnjs.getSessionListCb);
 };
 scnjs.getSessionListCb = function(xhr, res, req) {
@@ -476,25 +490,54 @@ scnjs.drawSessionList = function(sessions) {
   var html = '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
-  html += '<td>UID</td>';
-  html += '<td>Name</td>';
-  html += '<td><span style="margin-left:8px;">Session</span></td>';
-  html += '<td>Last Access</td>';
-  html += '<td style="min-width:98px;">Elapsed</td>';
-  html += '<td style="font-weight:normal;">' + scnjs.buildTimeLineHeader(now) + '</td>';
-  html += '<td>Addr</td>';
-  html += '<td>User-Agent</td>';
-  html += '<td>Logged in</td>';
+  html += '<td class="timeline-head">UID</td>';
+  html += '<td class="timeline-head">Name</td>';
+  html += '<td class="timeline-head"><span style="margin-left:8px;">Session</span></td>';
+  html += '<td class="timeline-head">Last Access</td>';
+  html += '<td class="timeline-head" style="min-width:98px;">Elapsed</td>';
+  html += '<td class="timeline-head"style="font-weight:normal;">' + scnjs.buildTimeLineHeader1(now) + scnjs.buildTimeLineHeader2(now) + '</td>';
+  html += '<td class="timeline-head">Addr</td>';
+  html += '<td class="timeline-head">User-Agent</td>';
+  html += '<td class="timeline-head">Logged in</td>';
   html += '</tr>';
   html += scnjs.buildSessionInfoHtml(sessions, now);
   html += '</table>';
   $el('#session-list').innerHTML = html;
 };
 
-scnjs.buildTimeLineHeader = function(now) {
-  var currentInd = '<span class="blink1 text-skyblue">v</span>';
+scnjs.buildTimeLineHeader1 = function(now) {
+  var os = scnjs.timelineOffset;
+  var DAY = 86400;
+  if (scnjs.INSEC) DAY *= 1000;
+  if (os > 0) {
+    now = now - (DAY * os);
+  }
 
-  var nowYYYYMMDD = util.getDateTimeString(now, '%YYYY%MM%DD');
+  var mmddw = util.getDateTimeString(now, '%MM/%DD %W');
+  mmddw = mmddw.replace(/(SAT)/, '<span class="wday-sat">$1</span>');
+  mmddw = mmddw.replace(/(SUN)/, '<span class="wday-sun">$1</span>');
+  var v = (os ? os : '');
+
+  var html = '<div style="position:relative;margin-bottom:4px;">';
+  html += '<span style="margin-right:16px;">' + mmddw + '</span>';
+  html += '<span style="position:absolute;right:0;">';
+  html += '<span class="pseudo-link link-button" onclick="scnjs.getSessionListPrev();">&lt;</span>&nbsp;';
+  html += '<span class="pseudo-link link-button" onclick="scnjs.getSessionListNext();">&gt;</span>';
+  html += '<input type="text" id="timeline-offset" style="margin-left:8px;width:20px;text-align:right;" value="' + v + '">';
+  html += '<span class="pseudo-link link-button" style="margin-left:4px;" onclick="scnjs.getSessionListN();">SHOW</span>';
+  html += '</span>';
+  html += '</div>';
+  return html;
+};
+scnjs.buildTimeLineHeader2 = function(now) {
+  var os = scnjs.timelineOffset;
+  var DAY = 86400;
+  if (scnjs.INSEC) DAY *= 1000;
+  if (os > 0) {
+    now = now - (DAY * os);
+  }
+
+  var currentInd = '<span class="blink1 text-skyblue">v</span>';
   var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
   var tmp = nowHHMM.split(':');
   var nowHH = tmp[0];
@@ -505,10 +548,10 @@ scnjs.buildTimeLineHeader = function(now) {
     var ts = scnjs.getTimeSlot(i, nowHH, nowMM);
     var v = false;
     if (i < 10) {
-      if (ts == 0) {
+      if ((os == 0) && (ts == 0)) {
         html += currentInd;
       }
-    } else {
+    } else if (os == 0) {
       if (ts == 0) {
         html += currentInd + ' ';
       } else if (ts == 1) {
@@ -522,7 +565,7 @@ scnjs.buildTimeLineHeader = function(now) {
 
     var st = ((i < 10) ? 1 : 2);
     for (var j = st; j <= 4; j++) {
-      if (ts == j) {
+      if ((os == 0) && (ts == j)) {
         html += currentInd;
       } else {
         html += ' ';
@@ -591,6 +634,13 @@ scnjs.startElapsedCounter = function(param) {
 };
 
 scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
+  var os = scnjs.timelineOffset;
+  var DAY = 86400;
+  if (scnjs.INSEC) DAY *= 1000;
+  if (os > 0) {
+    now = now - (DAY * os);
+  }
+
   var accYearDateTime = util.getDateTimeString(lastAccessTime, '%YYYY-%MM-%DD %HH:%mm');
   var accDateTime = util.getDateTimeString(lastAccessTime, '%W %DD %MMM %HH:%mm');
   var accTime = util.getDateTimeString(lastAccessTime, '%HH:%mm');
@@ -608,12 +658,12 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   var s;
   var f = false;
   for (var i = 0; i <= ttlPs; i++) {
-    if (!f && (i > nowTp)) {
+    if (!f && (os == 0) && (i > nowTp)) {
       html += '<span class="timeline-forward">';
       f = true;
     }
 
-    if ((i == 0) && (accTp == -1)) {
+    if ((os == 0) && (i == 0) && (accTp == -1)) {
       s = '<span class="timeline-acc-ind-out" data-tooltip="' + accYearDateTime + '">&lt;</span>';
       s += '<span class="timeline-acc-ind-time">' + dispAccDateTime + '</san>';
       html += s;
@@ -1568,6 +1618,12 @@ scnjs.showInfotip = function(m, d, o) {
     'font-size': '14px'
   };
   util.infotip.show(m, d, o);
+};
+
+$onEnterKey = function(e) {
+  if ($el('#timeline-offset').hasFocus()) {
+    scnjs.getSessionListN();
+  }
 };
 
 $onEscKey = function(e) {
