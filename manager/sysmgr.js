@@ -217,7 +217,8 @@ scnjs.buildListHeader = function(columns, sortIdx, sortOrder) {
 };
 
 scnjs.onSearchInput = function(el) {
-  scnjs.filterUserList(el.value);
+  var filter = $el('#search-filter').checked;
+  scnjs.searchUserList(el.value, filter);
 };
 
 scnjs.clearSeachKey = function() {
@@ -228,18 +229,27 @@ scnjs.clearSeachKey = function() {
   }
 };
 
-scnjs.filterUserList = function(filter) {
+scnjs.searchUserList = function(searchKey, filter) {
   var userList = scnjs.userList;
   var listStatus = scnjs.listStatus;
-  scnjs._drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, filter);
+  scnjs._drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, searchKey, filter);
+};
+
+scnjs.onFilterChange = function() {
+  var userList = scnjs.userList;
+  var listStatus = scnjs.listStatus;
+  var searchKey = $el('#search-text').value;
+  var filter = $el('#search-filter').checked;
+  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrde, searchKey, filter);
 };
 
 scnjs.drawUserList = function(userList, sortIdx, sortOrder) {
-  var filter = $el('#search-text').value;
-  scnjs._drawUserList(userList, sortIdx, sortOrder, filter);
+  var searchKey = $el('#search-text').value;
+  var filter = $el('#search-filter').checked;
+  scnjs._drawUserList(userList, sortIdx, sortOrder, searchKey, filter);
 };
 
-scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
+scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
   var now = util.now();
   var currentUid = websys.getUserId();
 
@@ -251,13 +261,13 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     }
   }
 
-  var filterCaseSensitive = false;
+  var searchCaseSensitive = false;
 
   var count = 0;
   var htmlList = '';
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
-    if (!scnjs.filterUserByKeyword(item, filter, filterCaseSensitive)) continue;
+    if (filter && !scnjs.searchUserByKeyword(item, searchKey, searchCaseSensitive)) continue;
     count++;
     var uid = item.uid;
     var name = item.name;
@@ -299,15 +309,15 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
     var dispInfo1 = info1;
     var dispInfo2 = info2;
 
-    if (filter) {
-      dispUid = scnjs.highlightKeyword(uid, filter, filterCaseSensitive);
-      dispFullname = scnjs.highlightKeyword(name, filter, filterCaseSensitive);
-      dispLocalFullname = scnjs.highlightKeyword(local_name, filter, filterCaseSensitive);
-      dispEmail = scnjs.highlightKeyword(email, filter, filterCaseSensitive);
-      dispGroups = scnjs.highlightKeyword(groups, filter, filterCaseSensitive);
-      dispPrivs = scnjs.highlightKeyword(privs, filter, filterCaseSensitive);
-      dispInfo1 = scnjs.highlightKeyword(info1, filter, filterCaseSensitive);
-      dispInfo2 = scnjs.highlightKeyword(info2, filter, filterCaseSensitive);
+    if (searchKey) {
+      dispUid = scnjs.highlightKeyword(uid, searchKey, searchCaseSensitive);
+      dispFullname = scnjs.highlightKeyword(name, searchKey, searchCaseSensitive);
+      dispLocalFullname = scnjs.highlightKeyword(local_name, searchKey, searchCaseSensitive);
+      dispEmail = scnjs.highlightKeyword(email, searchKey, searchCaseSensitive);
+      dispGroups = scnjs.highlightKeyword(groups, searchKey, searchCaseSensitive);
+      dispPrivs = scnjs.highlightKeyword(privs, searchKey, searchCaseSensitive);
+      dispInfo1 = scnjs.highlightKeyword(info1, searchKey, searchCaseSensitive);
+      dispInfo2 = scnjs.highlightKeyword(info2, searchKey, searchCaseSensitive);
     }
 
     dispUid = cInd + '<span class="pseudo-link link-button" onclick="scnjs.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
@@ -369,20 +379,20 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, filter) {
   $el('#user-list').innerHTML = html;
 };
 
-scnjs.highlightKeyword = function(v, filter, fltCase) {
-  if (!fltCase) filter = filter.toLowerCase();
+scnjs.highlightKeyword = function(v, searchKey, caseSensitive) {
+  if (!caseSensitive) searchKey = searchKey.toLowerCase();
   try {
-    var pos = (fltCase ? v.indexOf(filter) : v.toLowerCase().indexOf(filter));
+    var pos = (caseSensitive ? v.indexOf(searchKey) : v.toLowerCase().indexOf(searchKey));
     if (pos != -1) {
-      var key = v.slice(pos, pos + filter.length);
+      var key = v.slice(pos, pos + searchKey.length);
       var hl = '<span class="search-highlight">' + key + '</span>';
       v = v.replace(key, hl, 'ig');
     }
   } catch (e) {}
   return v;
-}
+};
 
-scnjs.filterUserByKeyword = function(item, key, fltCase) {
+scnjs.searchUserByKeyword = function(item, key, caseSensitive) {
   if (!key) return true;
   var targets = [];
   targets.push(item.uid);
@@ -393,10 +403,10 @@ scnjs.filterUserByKeyword = function(item, key, fltCase) {
   targets.push(item.privs);
   targets.push(item.info1);
   targets.push(item.info2);
-  return scnjs.filterByKeyword(targets, key, fltCase);
+  return scnjs.searchByKeyword(targets, key, caseSensitive);
 };
-scnjs.filterByKeyword = function(targets, key, fltCase) {
-  var flg = (fltCase ? 'g' : 'gi');
+scnjs.searchByKeyword = function(targets, key, caseSensitive) {
+  var flg = (caseSensitive ? 'g' : 'gi');
   for (var i = 0; i < targets.length; i++) {
     var v = targets[i];
     try {
