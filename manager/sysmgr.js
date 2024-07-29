@@ -158,7 +158,8 @@ scnjs.getUserListCb = function(xhr, res, req) {
   }
   scnjs.userList = userList;
   var listStatus = scnjs.listStatus;
-  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
+  var filter = $el('#search-filter').checked;
+  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, filter);
 };
 
 scnjs.elapsedSinceLastAccess = function(now, t) {
@@ -240,7 +241,7 @@ scnjs.onFilterChange = function() {
   var listStatus = scnjs.listStatus;
   var searchKey = $el('#search-text').value;
   var filter = $el('#search-filter').checked;
-  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrde, searchKey, filter);
+  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, searchKey, filter);
 };
 
 scnjs.drawUserList = function(userList, sortIdx, sortOrder) {
