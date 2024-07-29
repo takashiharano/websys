@@ -15,6 +15,7 @@ scnjs.LED_COLORS = [
   {t: 0, color: 'led-color-red'},
 ];
 
+scnjs.DAY = 86400000;
 scnjs.INTERVAL = 60000;
 scnjs.USER_LIST_COLUMNS = [
   {key: 'elapsed', label: ''},
@@ -449,6 +450,10 @@ scnjs.getSessionListN = function() {
   scnjs.timelineOffset = $el('#timeline-offset').value | 0;
   scnjs.getSessionList();
 };
+scnjs.getSessionListRst = function() {
+  scnjs.timelineOffset = 0;
+  scnjs.getSessionList();
+};
 scnjs.getSessionListPrev = function() {
   scnjs.timelineOffset++;
   scnjs.getSessionList();
@@ -507,10 +512,8 @@ scnjs.drawSessionList = function(sessions) {
 
 scnjs.buildTimeLineHeader1 = function(now) {
   var os = scnjs.timelineOffset;
-  var DAY = 86400;
-  if (scnjs.INSEC) DAY *= 1000;
   if (os > 0) {
-    now = now - (DAY * os);
+    now = now - (scnjs.DAY * os);
   }
 
   var mmddw = util.getDateTimeString(now, '%MM/%DD %W');
@@ -524,17 +527,16 @@ scnjs.buildTimeLineHeader1 = function(now) {
   html += '<span class="pseudo-link link-button" onclick="scnjs.getSessionListPrev();">&lt;</span>&nbsp;';
   html += '<span class="pseudo-link link-button" onclick="scnjs.getSessionListNext();">&gt;</span>';
   html += '<input type="text" id="timeline-offset" style="margin-left:8px;width:20px;text-align:right;" value="' + v + '">';
-  html += '<span class="pseudo-link link-button" style="margin-left:4px;" onclick="scnjs.getSessionListN();">SHOW</span>';
+  html += '<span class="pseudo-link link-button" style="margin-left:2px;" onclick="scnjs.getSessionListN();">SHOW</span>';
+  html += '<span class="pseudo-link link-button" style="margin-left:8px;" onclick="scnjs.getSessionListRst();">RST</span>';
   html += '</span>';
   html += '</div>';
   return html;
 };
 scnjs.buildTimeLineHeader2 = function(now) {
   var os = scnjs.timelineOffset;
-  var DAY = 86400;
-  if (scnjs.INSEC) DAY *= 1000;
   if (os > 0) {
-    now = now - (DAY * os);
+    now = now - (scnjs.DAY * os);
   }
 
   var currentInd = '<span class="blink1 text-skyblue">v</span>';
@@ -635,10 +637,8 @@ scnjs.startElapsedCounter = function(param) {
 
 scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   var os = scnjs.timelineOffset;
-  var DAY = 86400;
-  if (scnjs.INSEC) DAY *= 1000;
   if (os > 0) {
-    now = now - (DAY * os);
+    now = now - (scnjs.DAY * os);
   }
 
   var accYearDateTime = util.getDateTimeString(lastAccessTime, '%YYYY-%MM-%DD %HH:%mm');
