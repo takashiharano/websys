@@ -126,15 +126,13 @@ def ger_timeline_logs_by_session(sessions, target_offset):
 #   "addr": "::1",
 #   "host": "hostname",
 #   "ua": "Mozilla/5.0",
-#   "is_guest": False,
-#   "last_access": {
-#    "time": 1234567890.123456,
-#    "tz": "+0900",
-#    "addr": "::1",
-#    "host": "hostname",
-#    "ua": "Mozilla/5.0",
-#    "user_name": "John Doe"
-#   }
+#   "user_fullname": "John Doe"
+#   "c_time": 1234567890.123456,
+#   "c_tz": "+0900",
+#   "c_addr": "::1",
+#   "c_host": "hostname",
+#   "c_ua": "Mozilla/5.0",
+#   "is_guest": False
 #  },
 #  ...
 # ]
@@ -145,7 +143,7 @@ def get_sorted_session_list():
     last_access_time_list = []
     for sid in sessions:
         session = sessions[sid]
-        last_access_time_list.append(session['last_access']['time'])
+        last_access_time_list.append(session['time'])
 
     last_access_time_list.sort(reverse=True)
     new_list = []
@@ -153,10 +151,10 @@ def get_sorted_session_list():
         time = last_access_time_list[i]
         for sid in sessions:
             session = sessions[sid]
-            if session['last_access']['time'] == time:
+            if session['time'] == time:
                 uid = session['uid']
-                user_name = _get_user_fullname(users, uid)
-                session['user_name'] = user_name
+                user_fullname = _get_user_fullname(users, uid)
+                session['user_fullname'] = user_fullname
                 new_list.append(session)
 
     return new_list

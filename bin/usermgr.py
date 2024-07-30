@@ -25,28 +25,28 @@ U_FLG_NEED_PW_CHANGE = 1
 U_FLG_DISABLED = 1 << 2
 U_FLG_INVALID_DATA = 1 << 7
 
-USER_DATA_FIELDS = [
-    {'key': 'uid'},
-    {'key': 'name'},
-    {'key': 'local_name'},
-    {'key': 'email'},
-    {'key': 'is_admin', 'data_type': 'bool'},
-    {'key': 'groups'},
-    {'key': 'privs'},
-    {'key': 'info1'},
-    {'key': 'info2'},
-    {'key': 'desc'},
-    {'key': 'flags', 'data_type': 'int'},
-    {'key': 'created_at', 'data_type': 'float'},
-    {'key': 'updated_at', 'data_type': 'float'}
+USER_DATA_STRUCT = [
+    {'name': 'uid'},
+    {'name': 'name'},
+    {'name': 'local_name'},
+    {'name': 'email'},
+    {'name': 'is_admin', 'type': 'bool'},
+    {'name': 'groups'},
+    {'name': 'privs'},
+    {'name': 'info1'},
+    {'name': 'info2'},
+    {'name': 'desc'},
+    {'name': 'flags', 'type': 'int'},
+    {'name': 'created_at', 'type': 'float'},
+    {'name': 'updated_at', 'type': 'float'}
 ]
 
-USER_DATA_FIELDS_FOR_GUEST = [
-    {'key': 'is_guest', 'data_type': 'bool'},
-    {'key': 'expires_at', 'data_type': 'float'}
+USER_DATA_STRUCT_FOR_GUEST = [
+    {'name': 'is_guest', 'type': 'bool'},
+    {'name': 'expires_at', 'type': 'float'}
 ]
 
-GUEST_DATA_FIELDS = USER_DATA_FIELDS + USER_DATA_FIELDS_FOR_GUEST
+GUEST_DATA_STRUCT = USER_DATA_STRUCT + USER_DATA_STRUCT_FOR_GUEST
 
 # User data format
 # #uid	name	local_name	is_admin	groups	privs	info1	info2	desc	flags	created_at	updated_at
@@ -131,11 +131,11 @@ def get_all_user_info(extra_info=False):
     return users
 
 def load_all_users():
-    users = _load_all_users(USER_LIST_FILE_PATH, USER_DATA_FIELDS)
+    users = _load_all_users(USER_LIST_FILE_PATH, USER_DATA_STRUCT)
     return users
 
 def load_all_guest_users():
-    users = _load_all_users(GUEST_USER_LIST_FILE_PATH, GUEST_DATA_FIELDS)
+    users = _load_all_users(GUEST_USER_LIST_FILE_PATH, GUEST_DATA_STRUCT)
     return users
 
 #----
@@ -148,10 +148,10 @@ def _load_all_users(path, data_fields_def):
             result = common.parse_tsv_field_values(text_line, data_fields_def)
 
             data = result['values']
-            if result['has_error']:
-                data['flags'] |= U_FLG_INVALID_DATA
-            else:
+            if result['status'] == 'OK':
                 data['flags'] &= ~U_FLG_INVALID_DATA
+            else:
+                data['flags'] |= U_FLG_INVALID_DATA
 
             uid = data['uid']
             obj[uid] = data
@@ -328,7 +328,7 @@ def delete_user(uid):
 
 # Save Users
 def save_users(users):
-    common.save_to_tsv_file(USER_LIST_FILE_PATH, users, USER_DATA_FIELDS)
+    common.save_to_tsv_file(USER_LIST_FILE_PATH, users, USER_DATA_STRUCT)
 
 def delete_user_dir(uid):
     path = USER_ROOT_PATH + '/' + uid
@@ -436,7 +436,7 @@ def delete_guest_user(uid):
 
 # Save Guest Users
 def save_guest_users(users):
-    common.save_to_tsv_file(GUEST_USER_LIST_FILE_PATH, users, GUEST_DATA_FIELDS)
+    common.save_to_tsv_file(GUEST_USER_LIST_FILE_PATH, users, GUEST_DATA_STRUCT)
 
 #----------------------------------------------------------
 def is_admin(user_info):

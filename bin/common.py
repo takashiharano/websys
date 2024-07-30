@@ -107,39 +107,38 @@ def write_error_file(s):
 def parse_tsv_field_values(fields_text, data_fields_def):
     text_values = fields_text.split('\t')
 
-    has_error = False
+    status = 'OK'
     values = {}
     for i in range(len(data_fields_def)):
         field = data_fields_def[i]
-        key = field['key']
+        key = field['name']
         index = i
         data_type = 'str'
         as_true = '1'
 
-        if 'data_type' in field:
-            data_type = field['data_type']
+        if 'type' in field:
+            data_type = field['type']
             if 'data_type' == 'bool':
                 if 'as_true' in field:
                     as_true = field['as_true']
 
-        value = _get_field_value(text_values, index, data_type, as_true)
+        value = _from_text_field_value(text_values, index, data_type, as_true)
 
         values[key] = value['value']
         if value['status'] != 'OK':
-            has_error = True
+            status = 'ERR'
 
     result = {
         'values': values,
-        'has_error': False
+        'status': status
     }
 
-    if has_error:
-        result['has_error'] = True
+    if status != 'OK':
         write_error_file(fields_text)
 
     return result
 
-def _get_field_value(values, index, data_type='str', as_true='1'):
+def _from_text_field_value(values, index, data_type='str', as_true='1'):
     status = 'OK'
     try:
         value = values[index]
@@ -150,12 +149,12 @@ def _get_field_value(values, index, data_type='str', as_true='1'):
         elif data_type == 'bool':
             value = True if value == as_true else False
     except Exception as e:
-        logger.write_system_log('ERROR', '-', 'common._get_field_value() index=' + str(index) + ' : ' + str(e))
+        logger.write_system_log('ERROR', '-', 'common._from_text_field_value() index=' + str(index) + ' : ' + str(e))
         status = 'ERROR'
-        value = _get_invalid_value(data_type)
+        value = _get_value_for_invalid(data_type)
     return {'status': status, 'value': value}
 
-def _get_invalid_value(data_type):
+def _get_value_for_invalid(data_type):
     values = {
         'str': '',
         'int': 0,
@@ -174,10 +173,10 @@ def save_to_tsv_file(path, data_dict, fields):
         data = data_dict[data_key]
         for i in range(len(fields)):
             field = fields[i]
-            key = field['key']
+            key = field['name']
             data_type = 'str'
-            if 'data_type' in field:
-                data_type = field['data_type']
+            if 'type' in field:
+                data_type = field['type']
             if i > 0:
                 s += '\t'
             s += _to_field_value_text(data, key, data_type)
@@ -188,7 +187,7 @@ def _build_data_header(fields):
     s = '#'
     for i in range(len(fields)):
         field = fields[i]
-        key = field['key']
+        key = field['name']
         if i > 0:
             s += '\t'
         s += key

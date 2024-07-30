@@ -20,8 +20,23 @@ USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 SESSION_TIMEOUT_SEC = websysconf.SESSION_TIMEOUT_SEC
 MAX_SESSIONS_PER_USER = websysconf.MAX_SESSIONS_PER_USER
 ALGOTRITHM = websysconf.ALGOTRITHM
-
 MIN_FILE_UPDATE_INTERVAL_SEC = 0.25
+
+SESSION_DATA_STRUCT = [
+   {'name': 'sid'},
+   {'name': 'uid'},
+   {'name': 'time', 'type': 'float'},
+   {'name': 'tz'},
+   {'name': 'addr'},
+   {'name': 'host'},
+   {'name': 'ua'},
+   {'name': 'c_time', 'type': 'float'},
+   {'name': 'c_tz'},
+   {'name': 'c_addr'},
+   {'name': 'c_host'},
+   {'name': 'c_ua'},
+   {'name': 'is_guest', 'type': 'bool'}
+]
 
 current_session_info = None
 
@@ -29,7 +44,7 @@ current_session_info = None
 # Get sessions file path
 #----------------------------------------------------------
 def get_sessions_file_path(uid):
-    path = USER_ROOT_PATH + '/' + uid + '/sessions.json'
+    path = USER_ROOT_PATH + '/' + uid + '/sessions.txt'
     return path
 
 #----------------------------------------------------------
@@ -40,13 +55,21 @@ def get_all_sessions_info():
 
 def get_user_sessions(uid):
     path = get_sessions_file_path(uid)
+    tsv_text_list = util.read_text_file_as_list(path)
     try:
-        session_list = common.load_dict(path)
+        sessions = {}
+        for i in range(len(tsv_text_list)):
+            text_line = tsv_text_list[i]
+            if not util.is_comment(text_line, '#'):
+                result = common.parse_tsv_field_values(text_line, SESSION_DATA_STRUCT)
+                data = result['values']
+                sid = data['sid']
+                sessions[sid] = data
     except Exception as e:
         logger.write_system_log('ERROR', uid, 'sessionmgr.get_user_sessions(): ' + str(e))
-        session_list = None
+        sessions = None
 
-    return session_list
+    return sessions
 
 #----------------------------------------------------------
 # Get session info
@@ -60,15 +83,12 @@ def get_user_sessions(uid):
 #   "addr": "::1",
 #   "host": "hostname",
 #   "ua": "Mozilla/5.0",
-#   "is_guest": False,
-#   "last_access": {
-#    "time": 1234567890.123456,
-#    "tz": "+0900",
-#    "addr": "::1",
-#    "host": "hostname",
-#    "ua": "Mozilla/5.0"
-#   }
-#  }
+#   "c_time": 1234567890.123456,
+#   "c_tz": "+0900",
+#   "c_addr": "::1",
+#   "c_host": "hostname",
+#   "c_ua": "Mozilla/5.0",
+#   "is_guest": False
 # }
 #
 # Returns None id the session does not exist.
@@ -152,19 +172,17 @@ def create_session_info(uid, is_guest=False):
     new_session = {
         'sid': sid,
         'uid': uid,
-        'created_time': now,
+        'time': now,
         'tz': tz,
         'addr': addr,
         'host': host,
         'ua': useragent,
-        'is_guest': is_guest,
-        'last_access': {
-            'time': now,
-            'tz': tz,
-            'addr': addr,
-            'host': host,
-            'ua': useragent
-        }
+        'c_time': now,
+        'c_tz': tz,
+        'c_addr': addr,
+        'c_host': host,
+        'c_ua': useragent,
+        'is_guest': is_guest
     }
 
     return new_session
@@ -183,13 +201,13 @@ def append_session_info_to_session_file(uid, session_info):
 
     sid = session_info['sid']
     sessions[sid] = session_info
-    save_user_sessions_to_file(uid, sessions)
+    save_user_sessions(uid, sessions)
 
 def _trim_sessions(sessions, num_of_sessions):
     time_list = []
     for sid in sessions:
         session = sessions[sid]
-        t = session['last_access']['time']
+        t = session['time']
         time_list.append(t)
 
     time_list.sort(reverse=True)
@@ -197,7 +215,7 @@ def _trim_sessions(sessions, num_of_sessions):
     trimmed_sessions = {}
     for sid in sessions:
         session = sessions[sid]
-        t = session['last_access']['time']
+        t = session['time']
         if _in_top_n(time_list, num_of_sessions, t):
             trimmed_sessions[sid] = session
         else:
@@ -247,23 +265,25 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
 
     session = sessions[sid]
     uid = session['uid']
-    last_access = session['last_access']
 
-    prev_time = last_access['time']
+    prev_time = session['time']
+    session['time'] = time
 
-    last_access['time'] = time
     if tz is not None:
-        last_access['tz'] = tz
+        session['tz'] = tz
+
     if addr is not None:
-        last_access['addr'] = addr
+        session['addr'] = addr
+
     if host is not None:
-        last_access['host'] = host
+        session['host'] = host
+
     if ua is not None:
-        last_access['ua'] = ua
+        session['ua'] = ua
 
     elapsed = time - prev_time
     if elapsed > MIN_FILE_UPDATE_INTERVAL_SEC:
-        save_user_sessions_to_file(uid, sessions)
+        save_user_sessions(uid, sessions)
         usermgr.update_user_status_info(uid, 'last_access', time)
         write_user_timeline_log(uid, sid, time)
 
@@ -336,7 +356,7 @@ def clear_session(sid, renew=False):
         session = user_sessions.pop(sid, None)
         status = 'RENEW' if renew else 'OK'
         write_logout_log(session, status)
-        save_user_sessions_to_file(uid, user_sessions)
+        save_user_sessions(uid, user_sessions)
 
     if get_current_session_id() == sid:
         set_current_session_info_to_global(None)
@@ -350,13 +370,13 @@ def write_logout_log(session, status='OK'):
     addr = '-'
     host = '-'
     ua = ''
-    la_info = session['last_access']
-    if 'ua' in la_info:
-        ua = la_info['ua']
+
+    if 'ua' in session:
+        ua = session['ua']
 
     if status == 'OK':
-        addr = la_info['addr']
-        host = la_info['host']
+        addr = session['addr']
+        host = session['host']
 
     logger.write_status_log('LOGOUT', status, uid, addr, host, ua, sid)
 
@@ -384,7 +404,7 @@ def clear_expired_sessions(uid, sessions, now):
     for sid in sessions:
         session = sessions[sid]
         try:
-            last_access_time = session['last_access']['time']
+            last_access_time = session['time']
             if round(now - last_access_time) <= SESSION_TIMEOUT_SEC:
                 new_sessions[sid] = session
             else:
@@ -394,7 +414,7 @@ def clear_expired_sessions(uid, sessions, now):
             pass
 
     if cleared:
-        save_user_sessions_to_file(uid, new_sessions)
+        save_user_sessions(uid, new_sessions)
 
 #----------------------------------------------------------
 # Clear user sessions
@@ -404,7 +424,7 @@ def clear_user_sessions(uid):
     if user_sessions is None:
         return 0
     count =  len(user_sessions)
-    save_user_sessions_to_file(uid, {})
+    save_user_sessions(uid, {})
     return count
 
 #----------------------------------------------------------
@@ -427,11 +447,11 @@ def load_all_session_info_from_file():
 #----------------------------------------------------------
 # Save sessions info
 #----------------------------------------------------------
-def save_user_sessions_to_file(uid, sessions):
+def save_user_sessions(uid, sessions):
     path = get_sessions_file_path(uid)
     if len(sessions) == 0:
         now = util.get_timestamp()
         util.delete_file(path)
         usermgr.update_user_status_info(uid, 'last_logout', now)
     else:
-        util.save_dict(path, sessions)
+        common.save_to_tsv_file(path, sessions, SESSION_DATA_STRUCT)

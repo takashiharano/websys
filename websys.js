@@ -562,21 +562,21 @@ websys.cmdSessions.cb = function(xhr, res, req) {
 };
 
 websys.buildSessinInfo = function(info, flgA) {
-  var brwC = util.getBrowserInfo(info.ua);
-  var brwL = util.getBrowserInfo(info.last_access.ua);
+  var brwC = util.getBrowserInfo(info['c_ua']);
+  var brwL = util.getBrowserInfo(info['ua']);
 
   var s = '';
-  s += 'uid     : ' + info.uid + (info.is_guest ? ' (GUEST)' : '') + '\n';
-  s += 'sid     : ' + info.sid + '\n';
-  s += 'time    : ' + util.getDateTimeString(info.last_accesstime) + ' <span style="color:#ccc;">' + info.last_access.tz + '\n';
-  s += 'host    : ' + info.last_access.addr + '  ' + info.last_access.host + '\n';
+  s += 'uid     : ' + info['uid'] + (info.is_guest ? ' (GUEST)' : '') + '\n';
+  s += 'sid     : ' + info['sid'] + '\n';
+  s += 'time    : ' + util.getDateTimeString(info['time']) + ' <span style="color:#ccc;">' + info['tz'] + '\n';
+  s += 'host    : ' + info['addr'] + '  ' + info['host'] + '\n';
   s += 'ua      : ' + brwL.name + ' ' + brwL.version + '\n';
   s += '</span>';
   if (flgA) {
     s += '<span style="color:#aaa;">';
     s += ' created:\n';
-    s += '    time: ' + util.getDateTimeString(info.created_time) + ' ' + info.tz + '\n';
-    s += '    host: ' + info.addr + '  ' + info.host + '\n';
+    s += '    time: ' + util.getDateTimeString(info['c_time']) + ' ' + info['c_tz'] + '\n';
+    s += '    host: ' + info['c_addr'] + '  ' + info['c_host'] + '\n';
     s += '    ua  : ' + brwC.name + ' ' + brwC.version + '\n';
     s += '</span>';
   }

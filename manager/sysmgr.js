@@ -138,6 +138,10 @@ scnjs.getUserList = function() {
   scnjs.callApi('get_user_list', null, scnjs.getUserListCb);
 };
 scnjs.getUserListCb = function(xhr, res, req) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status == 'FORBIDDEN') {
     location.href = location.href;
     return;
@@ -484,6 +488,10 @@ scnjs.getSessionList = function() {
   scnjs.callApi('get_session_list', param, scnjs.getSessionListCb);
 };
 scnjs.getSessionListCb = function(xhr, res, req) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status == 'FORBIDDEN') {
     location.href = location.href;
     return;
@@ -600,19 +608,18 @@ scnjs.buildSessionInfoHtml = function(sessions, now) {
 };
 scnjs.buildSessionInfoOne = function(session, now, mn) {
   var cSid = websys.getSessionId();
-  var uid = session.uid;
-  var name = session.user_name;
-  var loginT = session.created_time;
-  var la = session.last_access;
-  var ua = la['ua'];
-  var laTime = la['time'];
+  var uid = session['uid'];
+  var name = session['user_fullname'];
+  var loginT = session['c_time'];
+  var ua = session['ua'];
+  var laTime = session['time'];
+  var sid = session['sid'];
+  var addr = session['addr'];
   if (scnjs.INSEC) laTime = Math.floor(laTime * 1000);
   var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var laTimeStr = util.getDateTimeString(laTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
-  var sid = session['sid'];
   var ssid = util.snip(sid, 7, 3, '..');
   var sid7 = util.snip(sid, 7, 0, '');
-  var addr = la['addr'];
   var brws = util.getBrowserInfo(ua);
   var ua = brws.name + ' ' + brws.version;
   var led = scnjs.buildLedHtml(now, laTime, false, true);
@@ -812,6 +819,10 @@ scnjs.logoutSession = function(sid) {
   scnjs.execCmd('logout', params, scnjs.logoutSessionCb);
 };
 scnjs.logoutSessionCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   scnjs.showInfotip(res.status);
   scnjs.reloadUserInfo();
 };
@@ -977,6 +988,10 @@ scnjs.mail2name = function(m) {
 };
 
 scnjs.GetUserInfoCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status != 'OK') {
     scnjs.showInfotip(res.status);
     return;
@@ -1110,6 +1125,10 @@ scnjs.addUser = function() {
 };
 
 scnjs.addUserCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
@@ -1163,6 +1182,10 @@ scnjs.updateUser = function() {
 };
 
 scnjs.updateUserCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
@@ -1192,6 +1215,10 @@ scnjs._deleteUser = function(uid) {
 };
 
 scnjs.deleteUserCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status != 'OK') {
     scnjs.showInfotip(res.status);
     return;
@@ -1218,6 +1245,10 @@ scnjs.clearLoginFailedCount = function(uid) {
 };
 
 scnjs.clearLoginFailedCountCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status != 'OK') {
     scnjs.showInfotip(res.status);
     return;
@@ -1339,6 +1370,10 @@ scnjs.getGroupList = function() {
   scnjs.callApi('get_group_list', null, scnjs.getGroupListCb);
 };
 scnjs.getGroupListCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status == 'OK') {
     scnjs.drawGroupStatus('');
     var list = res.body.group_list;
@@ -1500,6 +1535,10 @@ scnjs.addGroup = function() {
 };
 
 scnjs.addGroupCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
@@ -1526,6 +1565,10 @@ scnjs.updateGroup = function() {
 };
 
 scnjs.updateGroupCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
     return;
@@ -1555,6 +1598,10 @@ scnjs._deleteGroup = function(gid) {
 };
 
 scnjs.deleteGroupCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status != 'OK') {
     scnjs.showInfotip(res.status);
     return;
@@ -1565,6 +1612,10 @@ scnjs.deleteGroupCb = function(xhr, res) {
 
 //-----------------------------------------------------------------------------
 scnjs.getGroupInfoCb = function(xhr, res) {
+  if (xhr.status != 200) {
+    scnjs.showInfotip('HTTP ' + xhr.status);
+    return;
+  }
   if (res.status != 'OK') {
     scnjs.showInfotip(res.status);
     return;

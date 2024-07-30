@@ -16,12 +16,12 @@ import common
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
 
 GROUP_DATA_FIELDS = [
-    {'key': 'gid'},
-    {'key': 'name'},
-    {'key': 'privs'},
-    {'key': 'desc'},
-    {'key': 'created_at', 'data_type': 'float'},
-    {'key': 'updated_at', 'data_type': 'float'}
+    {'name': 'gid'},
+    {'name': 'name'},
+    {'name': 'privs'},
+    {'name': 'desc'},
+    {'name': 'created_at', 'type': 'float'},
+    {'name': 'updated_at', 'type': 'float'}
 ]
 
 # Object structure
