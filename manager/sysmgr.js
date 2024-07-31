@@ -20,7 +20,7 @@ scnjs.INTERVAL = 60000;
 scnjs.USER_LIST_COLUMNS = [
   {key: 'elapsed', label: ''},
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
-  {key: 'name', label: 'Full name', style: 'min-width:10em;'},
+  {key: 'fullname', label: 'Full name', style: 'min-width:10em;'},
   {key: 'local_name', label: 'Local full name', style: 'min-width:10em;'},
   {key: 'c_name', label: 'Canonical name', style: 'min-width:5em;'},
   {key: 'email', label: 'Email', style: 'min-width:10em;'},

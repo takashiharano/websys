@@ -1457,7 +1457,7 @@ websys.getUserId = function() {
   return uid;
 };
 
-websys.getUserName = function() {
+websys.getUserFullname = function() {
   var fullname = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {

@@ -65,7 +65,7 @@ class WebContext:
     # Returns:
     # user: {
     #   "uid": "root", # guest: "123456"
-    #   "name": "root", # guest: "GUEST"
+    #   "fullname": "root", # guest: "GUEST"
     #   "local_name": "root_L", # guest: "GUEST_L"
     #   "c_name": "root_C", # guest: "GUEST_C"
     #   "is_admin": true,
@@ -100,10 +100,10 @@ class WebContext:
             return user_info['uid']
         return None
 
-    def get_user_name(self):
+    def get_user_fullname(self):
         user_info = self.user_info
-        if user_info is not None and 'name' in user_info:
-            return user_info['name']
+        if user_info is not None and 'fullname' in user_info:
+            return user_info['fullname']
         return ''
 
     def get_user_local_name(self):
@@ -402,14 +402,14 @@ def redirect_auth_screen():
     send_response(html, 'text/html')
 
 #----------------------------------------------------------
-def get_user_name(uid, default=None):
-    user_name = default
+def get_user_fullname(uid, default=None):
+    user_fullname = default
     if default is None:
-        user_name = uid
+        user_fullname = uid
     user_info = usermgr.get_user_info(uid)
-    if user_info is not None and 'name' in user_info:
-        user_name = user_info['name']
-    return user_name
+    if user_info is not None and 'fullname' in user_info:
+        user_fullname = user_info['fullname']
+    return user_fullname
 
 def get_user_local_name(uid, default=None):
     user_local_name = default
