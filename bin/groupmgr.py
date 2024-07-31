@@ -165,7 +165,7 @@ def load_all_groups(path, data_fields_def):
     for i in range(len(tsv_text_list)):
         text_line = tsv_text_list[i]
         if not util.is_comment(text_line, '#'):
-            result = common.parse_tsv_field_values(text_line, data_fields_def)
+            result = common.parse_tsv_field_values(text_line, data_fields_def, path)
             data = result['values']
             gid = data['gid']
             obj[gid] = data

@@ -61,7 +61,7 @@ def get_user_sessions(uid):
         for i in range(len(tsv_text_list)):
             text_line = tsv_text_list[i]
             if not util.is_comment(text_line, '#'):
-                result = common.parse_tsv_field_values(text_line, SESSION_DATA_STRUCT)
+                result = common.parse_tsv_field_values(text_line, SESSION_DATA_STRUCT, path)
                 data = result['values']
                 sid = data['sid']
                 sessions[sid] = data

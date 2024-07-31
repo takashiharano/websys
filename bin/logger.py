@@ -61,4 +61,5 @@ def write_event_log(context, op_type, status, info):
 
 #----------------------------------------------------------
 def write_system_log(status, uid, info):
+    info = util.replace(info, '\t', '  ');
     write_status_log('SYSTEM', status, uid, addr='-', host='-', ua='-', sid='-', info=info)

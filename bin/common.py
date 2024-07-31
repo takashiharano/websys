@@ -104,15 +104,14 @@ def write_error_file(s):
     util.append_text_file(path, s)
 
 #------------------------------------------------------------------------------
-def parse_tsv_field_values(fields_text, data_fields_def):
-    text_values = fields_text.split('\t')
+def parse_tsv_field_values(tsv_text, data_fields_def, path):
+    text_values = tsv_text.split('\t')
 
     status = 'OK'
     values = {}
     for i in range(len(data_fields_def)):
         field = data_fields_def[i]
         key = field['name']
-        index = i
         data_type = 'str'
         as_true = '1'
 
@@ -122,11 +121,13 @@ def parse_tsv_field_values(fields_text, data_fields_def):
                 if 'as_true' in field:
                     as_true = field['as_true']
 
-        value = _from_text_field_value(text_values, index, data_type, as_true)
-
-        values[key] = value['value']
-        if value['status'] != 'OK':
-            status = 'ERR'
+        try:
+            value = text_values[i]
+            values[key] = _from_text_field_value(value, data_type, as_true)
+        except Exception as e:
+            logger.write_system_log('ERROR', '-', 'common.parse_tsv_field_values() : path=' + path + ' : col=' + str(i + 1) + ' : ' + str(e) + ' : text=' + tsv_text)
+            status = 'ERROR'
+            values[key] = _get_value_for_invalid(data_type)
 
     result = {
         'values': values,
@@ -134,25 +135,19 @@ def parse_tsv_field_values(fields_text, data_fields_def):
     }
 
     if status != 'OK':
-        write_error_file(fields_text)
+        write_error_file(tsv_text)
 
     return result
 
-def _from_text_field_value(values, index, data_type='str', as_true='1'):
-    status = 'OK'
-    try:
-        value = values[index]
-        if data_type == 'int':
-            value = int(value)
-        elif data_type == 'float':
-            value = float(value)
-        elif data_type == 'bool':
-            value = True if value == as_true else False
-    except Exception as e:
-        logger.write_system_log('ERROR', '-', 'common._from_text_field_value() index=' + str(index) + ' : ' + str(e))
-        status = 'ERROR'
-        value = _get_value_for_invalid(data_type)
-    return {'status': status, 'value': value}
+def _from_text_field_value(value, data_type='str', as_true='1'):
+    if data_type == 'int':
+        value = int(value)
+    elif data_type == 'float':
+        value = float(value)
+    elif data_type == 'bool':
+        value = True if value == as_true else False
+
+    return value
 
 def _get_value_for_invalid(data_type):
     values = {
