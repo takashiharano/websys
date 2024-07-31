@@ -656,7 +656,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     return;
   }
   var p = dbg.getOptVal(arg, 'p');
-  var name = dbg.getOptVal(arg, 'n');
+  var fullname = dbg.getOptVal(arg, 'n');
   var nameL = dbg.getOptVal(arg, 'nlocal');
   var nameC = dbg.getOptVal(arg, 'cname');
   var email = dbg.getOptVal(arg, 'email');
@@ -674,14 +674,14 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     uid: uid,
     pw: pw
   };
-  if (name) {
+  if (fullname) {
     try {
-      name = eval(name);
+      fullname = eval(fullname);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.name = name;
+    param.fullname = fullname;
   }
   if (nameL) {
     try {
@@ -784,7 +784,7 @@ websys.cmdUserAdd.cb = function(xhr, res) {
 websys.cmdUserMod = function(arg, tbl, echo) {
   var uid = dbg.getOptVal(arg, 'u');
   var p = dbg.getOptVal(arg, 'p');
-  var name = dbg.getOptVal(arg, 'n');
+  var fullname = dbg.getOptVal(arg, 'n');
   var nameL = dbg.getOptVal(arg, 'nlocal');
   var nameC = dbg.getOptVal(arg, 'cname');
   var email = dbg.getOptVal(arg, 'email');
@@ -808,14 +808,14 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     cmd: 'usermod',
     uid: uid
   };
-  if (name) {
+  if (fullname) {
     try {
-      name = eval(name);
+      fullname = eval(fullname);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.name = name;
+    param.fullname = fullname;
   }
   if (nameL) {
     try {
@@ -1458,12 +1458,12 @@ websys.getUserId = function() {
 };
 
 websys.getUserName = function() {
-  var name = null;
+  var fullname = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {
-    name = userInfo.name;
+    fullname = userInfo.fullname;
   }
-  return name;
+  return fullname;
 };
 
 websys.getUserLocalName = function() {

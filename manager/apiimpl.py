@@ -162,7 +162,7 @@ def get_sorted_session_list():
 def _get_user_fullname(users, uid):
     if uid in users:
         user = users[uid]
-        return user['name']
+        return user['fullname']
     return ''
 
 #------------------------------------------------------------------------------

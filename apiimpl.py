@@ -279,7 +279,7 @@ def cmd_useradd(context):
         return
 
     uid = web.get_request_param('uid')
-    name = web.get_request_param('name')
+    fullname = web.get_request_param('fullname')
     local_name = web.get_request_param('local_name')
     c_name = web.get_request_param('c_name')
     email = web.get_request_param('email')
@@ -301,11 +301,11 @@ def cmd_useradd(context):
         return
     pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
-    if name is None:
-        name = uid
+    if fullname is None:
+        fullname = uid
 
     if local_name is None:
-        local_name = name
+        local_name = fullname
 
     is_admin = False
     if p_admin is not None:
@@ -327,7 +327,7 @@ def cmd_useradd(context):
         p_flags = None
 
     try:
-        usermgr.add_user(uid, pw_hash, name=name, local_name=local_name, c_name=c_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, desc=desc, flags=p_flags)
+        usermgr.add_user(uid, pw_hash, fullname=fullname, local_name=local_name, c_name=c_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, desc=desc, flags=p_flags)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -355,7 +355,7 @@ def cmd_usermod(context):
         web.send_result_json('ERR_UID', body=None)
         return
 
-    name = web.get_request_param('name')
+    fullname = web.get_request_param('fullname')
     local_name = web.get_request_param('local_name')
     c_name = web.get_request_param('c_name')
     email = web.get_request_param('email')
@@ -407,7 +407,7 @@ def cmd_usermod(context):
             u_flags = p_flags
 
     try:
-        usermgr.modify_user(uid, pw_hash, name=name, local_name=local_name, c_name=c_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, desc=desc, flags=u_flags)
+        usermgr.modify_user(uid, pw_hash, fullname=fullname, local_name=local_name, c_name=c_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, desc=desc, flags=u_flags)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:

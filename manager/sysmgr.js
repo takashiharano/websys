@@ -276,7 +276,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     if (filter && !scnjs.searchUserByKeyword(item, searchKey, searchCaseSensitive)) continue;
     count++;
     var uid = item.uid;
-    var name = item.name;
+    var fullname = item.fullname;
     var local_name = item.local_name;
     var c_name = item.c_name;
     var email = item.email;
@@ -308,7 +308,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
 
     var dispUid = uid;
-    var dispFullname = name;
+    var dispFullname = fullname;
     var dispLocalFullname = local_name;
     var dispCname = c_name;
     var dispEmail = email;
@@ -319,7 +319,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
 
     if (searchKey) {
       dispUid = scnjs.highlightKeyword(uid, searchKey, searchCaseSensitive);
-      dispFullname = scnjs.highlightKeyword(name, searchKey, searchCaseSensitive);
+      dispFullname = scnjs.highlightKeyword(fullname, searchKey, searchCaseSensitive);
       dispLocalFullname = scnjs.highlightKeyword(local_name, searchKey, searchCaseSensitive);
       dispCname = scnjs.highlightKeyword(c_name, searchKey, searchCaseSensitive);
       dispEmail = scnjs.highlightKeyword(email, searchKey, searchCaseSensitive);
@@ -330,7 +330,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     }
 
     dispUid = cInd + '<span class="pseudo-link link-button" onclick="scnjs.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
-    dispFullname = scnjs.buildCopyableLabel(name, dispFullname);
+    dispFullname = scnjs.buildCopyableLabel(fullname, dispFullname);
     dispLocalFullname = scnjs.buildCopyableLabel(local_name, dispLocalFullname);
     dispCname = scnjs.buildCopyableLabel(c_name, dispCname);
     dispEmail = scnjs.buildCopyableLabel(email, dispEmail);
@@ -407,7 +407,7 @@ scnjs.searchUserByKeyword = function(item, key, caseSensitive) {
   if (!key) return true;
   var targets = [];
   targets.push(item.uid);
-  targets.push(item.name);
+  targets.push(item.fullname);
   targets.push(item.local_name);
   targets.push(item.c_name);
   targets.push(item.email);
@@ -616,7 +616,7 @@ scnjs.buildSessionInfoHtml = function(sessions, now) {
 scnjs.buildSessionInfoOne = function(session, now, mn) {
   var cSid = websys.getSessionId();
   var uid = session['uid'];
-  var name = session['user_fullname'];
+  var fullname = session['user_fullname'];
   var loginT = session['c_time'];
   var ua = session['ua'];
   var laTime = session['time'];
@@ -642,7 +642,7 @@ scnjs.buildSessionInfoOne = function(session, now, mn) {
   html += '<tr class="item-list">';
   html += '<td style="padding-right:4px;">' + led + '</td>';
   html += '<td style="padding-right:10px;">' + uid + '</td>';
-  html += '<td style="padding-right:6px;">' + name + '</td>';
+  html += '<td style="padding-right:6px;">' + fullname + '</td>';
   html += '<td style="padding-right:10px;">' + dispSid + '</td>';
   html += '<td style="padding-right:10px;">' + laTimeStr + '</td>';
   html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
@@ -865,7 +865,7 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
   if (uid && (uid != currentUid)) {
     html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="scnjs.deleteUser(\'' + uid + '\');">DEL</button></div>';
   }
-  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:400px;height:360px;text-align:left;">';
+  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:400px;height:380px;text-align:left;">';
 
   html += '<table class="edit-table">';
   html += '  <tr>';
@@ -874,7 +874,7 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Full name</td>';
-  html += '    <td><input type="text" id="name" style="width:100%;"></td>';
+  html += '    <td><input type="text" id="fullname" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Local Full name</td>';
@@ -947,9 +947,9 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
     pos: 'c',
     closeButton: true,
     width: 500,
-    height: 460,
+    height: 480,
     minWidth: 500,
-    minHeight: 460,
+    minHeight: 480,
     scale: 1,
     hidden: false,
     modal: false,
@@ -975,13 +975,13 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
 };
 
 scnjs.onUidBlur = function() {
-  var name = $el('#name').value;
-  if (name) return;
+  var fullname = $el('#fullname').value;
+  if (fullname) return;
   var uid = $el('#uid').value;
   if (uid.match()) {
-    name = scnjs.mail2name(uid);
+    fullname = scnjs.mail2name(uid);
   }
-  $el('#name').value = name;
+  $el('#fullname').value = fullname;
 };
 
 scnjs.mail2name = function(m) {
@@ -1021,7 +1021,7 @@ scnjs.setUserInfoToEditor = function(info) {
     $el('#uid').disabled = false;
     $el('#uid').removeClass('edit-disabled');
   }
-  $el('#name').value = info.name;
+  $el('#fullname').value = info.fullname;
   $el('#local_name').value = info.local_name;
   $el('#c_name').value = info.c_name;
   $el('#email').value = info.email;
@@ -1037,7 +1037,7 @@ scnjs.setUserInfoToEditor = function(info) {
 scnjs.clearUserInfoEditor = function() {
   var info = {
     uid: '',
-    name: '',
+    fullname: '',
     local_name: '',
     c_name: '',
     email: '',
@@ -1063,7 +1063,7 @@ scnjs.saveUserInfo = function() {
 //-----------------------------------------------------------------------------
 scnjs.addUser = function() {
   var uid = $el('#uid').value;
-  var name = $el('#name').value;
+  var fullname = $el('#fullname').value;
   var local_name = $el('#local_name').value;
   var c_name = $el('#c_name').value;
   var email = $el('#email').value;
@@ -1084,12 +1084,12 @@ scnjs.addUser = function() {
   }
   uid = clnsRes.val;
 
-  clnsRes = scnjs.cleanseFullName(name);
+  clnsRes = scnjs.cleanseFullName(fullname);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
     return;
   }
-  name = clnsRes.val;
+  fullname = clnsRes.val;
 
   clnsRes = scnjs.cleanseFullName(local_name);
   if (clnsRes.msg) {
@@ -1129,7 +1129,7 @@ scnjs.addUser = function() {
 
   var params = {
     uid: uid,
-    name: name,
+    fullname: fullname,
     local_name: local_name,
     c_name: c_name,
     email: email,
@@ -1162,7 +1162,7 @@ scnjs.addUserCb = function(xhr, res) {
 //-----------------------------------------------------------------------------
 scnjs.updateUser = function() {
   var uid = $el('#uid').value;
-  var name = $el('#name').value;
+  var fullname = $el('#fullname').value;
   var local_name = $el('#local_name').value;
   var c_name = $el('#c_name').value;
   var email = $el('#email').value;
@@ -1185,7 +1185,7 @@ scnjs.updateUser = function() {
 
   var params = {
     uid: uid,
-    name: name,
+    fullname: fullname,
     local_name: local_name,
     c_name: c_name,
     email: email,

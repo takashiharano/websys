@@ -192,6 +192,8 @@ def _to_field_value_text(values, key, data_type='str'):
     if key not in values:
         return ''
     value = values[key]
+    if value is None:
+        return ''
     if data_type == 'int':
         value = str(value)
     elif data_type == 'float':

@@ -27,7 +27,7 @@ U_FLG_INVALID_DATA = 1 << 7
 
 USER_DATA_STRUCT = [
     {'name': 'uid'},
-    {'name': 'name'},
+    {'name': 'fullname'},
     {'name': 'local_name'},
     {'name': 'c_name'},
     {'name': 'email'},
@@ -50,7 +50,7 @@ USER_DATA_STRUCT_FOR_GUEST = [
 GUEST_DATA_STRUCT = USER_DATA_STRUCT + USER_DATA_STRUCT_FOR_GUEST
 
 # User data format
-# #uid	name	local_name	c_name	is_admin	groups	privs	info1	info2	desc	flags	created_at	updated_at
+# #uid	fullname	local_name	c_name	is_admin	groups	privs	info1	info2	desc	flags	created_at	updated_at
 # admin	Admin	ADMIN	Administrator	1	g1	p1	Info1	Info2	Description	0	1721446496.789123	1721446496.789123
 
 # Object structure
@@ -58,7 +58,7 @@ GUEST_DATA_STRUCT = USER_DATA_STRUCT + USER_DATA_STRUCT_FOR_GUEST
 # {
 #   "root": {
 #     "uid": "root",
-#     "name": "root",
+#     "fullname": "root",
 #     "local_name": "root_L",
 #     "c_name": "root_C",
 #     "email": "user@host",
@@ -79,7 +79,7 @@ GUEST_DATA_STRUCT = USER_DATA_STRUCT + USER_DATA_STRUCT_FOR_GUEST
 # {
 #   "123456": {
 #     "uid": "123456",
-#     "name": "GUEST",
+#     "fullname": "GUEST",
 #     "local_name": "GUEST_L",
 #     "c_name": "GUEST_C",
 #     "email": "",
@@ -175,7 +175,7 @@ def count_sessions_per_user():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def add_user(uid, pw, name=None, local_name=None, c_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
+def add_user(uid, pw, fullname=None, local_name=None, c_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -184,7 +184,7 @@ def add_user(uid, pw, name=None, local_name=None, c_name=None, email=None, is_ad
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
-    user = create_new_user(now, uid, name, local_name, c_name, email, is_admin, groups, privs, info1, info2, desc, flags)
+    user = create_new_user(now, uid, fullname, local_name, c_name, email, is_admin, groups, privs, info1, info2, desc, flags)
 
     users[uid] = user
     save_users(users)
@@ -193,7 +193,7 @@ def add_user(uid, pw, name=None, local_name=None, c_name=None, email=None, is_ad
 
     return user
 
-def create_new_user(timestamp, uid, name=None, local_name=None, c_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
+def create_new_user(timestamp, uid, fullname=None, local_name=None, c_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
@@ -203,7 +203,7 @@ def create_new_user(timestamp, uid, name=None, local_name=None, c_name=None, ema
 
     user = {
         'uid': uid,
-        'name': name,
+        'fullname': fullname,
         'local_name': local_name,
         'c_name': c_name,
         'email': email,
@@ -221,7 +221,7 @@ def create_new_user(timestamp, uid, name=None, local_name=None, c_name=None, ema
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, name=None, local_name=None, c_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, desc=None, flags=None, chg_pw=False):
+def modify_user(uid, pw=None, fullname=None, local_name=None, c_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, desc=None, flags=None, chg_pw=False):
     now = util.get_timestamp()
     is_guest = False
 
@@ -239,8 +239,8 @@ def modify_user(uid, pw=None, name=None, local_name=None, c_name=None, email=Non
     user = users[uid]
 
     updated = False
-    if name is not None:
-        user['name'] = name
+    if fullname is not None:
+        user['fullname'] = fullname
         updated = True
 
     if local_name is not None:
@@ -397,11 +397,11 @@ def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs='', desc=''):
             raise Exception('ALREADY_EXISTS')
 
     gid = len(guest_users) + 1
-    name = 'GUEST' + str(gid)
-    local_name = name
+    fullname = 'GUEST' + str(gid)
+    local_name = fullname
     c_name = ''
 
-    user = create_new_user(now, new_uid, name, local_name, c_name, is_admin=False, groups=groups, privs=privs, desc=desc, flags=0)
+    user = create_new_user(now, new_uid, fullname, local_name, c_name, is_admin=False, groups=groups, privs=privs, desc=desc, flags=0)
     user['is_guest'] = True
     user['expires_at'] = now + valid_min * 60
 
