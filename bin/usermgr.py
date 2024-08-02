@@ -49,6 +49,15 @@ USER_DATA_STRUCT_FOR_GUEST = [
 
 GUEST_DATA_STRUCT = USER_DATA_STRUCT + USER_DATA_STRUCT_FOR_GUEST
 
+USER_STATUS_DATA_STRUCT = [
+    {'name': 'last_access', 'type': 'float', 'default': 0},
+    {'name': 'last_login', 'type': 'float', 'default': 0},
+    {'name': 'last_logout', 'type': 'float', 'default': 0},
+    {'name': 'pw_changed_at', 'type': 'float', 'default': 0},
+    {'name': 'login_failed_count', 'type': 'int', 'default': 0},
+    {'name': 'login_failed_time', 'type': 'float', 'default': 0}
+]
+
 # User data format
 # #uid	fullname	local_name	c_name	is_admin	groups	privs	info1	info2	desc	flags	created_at	updated_at
 # admin	Admin	ADMIN	Administrator	1	g1	p1	Info1	Info2	Description	0	1721446496.789123	1721446496.789123
@@ -582,30 +591,29 @@ def parse_int(s):
 #------------------------------------------------------------------------------
 # User status
 #------------------------------------------------------------------------------
-DEFAULT_STATUS_INFO = {
-    'last_access': 0,
-    'last_login': 0,
-    'last_logout': 0,
-    'pw_changed_at': 0,
-    'login_failed_count': 0,
-    'login_failed_time': 0
-}
-
 def get_user_status_file_path(uid):
-    return  USER_ROOT_PATH + '/' + uid + '/status.json'
+    return  USER_ROOT_PATH + '/' + uid + '/status.txt'
+
+def get_default_status_info():
+    data_struct = USER_STATUS_DATA_STRUCT
+    info = {}
+    for i in range(len(data_struct)):
+        field = data_struct[i]
+        name = field['name']
+        default = field['default']
+        info[name] = default
+    return info
 
 def create_user_status_info(uid):
-    info = DEFAULT_STATUS_INFO.copy()
+    info = get_default_status_info()
     write_user_status_info(uid, info)
 
 def load_user_status_info(uid):
-    info = DEFAULT_STATUS_INFO.copy()
+    info = get_default_status_info()
     path = get_user_status_file_path(uid)
 
     try:
-        data = common.load_dict(path)
-        if not data is None:
-            info = util.update_dict(info, data)
+        info = util.load_properties(path, USER_STATUS_DATA_STRUCT)
     except Exception as e:
         logger.write_system_log('ERROR', uid, 'usermgr.load_user_status_info(): ' + str(e))
 
@@ -613,7 +621,7 @@ def load_user_status_info(uid):
 
 def write_user_status_info(uid, info):
     path = get_user_status_file_path(uid)
-    util.save_dict(path, info)
+    util.save_properties(path, info)
 
 # Clear login failure counter and time
 def clear_login_failed(uid):

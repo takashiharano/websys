@@ -70,33 +70,6 @@ def remove_item_value(items, ritems):
         items = util.remove_item_value(items, item, separator=' ')
     return items
 
-def load_dict(path, default=None):
-    if not util.path_exists(path):
-        return get_default_dict_value(default)
-
-    s = util.read_text_file(path).strip()
-    if s == '':
-        return get_default_dict_value(default)
-
-    try:
-        o = json.loads(s)
-    except Exception as e:
-        logger.write_system_log('ERROR', '-', 'common.load_dict(): path=' + path + ' : ' + str(e))
-        write_error_file(s)
-        if s.endswith('}}'):
-            s = s[:-1]
-            o = json.loads(s)
-        else:
-            raise e
-
-    return o
-
-def get_default_dict_value(default):
-    ret = default
-    if util.typename(default) == 'dict' or util.typename(default) == 'list':
-        ret = default.copy()
-    return ret
-
 def write_error_file(s):
     path = websysconf.DATA_DIR + '/error.txt'
     t = util.get_datetime_str()
@@ -123,11 +96,11 @@ def parse_tsv_field_values(tsv_text, data_fields_def, path):
 
         try:
             value = text_values[i]
-            values[key] = _from_text_field_value(value, data_type, as_true)
+            values[key] = util.from_text_value(value, data_type, as_true)
         except Exception as e:
             logger.write_system_log('ERROR', '-', 'common.parse_tsv_field_values() : path=' + path + ' : col=' + str(i + 1) + ' : ' + str(e) + ' : text=' + tsv_text)
             status = 'ERROR'
-            values[key] = _get_value_for_invalid(data_type)
+            values[key] = util.get_value_for_default(data_type)
 
     result = {
         'values': values,
@@ -138,27 +111,6 @@ def parse_tsv_field_values(tsv_text, data_fields_def, path):
         write_error_file(tsv_text)
 
     return result
-
-def _from_text_field_value(value, data_type='str', as_true='1'):
-    if data_type == 'int':
-        value = int(value)
-    elif data_type == 'float':
-        value = float(value)
-    elif data_type == 'bool':
-        value = True if value == as_true else False
-
-    return value
-
-def _get_value_for_invalid(data_type):
-    values = {
-        'str': '',
-        'int': 0,
-        'float': 0,
-        'bool': False
-    }
-    if data_type in values:
-        return values[data_type]
-    return None
 
 #------------------------------------------------------------------------------
 def save_to_tsv_file(path, data_dict, fields):
@@ -174,7 +126,12 @@ def save_to_tsv_file(path, data_dict, fields):
                 data_type = field['type']
             if i > 0:
                 s += '\t'
-            s += _to_field_value_text(data, key, data_type)
+            if key not in data:
+                value_text = ''
+            else:
+                value = data[key]
+                value_text = util.to_value_text(value, data_type)
+            s += value_text
         s += '\n'
     util.write_text_file(path, s)
 
@@ -187,17 +144,3 @@ def _build_data_header(fields):
             s += '\t'
         s += key
     return s
-
-def _to_field_value_text(values, key, data_type='str'):
-    if key not in values:
-        return ''
-    value = values[key]
-    if value is None:
-        return ''
-    if data_type == 'int':
-        value = str(value)
-    elif data_type == 'float':
-        value = str(value)
-    elif data_type == 'bool':
-        value = '1' if value else '0'
-    return value
