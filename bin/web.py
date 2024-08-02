@@ -67,7 +67,7 @@ class WebContext:
     #   "uid": "root", # guest: "123456"
     #   "fullname": "root", # guest: "GUEST"
     #   "local_name": "root_L", # guest: "GUEST_L"
-    #   "c_name": "root_C", # guest: "GUEST_C"
+    #   "a_name": "root_A", # guest: "GUEST_A"
     #   "is_admin": true,
     #   "groups": "GROUP1 GROUP2",
     #   "privs": "PRIVILEGE1 PRIVILEGE2",
@@ -112,10 +112,10 @@ class WebContext:
             return user_info['local_name']
         return ''
 
-    def get_user_c_name(self):
+    def get_user_a_name(self):
         user_info = self.user_info
-        if user_info is not None and 'c_name' in user_info:
-            return user_info['c_name']
+        if user_info is not None and 'a_name' in user_info:
+            return user_info['a_name']
         return ''
 
     def is_admin(self):
@@ -420,12 +420,12 @@ def get_user_local_name(uid, default=None):
         user_local_name = user_info['local_name']
     return user_local_name
 
-def get_user_c_name(uid, default=None):
-    if user_info is not None and 'c_name' in user_info:
-        user_c_name = user_info['c_name']
+def get_user_a_name(uid, default=None):
+    if user_info is not None and 'a_name' in user_info:
+        user_a_name = user_info['a_name']
     if default is None:
-        user_c_name = get_user_local_name(uid)
-    return user_c_name
+        user_a_name = get_user_local_name(uid)
+    return user_a_name
 
 #----------------------------------------------------------
 def synchronize_start():
