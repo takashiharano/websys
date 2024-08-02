@@ -310,7 +310,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     var dispUid = uid;
     var dispFullname = fullname;
     var dispLocalFullname = local_name;
-    var dispCname = a_name;
+    var dispAname = a_name;
     var dispEmail = email;
     var dispGroups = groups;
     var dispPrivs = privs;
@@ -321,7 +321,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
       dispUid = scnjs.highlightKeyword(uid, searchKey, searchCaseSensitive);
       dispFullname = scnjs.highlightKeyword(fullname, searchKey, searchCaseSensitive);
       dispLocalFullname = scnjs.highlightKeyword(local_name, searchKey, searchCaseSensitive);
-      dispCname = scnjs.highlightKeyword(a_name, searchKey, searchCaseSensitive);
+      dispAname = scnjs.highlightKeyword(a_name, searchKey, searchCaseSensitive);
       dispEmail = scnjs.highlightKeyword(email, searchKey, searchCaseSensitive);
       dispGroups = scnjs.highlightKeyword(groups, searchKey, searchCaseSensitive);
       dispPrivs = scnjs.highlightKeyword(privs, searchKey, searchCaseSensitive);
@@ -332,7 +332,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     dispUid = cInd + '<span class="pseudo-link link-button" onclick="scnjs.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
     dispFullname = scnjs.buildCopyableLabel(fullname, dispFullname);
     dispLocalFullname = scnjs.buildCopyableLabel(local_name, dispLocalFullname);
-    dispCname = scnjs.buildCopyableLabel(a_name, dispCname);
+    dispAname = scnjs.buildCopyableLabel(a_name, dispAname);
     dispEmail = scnjs.buildCopyableLabel(email, dispEmail);
     dispInfo1 = scnjs.buildCopyableLabel(info1, dispInfo1);
     dispInfo2 = scnjs.buildCopyableLabel(info2, dispInfo2);
@@ -358,7 +358,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + dispFullname + '</td>';
     htmlList += '<td class="item-list">' + dispLocalFullname + '</td>';
-    htmlList += '<td class="item-list">' + dispCname + '</td>';
+    htmlList += '<td class="item-list">' + dispAname + '</td>';
     htmlList += '<td class="item-list">' + dispEmail + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
     htmlList += '<td class="item-list">' + dispGroups + '</td>';
@@ -1077,7 +1077,7 @@ scnjs.addUser = function() {
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
 
-  var clnsRes = scnjs.cleanseUsername(uid);
+  var clnsRes = scnjs.cleanseUid(uid);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
     return;
@@ -1301,7 +1301,7 @@ scnjs.cleanseCommon = function(s) {
   return res;
 };
 
-scnjs.cleanseUsername = function(s) {
+scnjs.cleanseUid = function(s) {
   var res = scnjs.cleanseCommon(s);
   if (res.msg) {
     return res;
@@ -1309,7 +1309,7 @@ scnjs.cleanseUsername = function(s) {
   var msg = null;
   s = res.val;
   if (!s) {
-    msg = 'Username is required';
+    msg = 'User ID is required';
   }
   res.val = s;
   res.msg = msg;
