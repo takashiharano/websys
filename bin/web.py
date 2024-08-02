@@ -66,7 +66,7 @@ class WebContext:
     # user: {
     #   "uid": "root", # guest: "123456"
     #   "fullname": "root", # guest: "GUEST"
-    #   "local_name": "root_L", # guest: "GUEST_L"
+    #   "localfullname": "root_L", # guest: "GUEST_L"
     #   "a_name": "root_A", # guest: "GUEST_A"
     #   "is_admin": true,
     #   "groups": "GROUP1 GROUP2",
@@ -106,10 +106,10 @@ class WebContext:
             return user_info['fullname']
         return ''
 
-    def get_user_local_name(self):
+    def get_user_local_fullname(self):
         user_info = self.user_info
-        if user_info is not None and 'local_name' in user_info:
-            return user_info['local_name']
+        if user_info is not None and 'localfullname' in user_info:
+            return user_info['localfullname']
         return ''
 
     def get_user_a_name(self):
@@ -411,20 +411,20 @@ def get_user_fullname(uid, default=None):
         user_fullname = user_info['fullname']
     return user_fullname
 
-def get_user_local_name(uid, default=None):
-    user_local_name = default
+def get_user_local_fullname(uid, default=None):
+    user_local_fullname = default
     if default is None:
-        user_local_name = uid
+        user_local_fullname = uid
     user_info = usermgr.get_user_info(uid)
-    if user_info is not None and 'local_name' in user_info:
-        user_local_name = user_info['local_name']
-    return user_local_name
+    if user_info is not None and 'localfullname' in user_info:
+        user_local_fullname = user_info['localfullname']
+    return user_local_fullname
 
 def get_user_a_name(uid, default=None):
     if user_info is not None and 'a_name' in user_info:
         user_a_name = user_info['a_name']
     if default is None:
-        user_a_name = get_user_local_name(uid)
+        user_a_name = get_user_local_fullname(uid)
     return user_a_name
 
 #----------------------------------------------------------

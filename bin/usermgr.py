@@ -28,7 +28,7 @@ U_FLG_INVALID_DATA = 1 << 7
 USER_DATA_STRUCT = [
     {'name': 'uid'},
     {'name': 'fullname'},
-    {'name': 'local_name'},
+    {'name': 'localfullname'},
     {'name': 'a_name'},
     {'name': 'email'},
     {'name': 'is_admin', 'type': 'bool'},
@@ -59,7 +59,7 @@ USER_STATUS_DATA_STRUCT = [
 ]
 
 # User data format
-# #uid	fullname	local_name	a_name	is_admin	groups	privs	info1	info2	desc	flags	created_at	updated_at
+# #uid	fullname	localfullname	a_name	is_admin	groups	privs	info1	info2	desc	flags	created_at	updated_at
 # admin	Admin	ADMIN	Administrator	1	g1	p1	Info1	Info2	Description	0	1721446496.789123	1721446496.789123
 
 # Object structure
@@ -68,7 +68,7 @@ USER_STATUS_DATA_STRUCT = [
 #   "root": {
 #     "uid": "root",
 #     "fullname": "root",
-#     "local_name": "root_L",
+#     "localfullname": "root_L",
 #     "a_name": "root_A",
 #     "email": "user@host",
 #     "is_admin": true,
@@ -89,7 +89,7 @@ USER_STATUS_DATA_STRUCT = [
 #   "123456": {
 #     "uid": "123456",
 #     "fullname": "GUEST",
-#     "local_name": "GUEST_L",
+#     "localfullname": "GUEST_L",
 #     "a_name": "GUEST_A",
 #     "email": "",
 #     "is_admin": true,
@@ -184,7 +184,7 @@ def count_sessions_per_user():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def add_user(uid, pw, fullname=None, local_name=None, a_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
+def add_user(uid, pw, fullname=None, localfullname=None, a_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -193,7 +193,7 @@ def add_user(uid, pw, fullname=None, local_name=None, a_name=None, email=None, i
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
-    user = create_new_user(now, uid, fullname, local_name, a_name, email, is_admin, groups, privs, info1, info2, desc, flags)
+    user = create_new_user(now, uid, fullname, localfullname, a_name, email, is_admin, groups, privs, info1, info2, desc, flags)
 
     users[uid] = user
     save_users(users)
@@ -202,7 +202,7 @@ def add_user(uid, pw, fullname=None, local_name=None, a_name=None, email=None, i
 
     return user
 
-def create_new_user(timestamp, uid, fullname=None, local_name=None, a_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
+def create_new_user(timestamp, uid, fullname=None, localfullname=None, a_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', desc='', flags=None):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
@@ -213,7 +213,7 @@ def create_new_user(timestamp, uid, fullname=None, local_name=None, a_name=None,
     user = {
         'uid': uid,
         'fullname': fullname,
-        'local_name': local_name,
+        'localfullname': localfullname,
         'a_name': a_name,
         'email': email,
         'is_admin': is_admin,
@@ -230,7 +230,7 @@ def create_new_user(timestamp, uid, fullname=None, local_name=None, a_name=None,
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, fullname=None, local_name=None, a_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, desc=None, flags=None, chg_pw=False):
+def modify_user(uid, pw=None, fullname=None, localfullname=None, a_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, desc=None, flags=None, chg_pw=False):
     now = util.get_timestamp()
     is_guest = False
 
@@ -252,8 +252,8 @@ def modify_user(uid, pw=None, fullname=None, local_name=None, a_name=None, email
         user['fullname'] = fullname
         updated = True
 
-    if local_name is not None:
-        user['local_name'] = local_name
+    if localfullname is not None:
+        user['localfullname'] = localfullname
         updated = True
 
     if a_name is not None:
@@ -407,10 +407,10 @@ def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs='', desc=''):
 
     gid = len(guest_users) + 1
     fullname = 'GUEST' + str(gid)
-    local_name = fullname
+    localfullname = fullname
     a_name = ''
 
-    user = create_new_user(now, new_uid, fullname, local_name, a_name, is_admin=False, groups=groups, privs=privs, desc=desc, flags=0)
+    user = create_new_user(now, new_uid, fullname, localfullname, a_name, is_admin=False, groups=groups, privs=privs, desc=desc, flags=0)
     user['is_guest'] = True
     user['expires_at'] = now + valid_min * 60
 
