@@ -8,6 +8,9 @@ scnjs.dialogFgColor = '#fff';
 scnjs.dialogBgColor = '#1e1e1e';
 scnjs.dialogTitleFgColor = '#fff';
 scnjs.dialogTitleBgColor = 'linear-gradient(150deg, rgba(0,32,255,0.8),rgba(0,82,255,0.8))';
+scnjs.userEditWindowW = 500;
+scnjs.userEditWindowH = 480;
+scnjs.userEditWindowH1 = 380;
 
 scnjs.LED_COLORS = [
   {t: 10 * util.MINUTE, color: 'led-color-green'},
@@ -518,6 +521,7 @@ scnjs.getSessionListCb = function(xhr, res, req) {
 
 scnjs.drawSessionList = function(sessions) {
   var now = util.now();
+  sessions = util.sortObjectList(sessions, 'time', true, true);
   var html = '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
@@ -865,7 +869,7 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
   if (uid && (uid != currentUid)) {
     html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="scnjs.deleteUser(\'' + uid + '\');">DEL</button></div>';
   }
-  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:400px;height:380px;text-align:left;">';
+  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:400px;height:' + scnjs.userEditWindowH1 + 'px;text-align:left;">';
 
   html += '<table class="edit-table">';
   html += '  <tr>';
@@ -946,10 +950,10 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
     resizable: true,
     pos: 'c',
     closeButton: true,
-    width: 500,
-    height: 480,
-    minWidth: 500,
-    minHeight: 480,
+    width: scnjs.userEditWindowW,
+    height: scnjs.userEditWindowH,
+    minWidth: scnjs.userEditWindowW,
+    minHeight: scnjs.userEditWindowH,
     scale: 1,
     hidden: false,
     modal: false,
@@ -1464,7 +1468,9 @@ scnjs.editGroup = function(gid) {
 scnjs.openGroupInfoEditorWindow = function(mode, gid) {
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
-  html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="scnjs.deleteGroup(\'' + gid + '\');">DEL</button></div>';
+  if (mode == 'edit') {
+    html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="scnjs.deleteGroup(\'' + gid + '\');">DEL</button></div>';
+  }
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:120px;text-align:left;">';
 
   html += '<table>';
