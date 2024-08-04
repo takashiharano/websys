@@ -657,7 +657,9 @@ scnjs.updateTimeline = function() {
 scnjs.updateTimelineCurrentTime = function() {
   var now = util.now();
   var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
-  $el('#timeline-now').dataset.tooltip = nowHHMM;
+  if (!$el('#timeline-now').notFound) {
+    $el('#timeline-now').dataset.tooltip = nowHHMM;
+  }
 };
 
 scnjs.buildSessionInfoHtml = function(sessions, now) {
