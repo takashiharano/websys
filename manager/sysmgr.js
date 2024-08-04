@@ -355,7 +355,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     }
     failedCount += '</td>';
 
-    var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
+    clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
     var ttFlg = scnjs.buildFlagsTooltip(flags);
 
     htmlList += '<tr class="item-list ' + clz + '">';
@@ -399,7 +399,7 @@ scnjs.buildFlagsTooltip = function(flags) {
   var d = 8;
   var s = '';
   for (var i = d - 1; i >= 0; i--) {
-    s += ((flags & (2 ** i)) ? '1' : '0');
+    s += ((flags & Math.pow(2, i)) ? '1' : '0');
   }
   s += ' (' + flags + ')';
   s += '\n';
@@ -419,7 +419,7 @@ scnjs.buildFlagsTooltip = function(flags) {
           var flgName = websys.USER_FLAGS[i - 1];
           if (!flgName) flgName = '';
           s += ' ';
-          s += ((flags & (2 ** (i - 1))) ? 'Y' : 'N');
+          s += ((flags & Math.pow(2, (i - 1))) ? 'Y' : 'N');
           s += ' ';
           s += flgName;
         }
@@ -472,7 +472,7 @@ scnjs.searchByKeyword = function(targets, key, caseSensitive) {
 
 scnjs.buildCopyableLabel = function(v, s) {
   if (!s) s = v;
-  var v = v.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
+  v = v.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
   var label = s;
   var r = '<pre class="pseudo-link" onclick="scnjs.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</pre>';
   return r;
@@ -616,7 +616,6 @@ scnjs.buildTimeLineHeader2 = function(now) {
   var html = '';
   for (var i = 0; i <= 23; i++) {
     var ts = scnjs.getTimeSlot(i, nowHH, nowMM);
-    var v = false;
     if (i < 10) {
       if ((os == 0) && (ts == 0)) {
         html += currentInd;
@@ -664,14 +663,13 @@ scnjs.updateTimelineCurrentTime = function() {
 scnjs.buildSessionInfoHtml = function(sessions, now) {
   var html = '';
   if (!sessions) return html;
-  var mn = util.getMidnightTimestamp(now);
   for (var i = 0; i < sessions.length; i++) {
     var session = sessions[i];
-    html += scnjs.buildSessionInfoOne(session, now, mn);
+    html += scnjs.buildSessionInfoOne(session, now);
   }
   return html;
 };
-scnjs.buildSessionInfoOne = function(session, now, mn) {
+scnjs.buildSessionInfoOne = function(session, now) {
   var cSid = websys.getSessionId();
   var uid = session['uid'];
   var fullname = session['user_fullname'];
@@ -686,7 +684,7 @@ scnjs.buildSessionInfoOne = function(session, now, mn) {
   var ssid = util.snip(sid, 7, 3, '..');
   var sid7 = util.snip(sid, 7, 0, '');
   var brws = util.getBrowserInfo(ua);
-  var ua = brws.name + ' ' + brws.version;
+  var dispUa = brws.name + ' ' + brws.version;
   var led = scnjs.buildLedHtml(now, laTime, false, true);
   var ssidLink = '<span class="pseudo-link link-button" onclick="scnjs.confirmLogoutSession(\'' + uid + '\', \'' + sid + '\');" data-tooltip="' + sid + '">' + ssid + '</span>';
   var dispSid = ((sid == cSid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="Current Session">*</span>' : '<span style="cursor:default;margin-right:2px;">&nbsp;</span>') + ssidLink;
@@ -706,7 +704,7 @@ scnjs.buildSessionInfoOne = function(session, now, mn) {
   html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
   html += '<td>' + timeline + '</td>';
   html += '<td style="padding-right:10px;">' + addr + '</td>';
-  html += '<td style="padding-right:10px;">' + ua + '</td>';
+  html += '<td style="padding-right:10px;">' + dispUa + '</td>';
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '</tr>';
 
@@ -733,7 +731,6 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   var ttlPs = hrBlk * 24;
   var dispAccDateTime = ' ' + accDateTime + ' ';
   var dispAccTime = ' ' + accTime + ' ';
-  var remains = ttlPs - (accTp + dispAccTime.length);
 
   var tsPosList = scnjs.getPosList4History(now, slotTimestampHistories);
 
@@ -863,7 +860,6 @@ scnjs.sortItemList = function(sortIdx, sortOrder) {
 
 scnjs.confirmLogoutSession = function(uid, sid) {
   var cSid = websys.getSessionId();
-  var ssid = util.snip(sid, 7, 7, '..');
   var currentUid = websys.getUserId();
   var m = 'Logout?\n\n';
   if (sid == cSid) {
@@ -1608,7 +1604,7 @@ scnjs.addGroup = function() {
     return;
   }
 
-  clnsRes = scnjs.cleansePrivileges(privs);
+  var clnsRes = scnjs.cleansePrivileges(privs);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
     return;
