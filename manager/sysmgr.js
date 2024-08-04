@@ -658,7 +658,7 @@ scnjs.updateTimelineCurrentTime = function() {
   var now = util.now();
   var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
   if (!$el('#timeline-now').notFound) {
-    $el('#timeline-now').dataset.tooltip = nowHHMM;
+    $el('#timeline-now').updateTooltip(nowHHMM);
   }
 };
 
@@ -1094,7 +1094,8 @@ scnjs.setUserInfoToEditor = function(info) {
 
 scnjs.onInputFlags = function() {
   var flags = $el('#flags').value;
-  $el('#flags').dataset.tooltip = scnjs.buildFlagsTooltip(flags);
+  var tt = scnjs.buildFlagsTooltip(flags);
+  $el('#flags').updateTooltip(tt);
 };
 
 scnjs.clearUserInfoEditor = function() {
