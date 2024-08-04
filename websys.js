@@ -7,8 +7,23 @@ websys.ST_LOGIN_ID = 1;
 websys.ST_LOGIN_PW = 2;
 websys.ST_CHANGE_PW = 3;
 
-websys.U_FLG_NEED_PW_CHANGE = 1;
-websys.U_FLG_DISABLED = 1 << 2;
+websys.USER_FLAGS = [
+  'U_FLG_NEED_PW_CHANGE',
+  '',
+  'U_FLG_DISABLED',
+  '',
+  '',
+  '',
+  '',
+  'U_FLG_INVALID_DATA'
+];
+
+websys.setupUserFlags = function() {
+  for (var i = 0; i < websys.USER_FLAGS.length; i++) {
+    var name = websys.USER_FLAGS[i];
+    websys[name] = 2 ** i;
+  }
+};
 
 websys.sendEncKey = 1;
 websys.recvEncKey = 7;

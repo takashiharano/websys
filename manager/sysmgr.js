@@ -285,6 +285,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     var email = item.email;
     var groups = item.groups;
     var privs = item.privs;
+    var flags = item.flags;
     var statusInfo = item.status_info;
     var loginFailedCount = statusInfo.login_failed_count;
     var loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
@@ -355,6 +356,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     failedCount += '</td>';
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
+    var ttFlg = scnjs.buildFlagsTooltip(flags);
 
     htmlList += '<tr class="item-list ' + clz + '">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
@@ -369,7 +371,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     htmlList += '<td class="item-list">' + dispInfo1 + '</td>';
     htmlList += '<td class="item-list">' + dispInfo2 + '</td>';
     htmlList += '<td class="item-list" style="max-width:15em;">' + dispDesc + '</td>';
-    htmlList += '<td class="item-list" style="text-align:center;">' + item.flags + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;" data-tooltip="' + ttFlg + '">' + flags + '</td>';
     htmlList += '<td class="item-list" style="text-align:right;">' + sessions + '</td>';
     htmlList += failedCount;
     htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessDate + '</td>';
@@ -391,6 +393,41 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
   html += '<div style="margin-bottom:4px;" class="list-info">' + listInfo + '</div>';
 
   $el('#user-list').innerHTML = html;
+};
+
+scnjs.buildFlagsTooltip = function(flags) {
+  var d = 8;
+  var s = '';
+  for (var i = d - 1; i >= 0; i--) {
+    s += ((flags & (2 ** i)) ? '1' : '0');
+  }
+  s += ' (' + flags + ')';
+  s += '\n';
+  for (i = 0; i <= d; i++) {
+    for (var j = d; j >= 0; j--) {
+      if (!((i == 0) && (j == 0))) {
+        if (j == i) {
+          s += '+';
+        } else if (j > i - 1) {
+          s += '|';
+        } else {
+          s += '-';
+        }
+      }
+      if (j == 0) {
+        if (i > 0) {
+          var flgName = websys.USER_FLAGS[i - 1];
+          if (!flgName) flgName = '';
+          s += ' ';
+          s += ((flags & (2 ** (i - 1))) ? 'Y' : 'N');
+          s += ' ';
+          s += flgName;
+        }
+      }
+    }
+    s += '\n';
+  }
+  return s;
 };
 
 scnjs.highlightKeyword = function(v, searchKey, caseSensitive) {
@@ -538,6 +575,7 @@ scnjs.drawSessionList = function(sessions) {
   html += scnjs.buildSessionInfoHtml(sessions, now);
   html += '</table>';
   $el('#session-list').innerHTML = html;
+  scnjs.updateTimeline();
 };
 
 scnjs.buildTimeLineHeader1 = function(now) {
@@ -569,11 +607,11 @@ scnjs.buildTimeLineHeader2 = function(now) {
     now = now - (scnjs.DAY * os);
   }
 
-  var currentInd = '<span class="blink1 text-skyblue">v</span>';
   var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
   var tmp = nowHHMM.split(':');
   var nowHH = tmp[0];
   var nowMM = tmp[1];
+  var currentInd = '<span id="timeline-now" class="timeline-current blink1 text-skyblue" data-tooltip="' + nowHHMM + '">v</span>';
 
   var html = '';
   for (var i = 0; i <= 23; i++) {
@@ -605,6 +643,22 @@ scnjs.buildTimeLineHeader2 = function(now) {
     }
   }
   return html;
+};
+
+scnjs.timelineTmrId = 0;
+scnjs.updateTimeline = function() {
+  if (scnjs.timelineTmrId > 0) {
+    clearTimeout(scnjs.timelineTmrId);
+  }
+  scnjs.updateTimelineCurrentTime();
+  if (scnjs.timelineTmrId != -1) {
+    scnjs.timelineTmrId = setTimeout(scnjs.updateTimeline, 1000);
+  }
+};
+scnjs.updateTimelineCurrentTime = function() {
+  var now = util.now();
+  var nowHHMM = util.getDateTimeString(now, '%HH:%mm');
+  $el('#timeline-now').dataset.tooltip = nowHHMM;
 };
 
 scnjs.buildSessionInfoHtml = function(sessions, now) {
@@ -859,6 +913,7 @@ scnjs.editUser = function(uid) {
     $el('#flags').value = '1';
     $el('#uid').focus();
   }
+  $el('#flags').addEventListener('input', scnjs.onInputFlags);
 };
 
 scnjs.openUserInfoEditorWindow = function(mode, uid) {
@@ -1036,6 +1091,12 @@ scnjs.setUserInfoToEditor = function(info) {
   $el('#info2').value = info.info2;
   $el('#desc').value = (info.desc ? info.desc : '');
   $el('#flags').value = info.flags;
+  $el('#flags').dataset.tooltip = scnjs.buildFlagsTooltip(info.flags);
+};
+
+scnjs.onInputFlags = function() {
+  var flags = $el('#flags').value;
+  $el('#flags').dataset.tooltip = scnjs.buildFlagsTooltip(flags);
 };
 
 scnjs.clearUserInfoEditor = function() {

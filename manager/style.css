@@ -216,6 +216,10 @@ tr.item-list:hover {
   color: #777;
 }
 
+.timeline-current {
+  cursor: default;
+}
+
 .timeline-acc-ind {
   color: #0f0;
 }
