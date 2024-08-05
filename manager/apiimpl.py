@@ -35,7 +35,7 @@ def send_result_json(status, body=None):
 
 def send_error_text(msg):
     b = msg.encode()
-    util.send_binary(b, filename='error.txt')
+    util.send_as_file(b, filename='error.txt')
 
 def proc_on_forbidden():
     send_result_json('FORBIDDEN')
