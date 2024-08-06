@@ -21,9 +21,9 @@ websys.USER_FLAGS = [
 websys.setupUserFlags = function() {
   for (var i = 0; i < websys.USER_FLAGS.length; i++) {
     var name = websys.USER_FLAGS[i];
-    websys[name] = 2 ** i;
+    websys[name] = Math.pow(2, i);
   }
-};
+}();
 
 websys.sendEncKey = 1;
 websys.recvEncKey = 7;
