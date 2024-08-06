@@ -18,12 +18,12 @@ websys.USER_FLAGS = [
   'U_FLG_INVALID_DATA'
 ];
 
-websys.setupUserFlags = function() {
+(function() {
   for (var i = 0; i < websys.USER_FLAGS.length; i++) {
     var name = websys.USER_FLAGS[i];
     websys[name] = Math.pow(2, i);
   }
-}();
+}());
 
 websys.sendEncKey = 1;
 websys.recvEncKey = 7;
