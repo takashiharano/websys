@@ -1039,8 +1039,9 @@ websys.cmdUsers.cb = function(xhr, res) {
 };
 
 websys.cmdWhoAmI = function(arg, tbl, echo) {
-  if (websys.sessionInfo) {
-    log.res(websys.sessionInfo.uid);
+  var sessionInfo = websys.sessionInfo;
+  if (sessionInfo && sessionInfo.uid) {
+    log.res(sessionInfo.uid);
   } else {
     log.res.err('NOT_LOGGED_IN');
   }

@@ -5,6 +5,7 @@ UTIL_PATH = os.path.join(os.path.dirname(__file__), '../libs')
 sys.path.append(UTIL_PATH)
 import util
 
+ANONYMOUS_SESSION_SEC = 31536000
 SESSION_TIMEOUT_SEC = 7 * util.DAY
 MAX_SESSIONS_PER_USER = 10
 LOGIN_FAILURE_MAX = 10

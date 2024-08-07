@@ -24,6 +24,10 @@ sendrecv_encryption = True
 recv_encryption_key = 1
 send_encryption_key = 7
 
+def init(http_encryption):
+    global sendrecv_encryption
+    sendrecv_encryption = http_encryption
+
 #----------------------------------------------------------
 # set root path
 #----------------------------------------------------------
@@ -205,23 +209,32 @@ def _on_access(context, allow_guest):
 
     sid = util.get_cookie_val('sid')
     sessions = sessionmgr.get_all_sessions_info()
-    session_info = None
+    is_managed = False
+
     if sid in sessions:
         session_info = sessions[sid]
+        uid = session_info['uid']
+        user_info = usermgr.get_user_info(uid)
+        is_managed = True
+    else:
+        anonymous_session_sec = sessionmgr.get_anonymous_session_sec()
+        if anonymous_session_sec <= 0:
+            return context
 
-    if session_info is None:
-        return context
+        uid = None
+        if sid is not None:
+            session_info = sessionmgr.create_session_info(sid, uid)
+        else:
+            session_info = sessionmgr.create_new_session_info(uid)
 
-    uid = session_info['uid']
-    user_info = usermgr.get_user_info(uid)
-
-    session_info = sessionmgr.update_last_access_info(uid, sid)
     sessionmgr.set_current_session_info_to_global(session_info)
-    authorized = authmgr.auth(allow_guest)
-
     context.set_session_info(session_info)
-    context.set_user_info(user_info) # see usermgr.create_user() for object fields
-    context.set_authorized(authorized)
+
+    if is_managed:
+        session_info = sessionmgr.update_last_access_info(uid, sid)
+        authorized = authmgr.auth(allow_guest)
+        context.set_user_info(user_info) # see usermgr.create_user() for object fields
+        context.set_authorized(authorized)
 
     return context
 
@@ -289,8 +302,15 @@ def build_session_cookie(session_info):
     if session_info is not None:
         sid = session_info['sid']
         uid = session_info['uid']
-        session_timeout = sessionmgr.get_session_timeout_value()
-        cookie1 = util.build_cookie('sid', sid, max_age=str(session_timeout), path='/', http_only=True)
+
+        if uid is None:
+            max_age = sessionmgr.get_anonymous_session_sec()
+            if max_age <= 0:
+                return cookies
+        else:
+            max_age = sessionmgr.get_session_timeout_value()
+
+        cookie1 = util.build_cookie('sid', sid, max_age=str(max_age), path='/', http_only=True)
         cookies = []
         cookies.append({'Set-Cookie': cookie1})
 
@@ -322,11 +342,17 @@ def get_user_agent():
 #----------------------------------------------------------
 # send response
 #----------------------------------------------------------
-def send_response(result, type, headers=None, encoding=None, encryption=sendrecv_encryption):
+def send_response(result, type, headers=None, encoding=None, encryption=None):
+    if encryption is None:
+        encryption = sendrecv_encryption
+
+    session_info = sessionmgr.get_current_session_info_from_global()
+    cookies = build_session_cookie(session_info)
     if headers is None:
-        session_info = sessionmgr.get_current_session_info_from_global()
-        cookies = build_session_cookie(session_info)
         headers = cookies
+    elif cookies is not None:
+        headers += cookies
+
     _send_response(result, type, headers, encoding, encryption)
 
 def _send_response(result, type, headers=None, encoding=None, encryption=False):
@@ -345,7 +371,7 @@ def _send_response(result, type, headers=None, encoding=None, encryption=False):
     util.send_response(content, type, headers=headers)
 
 #----------------------------------------------------------
-def send_result_json(status, body=None, headers=None, http_headers=None, encryption=sendrecv_encryption):
+def send_result_json(status, body=None, headers=None, http_headers=None, encryption=None):
     result = util.build_result_object(status, body, headers)
     content = util.to_json(result)
     send_response(content, 'application/json', headers=http_headers, encryption=encryption)

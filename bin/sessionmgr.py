@@ -17,6 +17,7 @@ import usermgr
 import web
 
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
+ANONYMOUS_SESSION_SEC = websysconf.ANONYMOUS_SESSION_SEC
 SESSION_TIMEOUT_SEC = websysconf.SESSION_TIMEOUT_SEC
 MAX_SESSIONS_PER_USER = websysconf.MAX_SESSIONS_PER_USER
 ALGOTRITHM = websysconf.ALGOTRITHM
@@ -148,11 +149,14 @@ def get_user_info_from_sid(sid):
 def get_session_timeout_value():
     return SESSION_TIMEOUT_SEC
 
+def get_anonymous_session_sec():
+    return ANONYMOUS_SESSION_SEC
+
 #----------------------------------------------------------
 # Create and register new session info
 #----------------------------------------------------------
 def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
-    new_session_info = create_session_info(uid, is_guest)
+    new_session_info = create_new_session_info(uid, is_guest)
     if ext_auth:
         new_session_info['ext_auth'] = True
     append_session_info_to_session_file(uid, new_session_info)
@@ -161,15 +165,19 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
 #----------------------------------------------------------
 # Create session info
 #----------------------------------------------------------
-def create_session_info(uid, is_guest=False):
+def create_new_session_info(uid, is_guest=False):
+    sid = generate_session_id(uid)
+    new_session = create_session_info(sid, uid, is_guest=is_guest)
+    return new_session
+
+def create_session_info(sid, uid, is_guest=False):
     now = util.get_timestamp()
     addr = web.get_ip_addr()
     host = web.get_host_name()
     useragent = web.get_user_agent()
     tz = web.get_request_param('_tz')
 
-    sid = generate_session_id(uid)
-    new_session = {
+    session_info = {
         'sid': sid,
         'uid': uid,
         'time': now,
@@ -185,7 +193,7 @@ def create_session_info(uid, is_guest=False):
         'is_guest': is_guest
     }
 
-    return new_session
+    return session_info
 
 #----------------------------------------------------------
 # Append session info to session file
@@ -235,7 +243,10 @@ def _in_top_n(v_list, n, v):
 # Generate session id
 #----------------------------------------------------------
 def generate_session_id(uid):
-    input = util.get_datetime_str() + uid
+    if uid is None:
+        uid = util.random_string()
+    now = util.get_timestamp()
+    input = str(now) + uid
     sid = util.hash(input, ALGOTRITHM)
     return sid
 
