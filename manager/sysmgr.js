@@ -779,8 +779,14 @@ scnjs.getTimeslotInd = function(tsPosList, pos) {
     var p = tsPos.p;
     if (p == pos) {
       var t = tsPos.t;
+      var info = tsPos.i;
       var tt = util.getDateTimeString(t, '%HH:%mm');
-      s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + tt + '">*</span>';
+      var ind = '*';
+      if (info == 'LOGIN') {
+        ind = 'I';
+        tt += ' Login';
+      }
+      s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + tt + '">' + ind + '</span>';
       break;
     }
   }
@@ -790,11 +796,13 @@ scnjs.getTimeslotInd = function(tsPosList, pos) {
 scnjs.getPosList4History = function(now, slotTimestampHistories) {
   var posList = [];
   for (var i = 0; i < slotTimestampHistories.length; i++) {
-    var t = slotTimestampHistories[i];
-    if (scnjs.INSEC) t *= 1000;
+    var dt = slotTimestampHistories[i];
+    var t = dt['time'];
+    var info = dt['info'];
+    if (scnjs.INSEC) t = Math.floor(t * 1000);
     var p = scnjs.getTimePosition(now, t);
     if (p >= 0) {
-      posList.push({p: p, t: t});
+      posList.push({p: p, t: t, i: info});
     }
   }
   return posList;

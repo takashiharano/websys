@@ -166,12 +166,12 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
 # Create session info
 #----------------------------------------------------------
 def create_new_session_info(uid, is_guest=False):
+    now = util.get_timestamp()
     sid = generate_session_id(uid)
-    new_session = create_session_info(sid, uid, is_guest=is_guest)
+    new_session = create_session_info(sid, uid, now, is_guest=is_guest)
     return new_session
 
-def create_session_info(sid, uid, is_guest=False):
-    now = util.get_timestamp()
+def create_session_info(sid, uid, now, is_guest=False):
     addr = web.get_ip_addr()
     host = web.get_host_name()
     useragent = web.get_user_agent()
@@ -313,7 +313,7 @@ def load_user_timeline_log(uid):
     logs = util.read_text_file_as_list(path)
     return logs
 
-def write_user_timeline_log(uid, sid, time):
+def write_user_timeline_log(uid, sid, time, info=None):
     TIME_SLOT_MIN = 15
     MAX_LOG_LINES = 1000
     logs = load_user_timeline_log(uid)
@@ -330,11 +330,15 @@ def write_user_timeline_log(uid, sid, time):
         values = get_timeline_log_field_values(line)
 
         if values['sid'] == sid:
-            elapsed_from_latest = time - values['time']
+            log_time = values['time']
+            log_time_slot_sec = int(log_time / time_slot_sec) * time_slot_sec
+            elapsed_from_latest = time - log_time_slot_sec
             if elapsed_from_latest <= time_slot_sec:
                 return
 
-    text = str(current_time_slot_sec) + '\t' + sid
+    text = str(time) + '\t' + sid
+    if info is not None:
+        text += '\t' + info
     rb.add(text)
 
     logs = rb.get_all()
@@ -342,11 +346,13 @@ def write_user_timeline_log(uid, sid, time):
     util.write_text_file_from_list(path, logs)
 
 def get_timeline_log_field_values(line):
-    values = {'time': 0, 'sid': ''}
+    values = {'time': 0, 'sid': '', 'info': None}
     try:
         wk = line.split('\t')
-        values['time'] = int(wk[0])
+        values['time'] = float(wk[0])
         values['sid'] = wk[1]
+        if len(wk) >= 3:
+            values['info'] = wk[2]
     except:
         pass
     return values

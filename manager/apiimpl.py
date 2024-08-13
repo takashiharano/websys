@@ -111,9 +111,14 @@ def get_timeline_logs_by_session(sessions, target_offset):
             if sid not in timeline_logs_by_session:
                 timeline_logs_by_session[sid] = []
             time = values['time']
+            info = values['info']
+            data = {
+                'time': time,
+                'info': info
+            }
 
             if target_from <= time and time < target_to:
-                timeline_logs_by_session[sid].append(time)
+                timeline_logs_by_session[sid].append(data)
 
     return timeline_logs_by_session
 

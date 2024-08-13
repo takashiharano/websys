@@ -97,6 +97,9 @@ def _login(uid, pw, ext_auth=False):
     user_status_info['login_failed_time'] = 0
     usermgr.write_user_status_info(uid, user_status_info)
 
+    sid = new_session_info['sid']
+    sessionmgr.write_user_timeline_log(uid, sid, now, 'LOGIN')
+
     return login_info
 
 # guest login

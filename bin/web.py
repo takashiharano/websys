@@ -217,15 +217,19 @@ def _on_access(context, allow_guest):
         user_info = usermgr.get_user_info(uid)
         is_managed = True
     else:
+        # Anonymous
         anonymous_session_sec = sessionmgr.get_anonymous_session_sec()
         if anonymous_session_sec <= 0:
             return context
 
         uid = None
-        if sid is not None:
-            session_info = sessionmgr.create_session_info(sid, uid)
-        else:
+        if sid is None:
+            # New session
             session_info = sessionmgr.create_new_session_info(uid)
+        else:
+            # Sesion already exists
+            now = util.get_timestamp()
+            session_info = sessionmgr.create_session_info(sid, uid, now)
 
     sessionmgr.set_current_session_info_to_global(session_info)
     context.set_session_info(session_info)
