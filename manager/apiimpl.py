@@ -64,7 +64,7 @@ def proc_get_session_list(context):
     p_logs = get_request_param('logs')
     if p_logs == '1':
         p_offset = get_request_param_as_int('offset')
-        timeline_logs = ger_timeline_logs_by_session(sessions, p_offset)
+        timeline_logs = get_timeline_logs_by_session(sessions, p_offset)
 
         for i in range(len(sessions)):
             session = sessions[i]
@@ -79,7 +79,7 @@ def proc_get_session_list(context):
 
     web.send_result_json('OK', body=sessions)
 
-def ger_timeline_logs_by_session(sessions, target_offset):
+def get_timeline_logs_by_session(sessions, target_offset):
     now = util.now()
 
     tm = now - util.DAY * target_offset
