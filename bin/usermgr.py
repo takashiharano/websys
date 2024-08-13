@@ -612,10 +612,10 @@ def load_user_status_info(uid):
     info = get_default_status_info()
     path = get_user_status_file_path(uid)
 
-    try:
-        info = util.load_properties(path, USER_STATUS_DATA_STRUCT)
-    except Exception as e:
-        logger.write_system_log('ERROR', uid, 'usermgr.load_user_status_info(): ' + str(e))
+    data = util.load_properties(path, USER_STATUS_DATA_STRUCT, info)
+    info = data['props']
+    if data['error'] is not None:
+        logger.write_system_log('ERROR', uid, 'usermgr.load_user_status_info(): ' + data['error'])
 
     return info
 
