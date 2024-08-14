@@ -323,7 +323,6 @@ def write_user_timeline_log(uid, sid, time, info=None):
         rb.add(logs[i])
 
     time_slot_sec = TIME_SLOT_MIN * 60
-    current_time_slot_sec = int(time / time_slot_sec) * time_slot_sec
 
     for i in range(rb.size):
         line = rb.get_reversed(i)
