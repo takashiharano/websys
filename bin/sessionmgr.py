@@ -244,9 +244,10 @@ def _in_top_n(v_list, n, v):
 #----------------------------------------------------------
 def generate_session_id(uid):
     if uid is None:
-        uid = util.random_string()
+        uid = util.random_string(8)
+    r = util.random_int()
     now = util.get_timestamp()
-    input = str(now) + uid
+    input = str(now) + uid + str(r)
     sid = util.hash(input, ALGOTRITHM)
     return sid
 
