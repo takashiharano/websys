@@ -6,9 +6,7 @@ ROOT_PATH = '../..'
 sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_PATH + '/libs'))
 import util
 
-util.append_system_path(__file__, ROOT_PATH)
 util.append_system_path(__file__, ROOT_PATH + '/websys')
-util.append_system_path(__file__, ROOT_PATH + '/websys/bin')
 import web
 import websysconf
 
