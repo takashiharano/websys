@@ -7,11 +7,11 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
+import websys
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
 import authmgr
-import web
 
 ALLOW_GUESTS = False
 DEBUG = False
@@ -20,9 +20,9 @@ post_url = '../test/' if DEBUG else './'
 
 # dir list
 def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
-    web.on_access()
+    websys.on_access()
     if auth_required and not authmgr.auth(allow_guest=ALLOW_GUESTS):
-        web.redirect_auth_screen()
+        websys.redirect_auth_screen()
         return
 
     dir_info = util.get_dir_info('.', recursive=1)
@@ -214,7 +214,7 @@ util.postSubmit = function(url, params, uriEnc) {
 </body>
 </html>'''
 
-    web.send_response(html, 'text/html')
+    websys.send_response(html, 'text/html')
 
 # is hidden file name
 def is_hidden(name):

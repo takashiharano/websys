@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_PATH + 'libs'))
 import util
 
 util.append_system_path(__file__, ROOT_PATH + '/websys')
-import web
+import websys
 
 import js
 
@@ -103,7 +103,7 @@ $onLoad = function() {
 
 #------------------------------------------------------------------------------
 def main():
-    context = web.on_access()
+    context = websys.on_access()
     res = util.get_request_param('res')
     if res == 'js':
         js.main()

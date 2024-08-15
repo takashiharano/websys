@@ -11,12 +11,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_PATH + 'libs'))
 import util
 
 util.append_system_path(__file__, ROOT_PATH + 'websys')
+import websys
+
 util.append_system_path(__file__, ROOT_PATH + 'websys/bin')
 import websysconf
 import usermgr
 import groupmgr
 import sessionmgr
-import web
 
 DATA_DIR = util.get_relative_path(__file__, '../../../private/websys/')
 GROUPS_DATA_FILE_PATH = DATA_DIR + 'groups.json'
@@ -24,13 +25,13 @@ GROUPS_DATA_FILE_PATH = DATA_DIR + 'groups.json'
 #------------------------------------------------------------------------------
 # Returns None if the value not found
 def get_request_param(key, default=None):
-    return web.get_request_param(key, default=default)
+    return websys.get_request_param(key, default=default)
 
 def get_request_param_as_int(key):
-    return web.get_request_param_as_int(key)
+    return websys.get_request_param_as_int(key)
 
 def send_result_json(status, body=None):
-    web.send_result_json(status, body)
+    websys.send_result_json(status, body)
 
 def send_error_text(msg):
     b = msg.encode()
@@ -42,7 +43,7 @@ def proc_on_forbidden():
 #------------------------------------------------------------------------------
 def proc_get_user_list(context):
     if not context.has_permission('sysadmin'):
-        web.send_result_json('FORBIDDEN', body=None)
+        websys.send_result_json('FORBIDDEN', body=None)
         return
 
     user_dict = usermgr.get_all_user_info(True)
@@ -50,12 +51,12 @@ def proc_get_user_list(context):
     if guest_user_dict is not None:
         user_dict.update(guest_user_dict)
 
-    web.send_result_json('OK', body=user_dict)
+    websys.send_result_json('OK', body=user_dict)
 
 #------------------------------------------------------------------------------
 def proc_get_session_list(context):
     if not context.has_permission('sysadmin'):
-        web.send_result_json('FORBIDDEN', body=None)
+        websys.send_result_json('FORBIDDEN', body=None)
         return
 
     sessions = get_sorted_session_list()
@@ -76,7 +77,7 @@ def proc_get_session_list(context):
 
             session['timeline_log'] = logs
 
-    web.send_result_json('OK', body=sessions)
+    websys.send_result_json('OK', body=sessions)
 
 def get_timeline_logs_by_session(sessions, target_offset):
     now = util.now()
@@ -175,7 +176,7 @@ def proc_get_group_list(context):
     result = {
         'group_list': group_list
     }
-    web.send_result_json('OK', result)
+    websys.send_result_json('OK', result)
 
 #------------------------------------------------------------------------------
 def proc_api(context, act):
@@ -186,11 +187,11 @@ def proc_api(context, act):
     if func_name in g:
         g[func_name](context)
     else:
-        web.send_result_json('PROC_NOT_FOUND:' + act, None)
+        websys.send_result_json('PROC_NOT_FOUND:' + act, None)
 
 #------------------------------------------------------------------------------
 def main():
-    context = web.on_access()
+    context = websys.on_access()
     act = get_request_param('act')
     if context.is_authorized():
         if context.has_permission('sysadmin'):

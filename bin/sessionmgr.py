@@ -7,6 +7,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
+import websys
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
@@ -14,7 +15,6 @@ import util
 import logger
 import common
 import usermgr
-import web
 
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 ANONYMOUS_SESSION_SEC = websysconf.ANONYMOUS_SESSION_SEC
@@ -172,10 +172,10 @@ def create_new_session_info(uid, is_guest=False):
     return new_session
 
 def create_session_info(sid, uid, now, is_guest=False):
-    addr = web.get_ip_addr()
-    host = web.get_host_name()
-    useragent = web.get_user_agent()
-    tz = web.get_request_param('_tz')
+    addr = websys.get_ip_addr()
+    host = websys.get_host_name()
+    useragent = websys.get_user_agent()
+    tz = websys.get_request_param('_tz')
 
     session_info = {
         'sid': sid,
@@ -256,10 +256,10 @@ def generate_session_id(uid):
 #----------------------------------------------------------
 def update_last_access_info(uid, sid):
     now = util.get_timestamp()
-    addr = web.get_ip_addr()
-    host = web.get_host_name()
-    useragent = web.get_user_agent()
-    tz = web.get_request_param('_tz')
+    addr = websys.get_ip_addr()
+    host = websys.get_host_name()
+    useragent = websys.get_user_agent()
+    tz = websys.get_request_param('_tz')
     session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz)
     return session
 

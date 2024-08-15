@@ -15,16 +15,17 @@ import usermgr
 import groupmgr
 import sessionmgr
 import authmgr
-import web
+
+import websys
 
 #----------------------------------------------------------
 # login
 # ?id=ID&pw=HASH(SHA-256(pw + uid))
 #----------------------------------------------------------
 def cmd_login(context):
-    id = web.get_request_param('id')
-    pw = web.get_request_param('pw')
-    p_ext_auth = web.get_request_param('ext_auth')
+    id = websys.get_request_param('id')
+    pw = websys.get_request_param('pw')
+    p_ext_auth = websys.get_request_param('ext_auth')
     ext_auth = True if p_ext_auth == 'true' else False
 
     usermgr.delete_expired_guest()
@@ -49,7 +50,7 @@ def cmd_login(context):
         body = None
         util.sleep(0.5)
 
-    web.send_result_json(status, body=body)
+    websys.send_result_json(status, body=body)
 
 #---
 def invalidate_existing_session(context):
@@ -63,7 +64,7 @@ def invalidate_existing_session(context):
 def cmd_syslog(context):
     status = 'OK'
     if context.is_admin():
-        p_n = web.get_request_param('n')
+        p_n = websys.get_request_param('n')
         n = 30
         if p_n is not None:
             try:
@@ -76,7 +77,7 @@ def cmd_syslog(context):
         status = 'NO_PRIVILEGE'
         log_list = None
 
-    web.send_result_json(status, body=log_list)
+    websys.send_result_json(status, body=log_list)
 
 #----------------------------------------------------------
 # logout
@@ -84,9 +85,9 @@ def cmd_syslog(context):
 # ?uid=UID
 #----------------------------------------------------------
 def cmd_logout(context):
-    p_sid = web.get_request_param('sid')
+    p_sid = websys.get_request_param('sid')
     if p_sid is None:
-        p_uid = web.get_request_param('uid')
+        p_uid = websys.get_request_param('uid')
     else:
         p_uid = None
 
@@ -101,7 +102,7 @@ def cmd_logout(context):
 
     self_logout = False
     try:
-        if web.get_request_param('all') == 'true':
+        if websys.get_request_param('all') == 'true':
             self_logout = all_logout(context, current_sid)
         elif target_sid is not None:
             # current session or specified sid
@@ -117,13 +118,13 @@ def cmd_logout(context):
 
     headers = None
     if self_logout:
-        headers = web.build_logout_cookies()
+        headers = websys.build_logout_cookies()
 
-    cb_url = web.get_request_param('url')
+    cb_url = websys.get_request_param('url')
     res_body = {
         'url': cb_url
     }
-    web.send_result_json(status, body=res_body, http_headers=headers)
+    websys.send_result_json(status, body=res_body, http_headers=headers)
 
 # Logout by SID
 def logout_by_sid(context, current_sid, sid):
@@ -179,7 +180,7 @@ def cmd_auth(context):
     status = 'FORBIDDEN'
     if authmgr.auth():
         status = 'OK'
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # session
@@ -187,20 +188,20 @@ def cmd_auth(context):
 def cmd_session(context):
     status = 'OK'
     session_info = context.get_session_info()
-    p_userinfo = web.get_request_param('userinfo')
+    p_userinfo = websys.get_request_param('userinfo')
 
     if session_info is not None and p_userinfo == 'true':
         user_info = context.get_user_info()
         session_info['userinfo'] = user_info
 
-    web.send_result_json(status, body=session_info)
+    websys.send_result_json(status, body=session_info)
 
 #----------------------------------------------------------
 # sessions
 #----------------------------------------------------------
 def cmd_sessions(context):
     status = 'OK'
-    all = web.get_request_param('all')
+    all = websys.get_request_param('all')
     if all is None:
         session_list = get_session_list_from_session(context)
     else:
@@ -211,7 +212,7 @@ def cmd_sessions(context):
                 session_list.append(sessions[sid])
         else:
             session_list = get_session_list_from_session(context)
-    web.send_result_json(status, body=session_list)
+    websys.send_result_json(status, body=session_list)
 
 #----------------------------------------------------------
 # user
@@ -220,7 +221,7 @@ def cmd_sessions(context):
 def cmd_user(context):
     status = 'OK'
     user_info = None
-    uid = web.get_request_param('uid')
+    uid = websys.get_request_param('uid')
 
     if uid is None:
         sid = context.get_session_id()
@@ -243,7 +244,7 @@ def cmd_user(context):
               else:
                   status = 'FORBIDDEN'
 
-    web.send_result_json(status, body=user_info)
+    websys.send_result_json(status, body=user_info)
 
 #----------------------------------------------------------
 # users
@@ -263,7 +264,7 @@ def cmd_users(context):
         status = 'FORBIDDEN'
         user_list = None
 
-    web.send_result_json(status, body=user_list)
+    websys.send_result_json(status, body=user_list)
 
 #----------------------------------------------------------
 # add a user
@@ -275,29 +276,29 @@ def cmd_useradd(context):
 
     status = 'ERROR'
     if not context.is_admin():
-        web.send_result_json('FORBIDDEN', body=None)
+        websys.send_result_json('FORBIDDEN', body=None)
         return
 
-    uid = web.get_request_param('uid')
-    fullname = web.get_request_param('fullname')
-    localfullname = web.get_request_param('localfullname')
-    a_name = web.get_request_param('a_name')
-    email = web.get_request_param('email')
-    pw = web.get_request_param('pw')
-    p_admin = web.get_request_param('is_admin')
-    p_groups = web.get_request_param('groups', '')
-    p_privs = web.get_request_param('privs')
-    info1 = web.get_request_param('info1', '')
-    info2 = web.get_request_param('info2', '')
-    desc = web.get_request_param('desc', '')
-    p_flags = web.get_request_param('flags')
+    uid = websys.get_request_param('uid')
+    fullname = websys.get_request_param('fullname')
+    localfullname = websys.get_request_param('localfullname')
+    a_name = websys.get_request_param('a_name')
+    email = websys.get_request_param('email')
+    pw = websys.get_request_param('pw')
+    p_admin = websys.get_request_param('is_admin')
+    p_groups = websys.get_request_param('groups', '')
+    p_privs = websys.get_request_param('privs')
+    info1 = websys.get_request_param('info1', '')
+    info2 = websys.get_request_param('info2', '')
+    desc = websys.get_request_param('desc', '')
+    p_flags = websys.get_request_param('flags')
 
     if uid is None:
-        web.send_result_json('ERR_UID', body=None)
+        websys.send_result_json('ERR_UID', body=None)
         return
 
     if pw is None:
-        web.send_result_json('ERR_PW', body=None)
+        websys.send_result_json('ERR_PW', body=None)
         return
     pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
@@ -333,7 +334,7 @@ def cmd_useradd(context):
     except Exception as e:
         status = 'ERR:' + str(e)
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # mod a user
@@ -343,24 +344,24 @@ def cmd_usermod(context):
         on_auth_error()
         return
 
-    uid = web.get_request_param('uid')
+    uid = websys.get_request_param('uid')
 
     if not context.is_admin():
         user_info = context.get_user_info()
         if uid != user_info['uid']:
-            web.send_result_json('FORBIDDEN', body=None)
+            websys.send_result_json('FORBIDDEN', body=None)
             return
 
     if uid is None:
-        web.send_result_json('ERR_UID', body=None)
+        websys.send_result_json('ERR_UID', body=None)
         return
 
-    fullname = web.get_request_param('fullname')
-    localfullname = web.get_request_param('localfullname')
-    a_name = web.get_request_param('a_name')
-    email = web.get_request_param('email')
+    fullname = websys.get_request_param('fullname')
+    localfullname = websys.get_request_param('localfullname')
+    a_name = websys.get_request_param('a_name')
+    email = websys.get_request_param('email')
 
-    pw = web.get_request_param('pw')
+    pw = websys.get_request_param('pw')
     pw_hash = None
     if pw is not None:
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
@@ -377,11 +378,11 @@ def cmd_usermod(context):
     u_flags = None
 
     if context.is_admin():
-        p_admin = web.get_request_param('is_admin')
+        p_admin = websys.get_request_param('is_admin')
         if p_admin is not None:
             is_admin = p_admin == 'true'
 
-        p_groups = web.get_request_param('groups')
+        p_groups = websys.get_request_param('groups')
         if p_groups is not None:
             groups = p_groups
             groups = util.replace(groups, r'\s{2,}', ' ')
@@ -390,7 +391,7 @@ def cmd_usermod(context):
         agroup = _get_optional_param_by_list('agroup')
         rgroup = _get_optional_param_by_list('rgroup')
 
-        p_privs = web.get_request_param('privs')
+        p_privs = websys.get_request_param('privs')
         if p_privs is not None:
             privs = p_privs
             privs = util.replace(privs, r'\s{2,}', ' ')
@@ -398,11 +399,11 @@ def cmd_usermod(context):
 
         aprivs = _get_optional_param_by_list('aprivs')
         rprivs = _get_optional_param_by_list('rprivs')
-        info1 = web.get_request_param('info1', '')
-        info2 = web.get_request_param('info2', '')
-        desc = web.get_request_param('desc', '')
+        info1 = websys.get_request_param('info1', '')
+        info2 = websys.get_request_param('info2', '')
+        desc = websys.get_request_param('desc', '')
 
-        p_flags = web.get_request_param('flags')
+        p_flags = websys.get_request_param('flags')
         if p_flags is not None:
             u_flags = p_flags
 
@@ -413,10 +414,10 @@ def cmd_usermod(context):
     except Exception as e:
         status = 'ERR:' + str(e)
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 def _get_optional_param_by_list(key):
-    p_value = web.get_request_param(key)
+    p_value = websys.get_request_param(key)
     param_list = None
     if p_value is not None:
         p_value = p_value.strip()
@@ -434,19 +435,19 @@ def cmd_passwd(context):
         on_auth_error()
         return
 
-    uid = web.get_request_param('uid')
+    uid = websys.get_request_param('uid')
 
     if not context.is_admin():
         user_info = context.get_user_info()
         if uid != user_info['uid']:
-            web.send_result_json('FORBIDDEN', body=None)
+            websys.send_result_json('FORBIDDEN', body=None)
             return
 
     if uid is None:
-        web.send_result_json('ERR_UID', body=None)
+        websys.send_result_json('ERR_UID', body=None)
         return
 
-    pw = web.get_request_param('pw')
+    pw = websys.get_request_param('pw')
     pw_hash = None
     if pw is not None:
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
@@ -458,7 +459,7 @@ def cmd_passwd(context):
     except Exception as e:
         status = 'ERR_' + str(e)
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # gencode
@@ -471,12 +472,12 @@ def cmd_gencode(context):
 
     uid = None
     if not context.is_admin():
-        web.send_result_json('FORBIDDEN', body=None)
+        websys.send_result_json('FORBIDDEN', body=None)
         return
 
     status = 'OK'
     valid_min = 30
-    p_valid_time = web.get_request_param('validtime')
+    p_valid_time = websys.get_request_param('validtime')
     if p_valid_time is not None:
         try:
             valid_min = int(p_valid_time)
@@ -484,18 +485,18 @@ def cmd_gencode(context):
             pass
 
     id = None
-    p_id = web.get_request_param('id')
+    p_id = websys.get_request_param('id')
     if p_id is not None:
         id = p_id
 
-    p_groups = web.get_request_param('groups')
+    p_groups = websys.get_request_param('groups')
     groups = ''
     if p_groups is not None:
         groups = p_groups
         groups = util.replace(groups, r'\s{2,}', ' ')
         groups = groups.strip()
 
-    p_privs = web.get_request_param('privs')
+    p_privs = websys.get_request_param('privs')
     privs = ''
     if p_privs is not None:
         privs = p_privs
@@ -507,7 +508,7 @@ def cmd_gencode(context):
     except Exception as e:
         status = str(e)
 
-    web.send_result_json(status, body=uid)
+    websys.send_result_json(status, body=uid)
 
 #----------------------------------------------------------
 # userdel
@@ -520,7 +521,7 @@ def cmd_userdel(context):
 
     status = 'ERROR'
     if context.is_admin():
-        uid = web.get_request_param('uid')
+        uid = websys.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
         else:
@@ -540,7 +541,7 @@ def cmd_userdel(context):
     else:
         status = 'FORBIDDEN'
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 def _is_prohibited_uid(uid):
     PROHIBITED_UIDS = ['root']
@@ -561,7 +562,7 @@ def cmd_unlockuser(context):
 
     status = 'ERROR'
     if context.is_admin():
-        uid = web.get_request_param('uid')
+        uid = websys.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
         else:
@@ -571,7 +572,7 @@ def cmd_unlockuser(context):
     else:
         status = 'FORBIDDEN'
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # guests
@@ -591,7 +592,7 @@ def cmd_guests(context):
         status = 'FORBIDDEN'
         guest_user_list = None
 
-    web.send_result_json(status, body=guest_user_list)
+    websys.send_result_json(status, body=guest_user_list)
 
 #----------------------------------------------------------
 # group
@@ -600,7 +601,7 @@ def cmd_guests(context):
 def cmd_group(context):
     status = 'OK'
     group_info = None
-    gid = web.get_request_param('gid')
+    gid = websys.get_request_param('gid')
     if gid is None:
         status = 'NO_GID'
     else:
@@ -611,7 +612,7 @@ def cmd_group(context):
         else:
             status = 'FORBIDDEN'
 
-    web.send_result_json(status, body=group_info)
+    websys.send_result_json(status, body=group_info)
 
 #----------------------------------------------------------
 # add a group
@@ -623,16 +624,16 @@ def cmd_addgroup(context):
 
     status = 'ERROR'
     if not context.is_admin():
-        web.send_result_json('FORBIDDEN', body=None)
+        websys.send_result_json('FORBIDDEN', body=None)
         return
 
-    gid = web.get_request_param('gid')
-    name = web.get_request_param('name', '')
-    p_privs = web.get_request_param('privs')
-    desc = web.get_request_param('desc', '')
+    gid = websys.get_request_param('gid')
+    name = websys.get_request_param('name', '')
+    p_privs = websys.get_request_param('privs')
+    desc = websys.get_request_param('desc', '')
 
     if gid is None:
-        web.send_result_json('ERR_GID', body=None)
+        websys.send_result_json('ERR_GID', body=None)
         return
 
     privs = ''
@@ -648,7 +649,7 @@ def cmd_addgroup(context):
     except Exception as e:
         status = 'ERR:' + str(e)
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # mod a group
@@ -658,14 +659,14 @@ def cmd_modgroup(context):
         on_auth_error()
         return
 
-    gid = web.get_request_param('gid')
+    gid = websys.get_request_param('gid')
 
     if not context.is_admin():
-        web.send_result_json('FORBIDDEN', body=None)
+        websys.send_result_json('FORBIDDEN', body=None)
         return
 
     if gid is None:
-        web.send_result_json('ERR_NO_GID', body=None)
+        websys.send_result_json('ERR_NO_GID', body=None)
         return
 
     privs = None
@@ -673,8 +674,8 @@ def cmd_modgroup(context):
     rprivs = None
     desc = None
 
-    name = web.get_request_param('name')
-    p_privs = web.get_request_param('privs')
+    name = websys.get_request_param('name')
+    p_privs = websys.get_request_param('privs')
     if p_privs is not None:
         privs = p_privs
         privs = util.replace(privs, r'\s{2,}', ' ')
@@ -683,7 +684,7 @@ def cmd_modgroup(context):
     aprivs = _get_optional_param_by_list('aprivs')
     rprivs = _get_optional_param_by_list('rprivs')
 
-    desc = web.get_request_param('desc', '')
+    desc = websys.get_request_param('desc', '')
 
     try:
         groupmgr.modify_group(gid, name=name, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc)
@@ -692,7 +693,7 @@ def cmd_modgroup(context):
     except Exception as e:
         status = 'ERR:' + str(e)
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # delgroup
@@ -705,7 +706,7 @@ def cmd_delgroup(context):
 
     status = 'ERROR'
     if context.is_admin():
-        gid = web.get_request_param('gid')
+        gid = websys.get_request_param('gid')
         if gid is None:
             status = 'ERR_NO_GID'
         else:
@@ -717,7 +718,7 @@ def cmd_delgroup(context):
     else:
         status = 'FORBIDDEN'
 
-    web.send_result_json(status, body=None)
+    websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
 # hello
@@ -726,7 +727,7 @@ def cmd_hello(context):
     status = 'OK'
     msg = None
 
-    q = web.get_request_param('q')
+    q = websys.get_request_param('q')
     if q is None:
         msg = 'Hello, World!'
     else:
@@ -739,7 +740,7 @@ def cmd_hello(context):
         else:
             msg = 'Hi!'
 
-    web.send_result_json(status, body=msg)
+    websys.send_result_json(status, body=msg)
 
 #------------------------------------------------------------------------------
 #----------------------------------------------------------
@@ -747,7 +748,7 @@ def cmd_hello(context):
 #----------------------------------------------------------
 def on_auth_error():
     obj = {'status': 'AUTH_ERROR'}
-    web.send_response(obj, 'application/json')
+    websys.send_response(obj, 'application/json')
 
 #----------------------------------------------------------
 # get user info
@@ -761,11 +762,11 @@ def get_session_list_from_session(context):
 # main
 #----------------------------------------------------------
 def main():
-    context = web.on_access()
-    cmd = web.get_request_param('cmd')
+    context = websys.on_access()
+    cmd = websys.get_request_param('cmd')
 
     if cmd is None:
-        web.send_result_json('ERR_NO_CMD_SPECIFIED', body=cmd)
+        websys.send_result_json('ERR_NO_CMD_SPECIFIED', body=cmd)
         return
 
     func_name = 'cmd_' + cmd
@@ -773,4 +774,4 @@ def main():
     if func_name in g:
         g[func_name](context)
     else:
-        web.send_result_json('ERR_CMD_NOT_FOUND', body=cmd)
+        websys.send_result_json('ERR_CMD_NOT_FOUND', body=cmd)

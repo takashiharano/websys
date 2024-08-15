@@ -7,20 +7,20 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
+import websys
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
 import dirlist
 import file
-import web
 
 #----------------------------------------------------------
 # main
 #----------------------------------------------------------
 def main(root_path, target_path, auth_required, upload=False):
-    web.set_root_path(root_path)
+    websys.set_root_path(root_path)
 
-    context = web.on_access()
+    context = websys.on_access()
 
     content_type = os.environ.get('CONTENT_TYPE', '')
 

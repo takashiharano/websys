@@ -7,8 +7,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_PATH + '/libs'))
 import util
 
 util.append_system_path(__file__, ROOT_PATH + '/websys')
-import web
 import websysconf
+import websys
 
 #------------------------------------------------------------------------------
 def build_js(context):
@@ -21,6 +21,6 @@ def build_js(context):
 
 #------------------------------------------------------------------------------
 def main():
-    context = web.on_access()
+    context = websys.on_access()
     js = build_js(context)
     util.send_response(js, 'text/javascript')

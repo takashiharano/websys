@@ -7,10 +7,10 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
+import websys
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
-import web
 
 LOG_FILE_PATH = websysconf.LOG_FILE_PATH
 
@@ -53,9 +53,9 @@ def write_status_log(op_type, status, uid, addr, host, ua, sid, info=''):
 def write_event_log(context, op_type, status, info):
     user_info = context.get_user_info()
     uid = user_info['uid']
-    addr = web.get_ip_addr()
-    host = web.get_host_name()
-    ua = web.get_user_agent()
+    addr = websys.get_ip_addr()
+    host = websys.get_host_name()
+    ua = websys.get_user_agent()
     sid = context.get_session_id()
     write_status_log(op_type, status, uid, addr, host, ua, sid, info)
 

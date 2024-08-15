@@ -7,13 +7,13 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
+import websys
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
 import bsb64
 
 import authmgr
-import web
 
 TXT_EXT = ['bas', 'bat', 'c', 'css', 'html', 'java', 'js', 'log', 'ps1', 'sh', 'txt', 'xml']
 
@@ -43,10 +43,10 @@ def output_text_file(root_path, path):
     html += 'document.getElementById(\'t\').innerHTML=a;'
     html += '};window.addEventListener(\'DOMContentLoaded\',onReady,true);'
     html += '</script></head><body><pre id="t"></pre></body></html>'
-    web.send_response(html, 'text/html')
+    websys.send_response(html, 'text/html')
 
 def main(root_path, path, allow_guest=False, auth_required=True):
-    web.on_access()
+    websys.on_access()
     if auth_required and  not authmgr.auth(allow_guest=allow_guest):
         util.send_response('FORBIDDEN')
     else:

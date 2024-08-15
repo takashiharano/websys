@@ -7,6 +7,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
+import websys
 
 sys.path.append(websysconf.UTIL_PATH)
 import util
@@ -14,7 +15,6 @@ import util
 import logger
 import sessionmgr
 import usermgr
-import web
 
 ALGOTRITHM = websysconf.ALGOTRITHM
 
@@ -24,12 +24,12 @@ ALGOTRITHM = websysconf.ALGOTRITHM
 #  pw: SHA-256(pw + uid)
 #----------------------------------------------------------
 def login(uid, pw, ext_auth=False):
-    if web.synchronize_start():
+    if websys.synchronize_start():
         try:
             ret = do_login(uid, pw, ext_auth=ext_auth)
-            web.synchronize_end()
+            websys.synchronize_end()
         except Exception as e:
-            web.synchronize_end()
+            websys.synchronize_end()
             raise Exception(e)
         return ret
     raise Exception('ERROR')
@@ -129,9 +129,9 @@ def _guest_login(uid, ext_auth=False):
 #----------------------------------------------------------
 def logout(sid, renew=False):
     session = None
-    if web.synchronize_start():
+    if websys.synchronize_start():
         session = sessionmgr.clear_session(sid, renew)
-        web.synchronize_end()
+        websys.synchronize_end()
     return session
 
 #----------------------------------------------------------
@@ -185,8 +185,8 @@ def write_login_log(status, uid, session_info=None):
     if session_info is not None:
         sid = session_info['sid']
 
-    addr = web.get_ip_addr()
-    host = web.get_host_name()
-    ua = web.get_user_agent()
+    addr = websys.get_ip_addr()
+    host = websys.get_host_name()
+    ua = websys.get_user_agent()
 
     logger.write_status_log('LOGIN', status, uid, addr, host, ua, sid)
