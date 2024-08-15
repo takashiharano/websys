@@ -12,6 +12,7 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 import bsb64
 
+sys.path.append(os.path.join(os.path.dirname(__file__), 'bin'))
 import usermgr
 import groupmgr
 import sessionmgr
