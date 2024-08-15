@@ -1,9 +1,0 @@
-input:-webkit-autofill {
-  -webkit-transition: all 86400s;
-  transition: all 86400s;
-}
-
-input.websys-dialog {
-  background: transparent;
-  color: #000;
-}
