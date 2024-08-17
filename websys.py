@@ -291,8 +291,11 @@ def get_raw_request_param(key=None, default=None):
     return get_request_param(key, default)
 
 #----------------------------------------------------------
-# build logout cookies
+# logout
 #----------------------------------------------------------
+def logout(sid, renew=False):
+    return authmgr.logout(sid)
+
 def build_logout_cookies():
     cookie1 = util.build_cookie_for_clear('sid', path='/', http_only=True)
     cookies = []
