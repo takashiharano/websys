@@ -57,7 +57,7 @@ scnjs.groupEditWindow = null;
 scnjs.groupEditMode = null;
 scnjs.tmrId = 0;
 scnjs.interval = 0;
-scnjs.timelineOffset = 0;
+scnjs.timelineDayOffset = 0;
 
 $onReady = function() {
   util.clock('#clock');
@@ -509,20 +509,20 @@ scnjs.getDateTimeString = function(ts, inSec) {
 };
 
 scnjs.getSessionListN = function() {
-  scnjs.timelineOffset = $el('#timeline-offset').value | 0;
+  scnjs.timelineDayOffset = $el('#timeline-offset').value | 0;
   scnjs.getSessionList();
 };
 scnjs.getSessionListRst = function() {
-  scnjs.timelineOffset = 0;
+  scnjs.timelineDayOffset = 0;
   scnjs.getSessionList();
 };
 scnjs.getSessionListPrev = function() {
-  scnjs.timelineOffset++;
+  scnjs.timelineDayOffset++;
   scnjs.getSessionList();
 };
 scnjs.getSessionListNext = function() {
-  scnjs.timelineOffset--;
-  if (scnjs.timelineOffset < 0) scnjs.timelineOffset = 0;
+  scnjs.timelineDayOffset--;
+  if (scnjs.timelineDayOffset < 0) scnjs.timelineDayOffset = 0;
   scnjs.getSessionList();
 };
 scnjs.getSessionList = function() {
@@ -531,7 +531,7 @@ scnjs.getSessionList = function() {
     scnjs.tmrId = 0;
     scnjs.interval = 1;
   }
-  var param = {logs: '1', offset: scnjs.timelineOffset};
+  var param = {logs: '1', offset: scnjs.timelineDayOffset};
   scnjs.callApi('get_session_list', param, scnjs.getSessionListCb);
 };
 scnjs.getSessionListCb = function(xhr, res, req) {
@@ -562,15 +562,15 @@ scnjs.drawSessionList = function(sessions) {
   var html = '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
-  html += '<td class="timeline-head">UID</td>';
-  html += '<td class="timeline-head">Name</td>';
-  html += '<td class="timeline-head"><span style="margin-left:8px;">Session</span></td>';
-  html += '<td class="timeline-head">Last Access</td>';
-  html += '<td class="timeline-head" style="min-width:98px;">Elapsed</td>';
-  html += '<td class="timeline-head"style="font-weight:normal;">' + scnjs.buildTimeLineHeader1(now) + scnjs.buildTimeLineHeader2(now) + '</td>';
-  html += '<td class="timeline-head">Addr</td>';
-  html += '<td class="timeline-head">User-Agent</td>';
-  html += '<td class="timeline-head">Logged in</td>';
+  html += '<td class="session-info-head">UID</td>';
+  html += '<td class="session-info-head">Name</td>';
+  html += '<td class="session-info-head"><span style="margin-left:8px;">Session</span></td>';
+  html += '<td class="session-info-head">Last Access</td>';
+  html += '<td class="session-info-head" style="min-width:98px;">Elapsed</td>';
+  html += '<td class="session-info-head"style="font-weight:normal;">' + scnjs.buildTimeLineHeader1(now) + scnjs.buildTimeLineHeader2(now) + '</td>';
+  html += '<td class="session-info-head">Addr</td>';
+  html += '<td class="session-info-head">User-Agent</td>';
+  html += '<td class="session-info-head">Logged in</td>';
   html += '</tr>';
   html += scnjs.buildSessionInfoHtml(sessions, now);
   html += '</table>';
@@ -579,7 +579,7 @@ scnjs.drawSessionList = function(sessions) {
 };
 
 scnjs.buildTimeLineHeader1 = function(now) {
-  var os = scnjs.timelineOffset;
+  var os = scnjs.timelineDayOffset;
   if (os > 0) {
     now = now - (scnjs.DAY * os);
   }
@@ -602,7 +602,7 @@ scnjs.buildTimeLineHeader1 = function(now) {
   return html;
 };
 scnjs.buildTimeLineHeader2 = function(now) {
-  var os = scnjs.timelineOffset;
+  var os = scnjs.timelineDayOffset;
   if (os > 0) {
     now = now - (scnjs.DAY * os);
   }
@@ -719,7 +719,7 @@ scnjs.startElapsedCounter = function(param) {
 };
 
 scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
-  var os = scnjs.timelineOffset;
+  var os = scnjs.timelineDayOffset;
   if (os > 0) {
     now = now - (scnjs.DAY * os);
   }
