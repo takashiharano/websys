@@ -680,6 +680,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var privs = dbg.getOptVal(arg, 'privs');
   var info1 = dbg.getOptVal(arg, 'info1');
   var info2 = dbg.getOptVal(arg, 'info2');
+  var info3 = dbg.getOptVal(arg, 'info3');
   var desc = dbg.getOptVal(arg, 'desc');
   var flags = dbg.getOptVal(arg, 'flags');
   if (!p) p = '';
@@ -764,6 +765,15 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     }
     param.info2 = info2;
   }
+  if (info3) {
+    try {
+      info3 = eval(info3);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.info3 = info3;
+  }
   if (desc) {
     try {
       desc = eval(desc);
@@ -812,6 +822,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var rprivs = dbg.getOptVal(arg, 'rPriv');
   var info1 = dbg.getOptVal(arg, 'info1');
   var info2 = dbg.getOptVal(arg, 'info2');
+  var info3 = dbg.getOptVal(arg, 'info3');
   var desc = dbg.getOptVal(arg, 'desc');
 
   if (!uid || (admin && (admin != 'true') && (admin != 'false'))) {
@@ -931,12 +942,21 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   }
   if (info2) {
     try {
-      info1 = eval(info2);
+      info2 = eval(info2);
     } catch (e) {
       log.e(e);
       return;
     }
     param.info2 = info2;
+  }
+  if (info3) {
+    try {
+      info3 = eval(info3);
+    } catch (e) {
+      log.e(e);
+      return;
+    }
+    param.info3 = info3;
   }
   if (desc) {
     try {

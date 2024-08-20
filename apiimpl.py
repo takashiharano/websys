@@ -290,6 +290,7 @@ def cmd_useradd(context):
     p_privs = websys.get_request_param('privs')
     info1 = websys.get_request_param('info1', '')
     info2 = websys.get_request_param('info2', '')
+    info3 = websys.get_request_param('info3', '')
     desc = websys.get_request_param('desc', '')
     p_flags = websys.get_request_param('flags')
 
@@ -328,7 +329,7 @@ def cmd_useradd(context):
         p_flags = None
 
     try:
-        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, desc=desc, flags=p_flags)
+        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, desc=desc, flags=p_flags)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -374,6 +375,8 @@ def cmd_usermod(context):
     aprivs = None
     rprivs = None
     info1 = None
+    info2 = None
+    info3 = None
     desc = None
     u_flags = None
 
@@ -401,6 +404,7 @@ def cmd_usermod(context):
         rprivs = _get_optional_param_by_list('rprivs')
         info1 = websys.get_request_param('info1', '')
         info2 = websys.get_request_param('info2', '')
+        info3 = websys.get_request_param('info3', '')
         desc = websys.get_request_param('desc', '')
 
         p_flags = websys.get_request_param('flags')
@@ -408,7 +412,7 @@ def cmd_usermod(context):
             u_flags = p_flags
 
     try:
-        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, desc=desc, flags=u_flags)
+        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, desc=desc, flags=u_flags)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
