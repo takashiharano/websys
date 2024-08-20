@@ -927,9 +927,16 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
 
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
-  if (uid && (uid != currentUid)) {
-    html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="scnjs.deleteUser(\'' + uid + '\');">DEL</button></div>';
+
+  html += '<div style="position:absolute;top:8px;right:8px;">';
+  if (mode == 'edit') {
+    html += '<button id="user-copy-button" onclick="scnjs.copyUser();">COPY</button>';
   }
+  if (uid && (uid != currentUid)) {
+    html += '<button id="user-del-button" style="margin-left:8px;" class="button-red" onclick="scnjs.deleteUser(\'' + uid + '\');">DEL</button>';
+  }
+  html += '</div>';
+
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:400px;height:' + scnjs.userEditWindowH1 + 'px;text-align:left;">';
 
   html += '<table class="edit-table">';
@@ -1037,6 +1044,17 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
 
   var win = util.newWindow(opt);
   return win;
+};
+
+scnjs.copyUser = function() {
+  $el('#uid').disabled = false;
+  $el('#uid').removeClass('edit-disabled');
+  $el('#uid').value = '';
+  $el('#uid').focus();
+  $el('#user-copy-button').hide();
+  $el('#user-del-button').hide();
+  scnjs.userEditWindow.setTitle("New User");
+  scnjs.userEditMode = 'new';
 };
 
 scnjs.onUidBlur = function() {
