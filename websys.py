@@ -356,9 +356,10 @@ def send_response(result, type, headers=None, encoding=None, encryption=None):
 
     session_info = sessionmgr.get_current_session_info_from_global()
     cookies = build_session_cookie(session_info)
-    if headers is None:
-        headers = cookies
-    elif cookies is not None:
+
+    if cookies is not None:
+        if headers is None:
+            headers = []
         headers += cookies
 
     _send_response(result, type, headers, encoding, encryption)
