@@ -613,26 +613,17 @@ scnjs.buildTimeLineHeader2 = function(now) {
   var nowMM = tmp[1];
   var currentInd = '<span id="timeline-now" class="timeline-current blink1 text-skyblue" data-tooltip="' + nowHHMM + '">v</span>';
 
-  var html = '';
+  var html = '<div style="position:relative;margin-bottom:0px;">';
   for (var i = 0; i <= 23; i++) {
     var ts = scnjs.getTimeSlot(i, nowHH, nowMM);
-    if (i < 10) {
-      if ((os == 0) && (ts == 0)) {
-        html += currentInd;
-      }
-    } else if (os == 0) {
-      if (ts == 0) {
-        html += currentInd + ' ';
-      } else if (ts == 1) {
-        html += ' ' + currentInd;
-      }
-    }
 
-    if (!((ts == 0) || ((i >= 10) && (ts == 1)))) {
+    if ((i >= 10) && (ts == 1)) {
+      html += (i + "").slice(0, 1);
+    } else {
       html += i;
     }
 
-    var st = ((i < 10) ? 1 : 2);
+    var st = (((i < 10) || (ts == 1)) ? 1 : 2);
     for (var j = st; j <= 4; j++) {
       if ((os == 0) && (ts == j)) {
         html += currentInd;
@@ -641,6 +632,7 @@ scnjs.buildTimeLineHeader2 = function(now) {
       }
     }
   }
+  html += '</div>';
   return html;
 };
 
@@ -844,17 +836,8 @@ scnjs.inTheTimeSlot = function(h, qM, hh, mm) {
 };
 scnjs.getTimeSlot = function(h, hh, mm) {
   if (h == hh) {
-    if (mm == 0) {
-      return 0;
-    } else if (mm < 15) {
-      return 1;
-    } else if ((mm >= 15) && (mm < 30)) {
-      return 2;
-    } else if ((mm >= 30) && (mm < 45)) {
-      return 3;
-    } else if (mm >= 45) {
-      return 4;
-    }
+    var m = (mm | 0) + 1;
+    return Math.ceil(m / 15);
   }
   return -1;
 };
