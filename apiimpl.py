@@ -19,46 +19,6 @@ import authmgr
 import websys
 
 #----------------------------------------------------------
-# login
-# ?id=ID&pw=HASH(SHA-256(pw + uid))
-#----------------------------------------------------------
-def cmd_login(context):
-    id = websys.get_request_param('id')
-    pw = websys.get_request_param('pw')
-    p_ext_auth = websys.get_request_param('ext_auth')
-    ext_auth = True if p_ext_auth == 'true' else False
-
-    usermgr.delete_expired_guest()
-
-    if not ext_auth:
-        invalidate_existing_session(context)
-
-    try:
-        login_info = authmgr.login(id, pw, ext_auth)
-        session_info = login_info['session_info']
-        user_info = login_info['user_info']
-        sid = session_info['sid']
-        status = 'OK'
-        body = {
-            'sid': sid
-        }
-        for key in user_info:
-            body[key] = user_info[key]
-
-    except Exception as e:
-        status = str(e)
-        body = None
-        util.sleep(0.5)
-
-    websys.send_result_json(status, body=body)
-
-#---
-def invalidate_existing_session(context):
-    current_sid = context.get_session_id()
-    if current_sid is not None:
-        authmgr.logout(current_sid, renew=True)
-
-#----------------------------------------------------------
 # syslog
 #----------------------------------------------------------
 def cmd_syslog(context):
@@ -78,6 +38,23 @@ def cmd_syslog(context):
         log_list = None
 
     websys.send_result_json(status, body=log_list)
+
+#----------------------------------------------------------
+# login
+# ?id=ID&pw=HASH(SHA-256(pw + uid))
+#----------------------------------------------------------
+def cmd_login(context):
+    id = websys.get_request_param('id')
+    pw = websys.get_request_param('pw')
+    p_ext_auth = websys.get_request_param('ext_auth')
+    ext_auth = True if p_ext_auth == 'true' else False
+    result = websys.login(context, id, pw, ext_auth)
+
+    cookies = []
+    cookie = websys.build_cookie_for_clear('ts')
+    cookies.append({'Set-Cookie': cookie})
+
+    websys.send_result_json(result['status'], body=result['body'], http_headers=cookies)
 
 #----------------------------------------------------------
 # logout

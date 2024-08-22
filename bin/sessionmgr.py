@@ -17,7 +17,7 @@ import common
 import usermgr
 
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
-ANONYMOUS_SESSION_SEC = websysconf.ANONYMOUS_SESSION_SEC
+ANONYMOUS_SESSION_PERIOD_SEC = websysconf.ANONYMOUS_SESSION_PERIOD_SEC
 SESSION_TIMEOUT_SEC = websysconf.SESSION_TIMEOUT_SEC
 MAX_SESSIONS_PER_USER = websysconf.MAX_SESSIONS_PER_USER
 ALGOTRITHM = websysconf.ALGOTRITHM
@@ -149,14 +149,15 @@ def get_user_info_from_sid(sid):
 def get_session_timeout_value():
     return SESSION_TIMEOUT_SEC
 
-def get_anonymous_session_sec():
-    return ANONYMOUS_SESSION_SEC
+def get_anonymous_session_period_sec():
+    return ANONYMOUS_SESSION_PERIOD_SEC
 
 #----------------------------------------------------------
 # Create and register new session info
 #----------------------------------------------------------
 def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
-    new_session_info = create_new_session_info(uid, is_guest)
+    now = util.get_timestamp()
+    new_session_info = create_new_session_info(uid, now, is_guest)
     if ext_auth:
         new_session_info['ext_auth'] = True
     append_session_info_to_session_file(uid, new_session_info)
@@ -165,13 +166,12 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
 #----------------------------------------------------------
 # Create session info
 #----------------------------------------------------------
-def create_new_session_info(uid, is_guest=False):
-    now = util.get_timestamp()
+def create_new_session_info(uid, now, is_guest=False):
     sid = generate_session_id(uid)
-    new_session = create_session_info(sid, uid, now, is_guest=is_guest)
+    new_session = build_session_info(sid, uid, now, is_guest=is_guest)
     return new_session
 
-def create_session_info(sid, uid, now, is_guest=False):
+def build_session_info(sid, uid, now, is_guest=False):
     addr = websys.get_ip_addr()
     host = websys.get_host_name()
     useragent = websys.get_user_agent()

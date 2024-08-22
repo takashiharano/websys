@@ -25,6 +25,8 @@ sendrecv_encryption = True
 recv_encryption_key = 1
 send_encryption_key = 7
 
+current_context = None
+
 def init(http_encryption):
     global sendrecv_encryption
     sendrecv_encryption = http_encryption
@@ -45,6 +47,7 @@ class WebContext:
         self.session_info = None
         self.user_info = None
         self.authorized = False
+        self.timestamp = None
 
     def get_status(self):
         return self.status
@@ -183,6 +186,12 @@ class WebContext:
                 return True
         return False
 
+    def get_timestamp(self):
+        return self.timestamp
+
+    def set_timestamp(self, ts):
+        self.timestamp = ts
+
 #----------------------------------------------------------
 # on access
 #----------------------------------------------------------
@@ -203,9 +212,13 @@ def on_access(allow_guest=True):
     else:
         context.set_status('SYSTEM_BUSY')
 
+    set_context_to_global(context)
+
     return context
 
 def _on_access(context, allow_guest):
+    now = util.get_timestamp()
+    now_ms = int(now * 1000)
     sessionmgr.clear_all_expired_sessions()
 
     sid = util.get_cookie_val('sid')
@@ -219,18 +232,25 @@ def _on_access(context, allow_guest):
         is_managed = True
     else:
         # Anonymous
-        anonymous_session_sec = sessionmgr.get_anonymous_session_sec()
+        anonymous_session_sec = sessionmgr.get_anonymous_session_period_sec()
         if anonymous_session_sec <= 0:
             return context
+
+        ts = util.get_cookie_val('ts')
+        if ts is None:
+            ts = now_ms
+        ts = util.to_int(ts)
 
         uid = None
         if sid is None:
             # New session
-            session_info = sessionmgr.create_new_session_info(uid)
+            session_info = sessionmgr.create_new_session_info(uid, now)
+            ts = now_ms
         else:
             # Sesion already exists
-            now = util.get_timestamp()
-            session_info = sessionmgr.create_session_info(sid, uid, now)
+            session_info = sessionmgr.build_session_info(sid, uid, now)
+
+        context.set_timestamp(ts)
 
     sessionmgr.set_current_session_info_to_global(session_info)
     context.set_session_info(session_info)
@@ -242,6 +262,14 @@ def _on_access(context, allow_guest):
         context.set_authorized(authorized)
 
     return context
+
+def get_current_context_from_global():
+    global current_context
+    return current_context
+
+def set_context_to_global(context):
+    global current_context
+    current_context = context
 
 #----------------------------------------------------------
 # Get Request Param
@@ -291,37 +319,56 @@ def get_raw_request_param(key=None, default=None):
     return get_request_param(key, default)
 
 #----------------------------------------------------------
+# login
+#----------------------------------------------------------
+def login(context, id, pw, ext_auth):
+    usermgr.delete_expired_guest()
+
+    if not ext_auth:
+        invalidate_existing_session(context)
+
+    try:
+        login_info = authmgr.login(id, pw, ext_auth)
+        session_info = login_info['session_info']
+        user_info = login_info['user_info']
+
+        context.set_session_info(session_info)
+        context.set_user_info(user_info)
+
+        sid = session_info['sid']
+        status = 'OK'
+        body = {
+            'sid': sid
+        }
+        for key in user_info:
+            body[key] = user_info[key]
+
+    except Exception as e:
+        status = str(e)
+        body = None
+        util.sleep(0.5)
+
+    return {'status': status, 'body': body}
+
+#---
+def invalidate_existing_session(context):
+    current_sid = context.get_session_id()
+    if current_sid is not None:
+        authmgr.logout(current_sid, renew=True)
+
+#----------------------------------------------------------
 # logout
 #----------------------------------------------------------
 def logout(sid, renew=False):
     return authmgr.logout(sid)
 
 def build_logout_cookies():
-    cookie1 = util.build_cookie_for_clear('sid', path='/', http_only=True)
+    names = ['sid', 'ts']
     cookies = []
-    cookies.append({'Set-Cookie': cookie1})
-    return cookies
-
-#----------------------------------------------------------
-# build session cookie
-#----------------------------------------------------------
-def build_session_cookie(session_info):
-    cookies = None
-    if session_info is not None:
-        sid = session_info['sid']
-        uid = session_info['uid']
-
-        if uid is None:
-            max_age = sessionmgr.get_anonymous_session_sec()
-            if max_age <= 0:
-                return cookies
-        else:
-            max_age = sessionmgr.get_session_timeout_value()
-
-        cookie1 = util.build_cookie('sid', sid, max_age=str(max_age), path='/', http_only=True)
-        cookies = []
-        cookies.append({'Set-Cookie': cookie1})
-
+    for i in range(len(names)):
+        name = names[i]
+        cookie = build_cookie_for_clear(name)
+        cookies.append({'Set-Cookie': cookie})
     return cookies
 
 #----------------------------------------------------------
@@ -348,14 +395,64 @@ def get_user_agent():
     return util.get_user_agent()
 
 #----------------------------------------------------------
+# build session cookie
+#----------------------------------------------------------
+def get_response_cookies(context):
+    if context is None:
+        return None
+
+    for_anonymous = True
+
+    cookies = None
+    session_info = context.get_session_info()
+    if session_info is not None:
+        sid = session_info['sid']
+        uid = session_info['uid']
+
+        if uid is not None:
+            for_anonymous = False
+
+        cookies = append_cookie(cookies, 'sid', sid, for_anonymous)
+
+    if for_anonymous:
+        ts = context.get_timestamp()
+        if ts is not None:
+            sts = str(ts)
+            cookies = append_cookie(cookies, 'ts', sts, for_anonymous)
+
+    return cookies
+
+def append_cookie(cookies, name, value, for_anonymous):
+    if cookies is None:
+        cookies = []
+    cookie = build_cookie_header_field(name, value, for_anonymous)
+    cookies.append(cookie)
+    return cookies
+
+def build_cookie_header_field(name, value, for_anonymous):
+    if for_anonymous:
+        max_age = sessionmgr.get_anonymous_session_period_sec()
+        if max_age <= 0:
+            return cookies
+    else:
+        max_age = sessionmgr.get_session_timeout_value()
+
+    cookie = util.build_cookie(name, value, max_age=str(max_age), path='/', http_only=True)
+    return {'Set-Cookie': cookie}
+
+def build_cookie_for_clear(name):
+    cookie = util.build_cookie_for_clear(name, path='/', http_only=True)
+    return cookie
+
+#----------------------------------------------------------
 # send response
 #----------------------------------------------------------
 def send_response(result, type, headers=None, encoding=None, encryption=None):
     if encryption is None:
         encryption = sendrecv_encryption
 
-    session_info = sessionmgr.get_current_session_info_from_global()
-    cookies = build_session_cookie(session_info)
+    context = get_current_context_from_global()
+    cookies = get_response_cookies(context)
 
     if cookies is not None:
         if headers is None:
