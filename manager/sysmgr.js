@@ -729,25 +729,24 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   var accTp = scnjs.getTimePosition(now, lastAccessTime);
   var nowTp = scnjs.getTimePosition(now, now);
   var hrBlk = 5;
-  var ttlPs = hrBlk * 24;
+  var ttlCnt = hrBlk * 24;
   var dispAccDateTime = ' ' + accDateTime + ' ';
   var dispAccTime = ' ' + accTime + ' ';
 
-  var tsPosList = scnjs.getPosList4History(now, slotTimestampHistories);
-
   var html = '<span class="timeline-span">';
-  var s;
   var f = false;
-  for (var i = 0; i <= ttlPs; i++) {
+
+  var objList = scnjs.getTimeslotDataList(slotTimestampHistories, ttlCnt, now);
+
+  for (var i = 0; i <= ttlCnt; i++) {
     if (!f && (os == 0) && (i > nowTp)) {
       html += '<span class="timeline-forward">';
       f = true;
     }
 
     if ((os == 0) && (i == 0) && (accTp == -1)) {
-      s = '<span class="timeline-acc-ind-out" data-tooltip="' + accYearDateTime + '">&lt;</span>';
-      s += '<span class="timeline-acc-ind-time">' + dispAccDateTime + '</san>';
-      html += s;
+      html += '<span class="timeline-acc-ind-out" data-tooltip="' + accYearDateTime + '">&lt;</span>';
+      html += '<span class="timeline-acc-ind-time">' + dispAccDateTime + '</san>';
       i += dispAccDateTime.length;
       continue;
     } else if (i % hrBlk == 0) {
@@ -755,13 +754,13 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
       continue;
     }
 
-    s = '';
+    var s = '';
     if (i == accTp) {
-      s += '<span class="timeline-acc-ind" data-tooltip="' + accTime + '">*</span>';
-      s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
+      s += scnjs.getLatestAccInd(accTime, dispAccTime);
       i += dispAccTime.length;
     } else {
-      s += scnjs.getTimeslotInd(tsPosList, i);
+      var d = objList[i];
+      s += scnjs.getTimeslotInd(d);
     }
     html += s;
   }
@@ -771,40 +770,46 @@ scnjs.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   return html;
 };
 
-scnjs.getTimeslotInd = function(tsPosList, pos) {
-  var s = '-';
-  for (var i = 0; i < tsPosList.length; i++) {
-    var tsPos = tsPosList[i];
-    var p = tsPos.p;
-    if (p == pos) {
-      var t = tsPos.t;
-      var info = tsPos.i;
-      var tt = util.getDateTimeString(t, '%HH:%mm');
-      var ind = '*';
-      if (info == 'LOGIN') {
-        ind = 'I';
-        tt += ' Login';
-      }
-      s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + tt + '">' + ind + '</span>';
-      break;
-    }
-  }
+scnjs.getLatestAccInd = function(accTime, dispAccTime) {
+  var s = '<span class="timeline-acc-ind" data-tooltip="' + accTime + '">*</span>';
+  s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
   return s;
 };
 
-scnjs.getPosList4History = function(now, slotTimestampHistories) {
-  var posList = [];
-  for (var i = 0; i < slotTimestampHistories.length; i++) {
-    var dt = slotTimestampHistories[i];
-    var t = dt['time'];
-    var info = dt['info'];
-    if (scnjs.INSEC) t = Math.floor(t * 1000);
-    var p = scnjs.getTimePosition(now, t);
-    if (p >= 0) {
-      posList.push({p: p, t: t, i: info});
+scnjs.getTimeslotInd = function(d) {
+  if (!d) return '-';
+  var ind = '*';
+  if (d.i == 'LOGIN') {
+    ind = 'I';
+    d.tt += ' Login';
+  }
+  var s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + d.tt + '">' + ind + '</span>';
+  return s;
+};
+
+scnjs.getTimeslotDataList = function(tlDataList, ttlCnt, now) {
+  var objList = new Array(ttlCnt);
+  for (var i = 0; i < ttlCnt; i++) {
+    objList[i] = null;
+  }
+  for (i = 0; i < tlDataList.length; i++) {
+    var data = tlDataList[i];
+    var obj = scnjs.getTimelineObj(data, now);
+    obj.tt = util.getDateTimeString(obj.t, '%HH:%mm');
+    var idx = obj.p;
+    if (!objList[idx]) {
+      objList[idx] = obj;
     }
   }
-  return posList;
+  return objList;
+};
+
+scnjs.getTimelineObj = function(tlData, now) {
+  var t = tlData['time'];
+  var info = tlData['info'];
+  if (scnjs.INSEC) t = Math.floor(t * 1000);
+  var p = scnjs.getTimePosition(now, t);
+  return {p: p, t: t, i: info};
 };
 
 scnjs.getTimePosition = function(now, timestamp) {
@@ -829,18 +834,15 @@ scnjs.getTimePosition = function(now, timestamp) {
 
 scnjs.inTheTimeSlot = function(h, qM, hh, mm) {
   if (hh == h) {
-    if ((qM == 0) && (mm < 15)) {
-      return true;
-    } else if ((qM == 1) && (mm >= 15) && (mm < 30)) {
-      return true;
-    } else if ((qM == 2) && (mm >= 30) && (mm < 45)) {
-      return true;
-    } else if ((qM == 3) && (mm >= 45)) {
+    var m = mm | 0;
+    var slot = Math.floor(m / 15);
+    if (qM == slot) {
       return true;
     }
   }
   return false;
 };
+
 scnjs.getTimeSlot = function(h, hh, mm) {
   if (h == hh) {
     var m = (mm | 0) + 1;
