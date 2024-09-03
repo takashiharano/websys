@@ -1002,7 +1002,7 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
   html += '</table>';
 
   html += '<div style="margin-top:40px;text-align:center;">';
-  html += '<button onclick="scnjs.saveUserInfo();">OK</button>'
+  html += '<button id="user-edit-ok-button" onclick="scnjs.saveUserInfo();">OK</button>'
   html += '<button style="margin-left:8px;" onclick="scnjs.userEditWindow.close();">Cancel</button>'
   html += '</div>';
 
@@ -1141,6 +1141,7 @@ scnjs.clearUserInfoEditor = function() {
 };
 
 scnjs.saveUserInfo = function() {
+  $el('#user-edit-ok-button').disabled = true;
   if (scnjs.userEditMode == 'new') {
     scnjs.addUser();
   } else {
@@ -1236,19 +1237,6 @@ scnjs.addUser = function() {
   scnjs.execCmd('useradd', params, scnjs.updateUserCb);
 };
 
-scnjs.addUserCb = function(xhr, res) {
-  if (xhr.status != 200) {
-    scnjs.showInfotip('HTTP ' + xhr.status);
-    return;
-  }
-  scnjs.showInfotip(res.status);
-  if (res.status != 'OK') {
-    return;
-  }
-  scnjs.userEditWindow.close();
-  scnjs.getUserList();
-};
-
 //-----------------------------------------------------------------------------
 scnjs.updateUser = function() {
   var uid = $el('#uid').value;
@@ -1300,10 +1288,12 @@ scnjs.updateUser = function() {
 scnjs.updateUserCb = function(xhr, res) {
   if (xhr.status != 200) {
     scnjs.showInfotip('HTTP ' + xhr.status);
+    $el('#user-edit-ok-button').disabled = false;
     return;
   }
   scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
+    $el('#user-edit-ok-button').disabled = false;
     return;
   }
   scnjs.userEditWindow.close();
@@ -1583,7 +1573,7 @@ scnjs.openGroupInfoEditorWindow = function(mode, gid) {
   html += '</table>';
 
   html += '<div style="margin-top:24px;text-align:center;">';
-  html += '<button onclick="scnjs.saveGroupInfo();">OK</button>'
+  html += '<button id="group-edit-ok-button" onclick="scnjs.saveGroupInfo();">OK</button>'
   html += '<button style="margin-left:8px;" onclick="scnjs.groupEditWindow.close();">Cancel</button>'
   html += '</div>';
 
@@ -1649,20 +1639,7 @@ scnjs.addGroup = function() {
     desc: desc
   };
 
-  scnjs.execCmd('addgroup', params, scnjs.addGroupCb);
-};
-
-scnjs.addGroupCb = function(xhr, res) {
-  if (xhr.status != 200) {
-    scnjs.showInfotip('HTTP ' + xhr.status);
-    return;
-  }
-  scnjs.showInfotip(res.status);
-  if (res.status != 'OK') {
-    return;
-  }
-  scnjs.groupEditWindow.close();
-  scnjs.getGroupList();
+  scnjs.execCmd('addgroup', params, scnjs.updateGroupCb);
 };
 
 //-----------------------------------------------------------------------------
@@ -1685,10 +1662,12 @@ scnjs.updateGroup = function() {
 scnjs.updateGroupCb = function(xhr, res) {
   if (xhr.status != 200) {
     scnjs.showInfotip('HTTP ' + xhr.status);
+    $el('#group-edit-ok-button').disabled = false;
     return;
   }
   scnjs.showInfotip(res.status);
   if (res.status != 'OK') {
+    $el('#group-edit-ok-button').disabled = false;
     return;
   }
   scnjs.groupEditWindow.close();
@@ -1768,6 +1747,7 @@ scnjs.clearGroupInfoEditor = function() {
 };
 
 scnjs.saveGroupInfo = function() {
+  $el('#group-edit-ok-button').disabled = true;
   if (scnjs.groupEditMode == 'new') {
     scnjs.addGroup();
   } else {
