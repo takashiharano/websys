@@ -576,7 +576,10 @@ def get_user_memo_text(uid):
 
 def save_user_memo(uid, memo):
     path = get_user_memo_file_path(uid)
-    util.write_text_file(path, memo)
+    if memo == '':
+        util.delete_file(path)
+    else:
+        util.write_text_file(path, memo)
 
 #------------------------------------------------------------------------------
 # User Flags
