@@ -79,7 +79,7 @@ class WebContext:
     #   "is_admin": true,
     #   "groups": "GROUP1 GROUP2",
     #   "privs": "PRIVILEGE1 PRIVILEGE2",
-    #   "desc": "Description",
+    #   "flags": 0,
     #   "status": 0,
     #   "created_at": 1667047612.967891,
     #   "updated_at": 1667047612.967891,
@@ -172,12 +172,6 @@ class WebContext:
                 return True
 
         return False
-
-    def get_user_description(self):
-        user_info = self.user_info
-        if user_info is not None and 'desc' in user_info:
-            return user_info['desc']
-        return ''
 
     def is_guest(self):
         session_info = self.session_info

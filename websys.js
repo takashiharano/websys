@@ -681,7 +681,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
   var info1 = dbg.getOptVal(arg, 'info1');
   var info2 = dbg.getOptVal(arg, 'info2');
   var info3 = dbg.getOptVal(arg, 'info3');
-  var desc = dbg.getOptVal(arg, 'desc');
+  var memo = dbg.getOptVal(arg, 'memo');
   var flags = dbg.getOptVal(arg, 'flags');
   if (!p) p = '';
   var pw = websys.getUserPwHash(uid, p);
@@ -774,14 +774,14 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     }
     param.info3 = info3;
   }
-  if (desc) {
+  if (memo) {
     try {
-      desc = eval(desc);
+      memo = eval(memo);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.desc = desc;
+    param.memo = memo;
   }
   if (flags) {
     if (util.isInteger(flags)) {
@@ -823,7 +823,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var info1 = dbg.getOptVal(arg, 'info1');
   var info2 = dbg.getOptVal(arg, 'info2');
   var info3 = dbg.getOptVal(arg, 'info3');
-  var desc = dbg.getOptVal(arg, 'desc');
+  var memo = dbg.getOptVal(arg, 'memo');
 
   if (!uid || (admin && (admin != 'true') && (admin != 'false'))) {
     dbg.printUsage(tbl.help);
@@ -958,14 +958,14 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     }
     param.info3 = info3;
   }
-  if (desc) {
+  if (memo) {
     try {
-      desc = eval(desc);
+      memo = eval(memo);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.desc = desc;
+    param.memo = memo;
   }
   var flags = dbg.getOptVal(arg, 'flags');
   if (flags) {

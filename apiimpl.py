@@ -199,6 +199,7 @@ def cmd_user(context):
     status = 'OK'
     user_info = None
     uid = websys.get_request_param('uid')
+    w_memo = websys.get_request_param('w_memo', '0')
 
     if uid is None:
         sid = context.get_session_id()
@@ -212,10 +213,10 @@ def cmd_user(context):
           status = 'FORBIDDEN'
       else:
           if uid == current_uid:
-              user_info = usermgr.get_user_info(uid)
+              user_info = usermgr.get_user_info(uid, w_memo=w_memo)
           else:
               if context.is_admin():
-                  user_info = usermgr.get_user_info(uid)
+                  user_info = usermgr.get_user_info(uid, w_memo=w_memo)
                   if user_info is None:
                       status = 'NG'
               else:
@@ -268,8 +269,8 @@ def cmd_useradd(context):
     info1 = websys.get_request_param('info1', '')
     info2 = websys.get_request_param('info2', '')
     info3 = websys.get_request_param('info3', '')
-    desc = websys.get_request_param('desc', '')
     p_flags = websys.get_request_param('flags')
+    memo = websys.get_request_param('memo', '')
 
     if uid is None:
         websys.send_result_json('ERR_UID', body=None)
@@ -306,7 +307,7 @@ def cmd_useradd(context):
         p_flags = None
 
     try:
-        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, desc=desc, flags=p_flags)
+        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -354,8 +355,8 @@ def cmd_usermod(context):
     info1 = None
     info2 = None
     info3 = None
-    desc = None
     u_flags = None
+    memo = None
 
     if context.is_admin():
         p_admin = websys.get_request_param('is_admin')
@@ -382,14 +383,14 @@ def cmd_usermod(context):
         info1 = websys.get_request_param('info1', '')
         info2 = websys.get_request_param('info2', '')
         info3 = websys.get_request_param('info3', '')
-        desc = websys.get_request_param('desc', '')
+        memo = websys.get_request_param('memo', '')
 
         p_flags = websys.get_request_param('flags')
         if p_flags is not None:
             u_flags = p_flags
 
     try:
-        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, desc=desc, flags=u_flags)
+        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:

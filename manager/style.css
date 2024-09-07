@@ -46,7 +46,7 @@ input[type="text"]:disabled, input[type="password"]:disabled {
 
 textarea {
   outline: none;
-  background: #000;
+  background: transparent;
   color: #fff;
   font-family: Consolas, Monaco, Menlo, monospace, sans-serif;
 }
@@ -201,6 +201,10 @@ tr.item-list:hover {
 
 .you {
   color: #2af;
+}
+
+.user-edit-field-name {
+  width: 110px;
 }
 
 .session-info-head {

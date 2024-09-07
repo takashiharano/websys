@@ -37,7 +37,6 @@ USER_DATA_STRUCT = [
     {'name': 'info1'},
     {'name': 'info2'},
     {'name': 'info3'},
-    {'name': 'desc'},
     {'name': 'flags', 'type': 'int'},
     {'name': 'created_at', 'type': 'float'},
     {'name': 'updated_at', 'type': 'float'}
@@ -60,8 +59,8 @@ USER_STATUS_DATA_STRUCT = [
 ]
 
 # User data format
-# #uid	fullname	localfullname	a_name	is_admin	groups	privs	info1	info2	info3	desc	flags	created_at	updated_at
-# admin	Admin	ADMIN	Administrator	1	g1	p1	Info1	Info2	Info3	Description	0	1721446496.789123	1721446496.789123
+# #uid	fullname	localfullname	a_name	is_admin	groups	privs	info1	info2	info3	flags	created_at	updated_at
+# admin	Admin	ADMIN	Administrator	1	g1	p1	Info1	Info2	Info3	0	1721446496.789123	1721446496.789123
 
 # Object structure
 # users
@@ -78,10 +77,10 @@ USER_STATUS_DATA_STRUCT = [
 #     "info1": "Info1",
 #     "info2": "Info2",
 #     "info3": "Info3",
-#     "desc": "Description",
 #     "flags": 0,
 #     "created_at": 1667047612.967891,
-#     "updated_at": 1667047612.967891
+#     "updated_at": 1667047612.967891,
+#     "memo": "TEXT"
 #   },
 #   ...
 # }
@@ -100,7 +99,6 @@ USER_STATUS_DATA_STRUCT = [
 #     "info1": "",
 #     "info2": "",
 #     "info3": "",
-#     "desc": "Description",
 #     "flags": 0,
 #     "created_at": 1706947022.714497
 #     "updated_at": 1706947022.714497
@@ -112,12 +110,15 @@ USER_STATUS_DATA_STRUCT = [
 
 # get user info
 # return None is not exist
-def get_user_info(uid, guest=True):
+def get_user_info(uid, guest=True, w_memo=False):
     user = None
 
     users = get_all_user_info()
     if users is not None and uid in users:
         user = users[uid]
+        if w_memo:
+            memo_text = get_user_memo_text(uid)
+            user['memo'] = memo_text
 
     if user is None and guest:
         users = get_all_guest_user_info()
@@ -187,7 +188,7 @@ def count_sessions_per_user():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def add_user(uid, pw, fullname=None, localfullname=None, a_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', desc='', flags=None):
+def add_user(uid, pw, fullname=None, localfullname=None, a_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None):
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -196,22 +197,23 @@ def add_user(uid, pw, fullname=None, localfullname=None, a_name=None, email=None
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
-    user = create_new_user(now, uid, fullname, localfullname, a_name, email, is_admin, groups, privs, info1, info2, info3, desc, flags)
+    user = create_new_user(now, uid, fullname, localfullname, a_name, email, is_admin, groups, privs, info1, info2, info3, flags)
 
     users[uid] = user
     save_users(users)
     save_user_password(uid, pw)
     create_user_status_info(uid)
 
+    if memo is not None:
+        save_user_memo(uid, memo)
+
     return user
 
-def create_new_user(timestamp, uid, fullname=None, localfullname=None, a_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', info3='', desc='', flags=None):
+def create_new_user(timestamp, uid, fullname=None, localfullname=None, a_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
         u_flags = parse_int(flags)
-
-    desc = util.replace(desc, '\t|\r\n|\n', ' ')
 
     user = {
         'uid': uid,
@@ -225,7 +227,6 @@ def create_new_user(timestamp, uid, fullname=None, localfullname=None, a_name=No
         'info1': info1,
         'info2': info2,
         'info3': info3,
-        'desc': desc,
         'flags': u_flags,
         'created_at': timestamp,
         'updated_at': timestamp
@@ -234,7 +235,7 @@ def create_new_user(timestamp, uid, fullname=None, localfullname=None, a_name=No
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, fullname=None, localfullname=None, a_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, desc=None, flags=None, chg_pw=False):
+def modify_user(uid, pw=None, fullname=None, localfullname=None, a_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False):
     now = util.get_timestamp()
     is_guest = False
 
@@ -308,11 +309,6 @@ def modify_user(uid, pw=None, fullname=None, localfullname=None, a_name=None, em
         user['info3'] = info3
         updated = True
 
-    if desc is not None:
-        desc = util.replace(desc, '\t|\r\n|\n', ' ')
-        user['desc'] = desc
-        updated = True
-
     if flags is not None:
         try:
             u_flags = int(flags)
@@ -320,6 +316,10 @@ def modify_user(uid, pw=None, fullname=None, localfullname=None, a_name=None, em
             updated = True
         except:
             pass
+
+    if memo is not None:
+        save_user_memo(uid, memo)
+        updated = True
 
     if pw is not None:
         save_user_password(uid, pw)
@@ -391,7 +391,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs='', desc=''):
+def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs=''):
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -418,7 +418,7 @@ def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs='', desc=''):
     localfullname = fullname
     a_name = ''
 
-    user = create_new_user(now, new_uid, fullname, localfullname, a_name, is_admin=False, groups=groups, privs=privs, desc=desc, flags=0)
+    user = create_new_user(now, new_uid, fullname, localfullname, a_name, is_admin=False, groups=groups, privs=privs, flags=0)
     user['is_guest'] = True
     user['expires_at'] = now + valid_min * 60
 
@@ -462,7 +462,10 @@ def delete_guest_user(uid):
 
 # Save Guest Users
 def save_guest_users(users):
-    common.save_to_tsv_file(GUEST_USER_LIST_FILE_PATH, users, GUEST_DATA_STRUCT)
+    if len(users) == 0:
+        util.delete_file(GUEST_USER_LIST_FILE_PATH)
+    else:
+        common.save_to_tsv_file(GUEST_USER_LIST_FILE_PATH, users, GUEST_DATA_STRUCT)
 
 #----------------------------------------------------------
 def is_admin(user_info):
@@ -559,6 +562,21 @@ def delete_user_password(uid):
     if idx >= 0:
         pw_list.pop(idx)
         save_password_list(pw_list)
+
+#------------------------------------------------------------------------------
+# User memo text
+#------------------------------------------------------------------------------
+def get_user_memo_file_path(uid):
+    return  USER_ROOT_PATH + '/' + uid + '/memo.txt'
+
+def get_user_memo_text(uid):
+    path = get_user_memo_file_path(uid)
+    text = util.read_text_file(path, '')
+    return text
+
+def save_user_memo(uid, memo):
+    path = get_user_memo_file_path(uid)
+    util.write_text_file(path, memo)
 
 #------------------------------------------------------------------------------
 # User Flags
