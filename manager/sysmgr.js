@@ -60,6 +60,7 @@ scnjs.groupEditMode = null;
 scnjs.tmrId = 0;
 scnjs.interval = 0;
 scnjs.timelineDayOffset = 0;
+scnjs.letterCase = 0;
 
 $onReady = function() {
   util.clock('#clock');
@@ -168,8 +169,7 @@ scnjs.getUserListCb = function(xhr, res, req) {
   }
   scnjs.userList = userList;
   var listStatus = scnjs.listStatus;
-  var filter = $el('#search-filter').checked;
-  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, filter);
+  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
 };
 
 scnjs.elapsedSinceLastAccess = function(now, t) {
@@ -247,11 +247,31 @@ scnjs.searchUserList = function(searchKey, filter) {
 };
 
 scnjs.onFilterChange = function() {
+  scnjs.redrawUserList();
+};
+
+scnjs.toggleLetterCase = function() {
+  scnjs.letterCase++;
+  if (scnjs.letterCase > 2) {
+    scnjs.letterCase = 0;
+  }
+  $el('#uc').removeClass('link-button-inactive');
+  $el('#lc').removeClass('link-button-inactive');
+  switch (scnjs.letterCase) {
+    case 1:
+      $el('#lc').addClass('link-button-inactive');
+      break;
+    case 2:
+      $el('#uc').addClass('link-button-inactive');
+      break;
+  }
+  scnjs.redrawUserList();
+};
+
+scnjs.redrawUserList = function() {
   var userList = scnjs.userList;
   var listStatus = scnjs.listStatus;
-  var searchKey = $el('#search-text').value;
-  var filter = $el('#search-filter').checked;
-  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, searchKey, filter);
+  scnjs.drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder);
 };
 
 scnjs.drawUserList = function(userList, sortIdx, sortOrder) {
@@ -273,6 +293,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
   }
 
   var searchCaseSensitive = false;
+  var letterCase = scnjs.letterCase;
 
   var count = 0;
   var htmlList = '';
@@ -301,6 +322,14 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     var info1 = item.info1;
     var info2 = item.info2;
     var info3 = item.info3;
+
+    fullname = scnjs.changeLetterCase(fullname, letterCase);
+    localfullname = scnjs.changeLetterCase(localfullname, letterCase);
+    a_name = scnjs.changeLetterCase(a_name, letterCase);
+    email = scnjs.changeLetterCase(email, letterCase);
+    info1 = scnjs.changeLetterCase(info1, letterCase);
+    info2 = scnjs.changeLetterCase(info2, letterCase);
+    info3 = scnjs.changeLetterCase(info3, letterCase);
 
     var active = (sessions > 0);
     var led = scnjs.buildLedHtml(now, statusInfo.last_access, scnjs.INSEC, active);
@@ -391,6 +420,18 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
   html += '<div style="margin-bottom:4px;" class="list-info">' + listInfo + '</div>';
 
   $el('#user-list').innerHTML = html;
+};
+
+scnjs.changeLetterCase = function(s, letterCase) {
+  switch (letterCase) {
+    case 1:
+      s = s.toUpperCase();
+      break;
+    case 2:
+      s = s.toLowerCase();
+      break;
+  }
+  return s;
 };
 
 scnjs.buildFlagsTooltip = function(flags) {

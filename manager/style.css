@@ -157,6 +157,10 @@ tr.item-list:hover {
   color: #c0f0ff;
 }
 
+.link-button-inactive {
+  color: #888;
+}
+
 .sort-button {
   display: inline-block;
   line-height: 1em;
