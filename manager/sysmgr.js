@@ -1121,9 +1121,7 @@ scnjs.onUidBlur = function() {
   var fullname = $el('#fullname').value;
   if (fullname) return;
   var uid = $el('#uid').value;
-  if (uid.match()) {
-    fullname = scnjs.mail2name(uid);
-  }
+  fullname = scnjs.mail2name(uid);
   $el('#fullname').value = fullname;
 };
 
