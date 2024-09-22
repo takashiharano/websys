@@ -1119,23 +1119,25 @@ scnjs.copyUser = function() {
 
 scnjs.onUidBlur = function() {
   var uid = $el('#uid').value;
+  if (!util.isEmailAddress(uid)) return;
   var fullname = $el('#fullname').value;
   if (!fullname) {
-    fullname = scnjs.mail2name(uid);
+    fullname = scnjs.getNameFromEmail(uid);
+    fullname = util.capitalize(fullname, ' ');
     $el('#fullname').value = fullname;
   }
   var email = $el('#email').value;
-  if (!email && util.isEmailAddress(uid)) {
+  if (!email) {
     $el('#email').value = uid.toLowerCase();
   }
 };
 
-scnjs.mail2name = function(m) {
-  var a = m.split('@');
-  var w = a[0];
-  w = w.replace(/\./g, ' ');
-  if (!w.match(/ /)) return w;
-  var n = util.capitalize(w, ' ');
+scnjs.getNameFromEmail = function(m) {
+  var w = m.split('@');
+  var n = w[0];
+  n = n.replace(/\./g, ' ');
+  n = n.replace(/-/g, ' ');
+  n = n.replace(/_/g, ' ');
   return n;
 };
 
