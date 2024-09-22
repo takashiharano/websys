@@ -66,6 +66,7 @@ $onReady = function() {
   util.clock('#clock');
   $el('#user-list').innerHTML = '<span class="progdot">Loading</span>';
   scnjs.drawGroupStatus('<span class="progdot">Loading</span>');
+  scnjs.updateLetterCaseButton();
   $el('#search-text').focus();
 };
 
@@ -252,20 +253,33 @@ scnjs.onFilterChange = function() {
 
 scnjs.toggleLetterCase = function() {
   scnjs.letterCase++;
-  if (scnjs.letterCase > 2) {
+  if (scnjs.letterCase > 3) {
     scnjs.letterCase = 0;
   }
-  $el('#uc').removeClass('link-button-inactive');
-  $el('#lc').removeClass('link-button-inactive');
+  scnjs.updateLetterCaseButton();
+  scnjs.redrawUserList();
+};
+scnjs.updateLetterCaseButton = function() {
+  $el('#uc').removeClass('link-button');
+  $el('#uc').addClass('link-button-inactive');
+  $el('#lc').removeClass('link-button');
+  $el('#lc').addClass('link-button-inactive');
   switch (scnjs.letterCase) {
     case 1:
-      $el('#lc').addClass('link-button-inactive');
+      $el('#uc').removeClass('link-button-inactive');
+      $el('#uc').addClass('link-button');
       break;
     case 2:
-      $el('#uc').addClass('link-button-inactive');
+      $el('#lc').removeClass('link-button-inactive');
+      $el('#lc').addClass('link-button');
+      break;
+    case 3:
+      $el('#uc').removeClass('link-button-inactive');
+      $el('#uc').addClass('link-button');
+      $el('#lc').removeClass('link-button-inactive');
+      $el('#lc').addClass('link-button');
       break;
   }
-  scnjs.redrawUserList();
 };
 
 scnjs.redrawUserList = function() {
@@ -326,7 +340,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     fullname = scnjs.changeLetterCase(fullname, letterCase);
     localfullname = scnjs.changeLetterCase(localfullname, letterCase);
     a_name = scnjs.changeLetterCase(a_name, letterCase);
-    email = scnjs.changeLetterCase(email, letterCase);
+    email = scnjs.changeLetterCase4email(email, letterCase);
     info1 = scnjs.changeLetterCase(info1, letterCase);
     info2 = scnjs.changeLetterCase(info2, letterCase);
     info3 = scnjs.changeLetterCase(info3, letterCase);
@@ -430,7 +444,23 @@ scnjs.changeLetterCase = function(s, letterCase) {
     case 2:
       s = s.toLowerCase();
       break;
+    case 3:
+      s = util.capitalize(s, ' ');
+      break;
   }
+  return s;
+};
+
+scnjs.changeLetterCase4email = function(m, letterCase) {
+  if (!m) return m;
+  if (letterCase != 3) {
+    return scnjs.changeLetterCase(m, letterCase);
+  }
+  var a = m.split('@');
+  var localPart = a[0];
+  var domain = a[1];
+  var n = util.capitalize(localPart, '.');
+  var s = n + '@' + domain;
   return s;
 };
 
@@ -1099,16 +1129,11 @@ scnjs.onUidBlur = function() {
 
 scnjs.mail2name = function(m) {
   var a = m.split('@');
-  a = a[0].split('.');
-  if (a.length == 1) return a[0];
-  var s = '';
-  for (var i = 0; i < a.length; i++) {
-    if (i > 0) {
-      s += ' ';
-    }
-    s += util.capitalize(a[i]);
-  }
-  return s;
+  var w = a[0];
+  w = w.replace(/\./g, ' ');
+  if (!w.match(/ /)) return w;
+  var n = util.capitalize(w, ' ');
+  return n;
 };
 
 scnjs.GetUserInfoCb = function(xhr, res) {
