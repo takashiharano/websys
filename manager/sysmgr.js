@@ -1118,11 +1118,16 @@ scnjs.copyUser = function() {
 };
 
 scnjs.onUidBlur = function() {
-  var fullname = $el('#fullname').value;
-  if (fullname) return;
   var uid = $el('#uid').value;
-  fullname = scnjs.mail2name(uid);
-  $el('#fullname').value = fullname;
+  var fullname = $el('#fullname').value;
+  if (!fullname) {
+    fullname = scnjs.mail2name(uid);
+    $el('#fullname').value = fullname;
+  }
+  var email = $el('#email').value;
+  if (!email && util.isEmailAddress(uid)) {
+    $el('#email').value = uid.toLowerCase();
+  }
 };
 
 scnjs.mail2name = function(m) {
