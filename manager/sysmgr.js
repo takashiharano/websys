@@ -302,6 +302,11 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     if (sortOrder > 0) {
       var srtDef = scnjs.USER_LIST_COLUMNS[sortIdx];
       var isDesc = (sortOrder == 2);
+      var idx0 = scnjs.getItemIndex(scnjs.USER_LIST_COLUMNS, 'updated_at');
+      var idx1 = scnjs.getItemIndex(scnjs.USER_LIST_COLUMNS, srtDef.key);
+      if (idx0 != idx1) {
+        items = scnjs.sortList(items, 'updated_at', true);
+      }
       items = scnjs.sortList(items, srtDef.key, isDesc);
     }
   }
@@ -912,6 +917,17 @@ scnjs.getTimeSlot = function(h, hh, mm) {
     return Math.ceil(m / 15);
   }
   return -1;
+};
+
+scnjs.getItemIndex = function(columnDefs, key) {
+  var idx = -1;
+  for (var i = 0; i < columnDefs.length; i++) {
+    if (columnDefs[i].key == key) {
+      idx = i;
+      break;
+    }
+  }
+  return idx;
 };
 
 scnjs.sortItemList = function(sortIdx, sortOrder) {
