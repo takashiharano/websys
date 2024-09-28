@@ -1002,7 +1002,7 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
 
   html += '<div style="position:absolute;top:8px;right:8px;">';
   if (mode == 'edit') {
-    html += '<button id="user-copy-button" onclick="scnjs.copyUser();">COPY</button>';
+    html += '<button id="user-copy-button" onclick="scnjs.duplicateUser();">DUP</button>';
   }
   if (uid && (uid != currentUid)) {
     html += '<button id="user-del-button" style="margin-left:8px;" class="button-red" onclick="scnjs.deleteUser(\'' + uid + '\');">DEL</button>';
@@ -1122,7 +1122,7 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
   return win;
 };
 
-scnjs.copyUser = function() {
+scnjs.duplicateUser = function() {
   $el('#uid').disabled = false;
   $el('#uid').removeClass('edit-disabled');
   $el('#uid').value = '';
