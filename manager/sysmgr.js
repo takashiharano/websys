@@ -1221,11 +1221,14 @@ scnjs.clearUserInfoEditor = function() {
 };
 
 scnjs.saveUserInfo = function() {
-  $el('#user-edit-ok-button').disabled = true;
+  var requested;
   if (scnjs.userEditMode == 'new') {
-    scnjs.addUser();
+    requested = scnjs.addUser();
   } else {
-    scnjs.updateUser();
+    requested = scnjs.updateUser();
+  }
+  if (requested) {
+    $el('#user-edit-ok-button').disabled = true;
   }
 };
 
@@ -1250,49 +1253,49 @@ scnjs.addUser = function() {
   var clnsRes = scnjs.cleanseUid(uid);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   uid = clnsRes.val;
 
   clnsRes = scnjs.cleanseFullName(fullname);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   fullname = clnsRes.val;
 
   clnsRes = scnjs.cleanseFullName(localfullname);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   localfullname = clnsRes.val;
 
   clnsRes = scnjs.cleanseFullName(a_name);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   a_name = clnsRes.val;
 
   clnsRes = scnjs.cleanseGroups(groups);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   groups = clnsRes.val;
 
   clnsRes = scnjs.cleansePrivileges(privs);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   privs = clnsRes.val;
 
   clnsRes = scnjs.cleansePW(pw1, pw2, 'new');
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   var pw = clnsRes.val;
   pw = websys.getUserPwHash(uid, pw);
@@ -1315,6 +1318,8 @@ scnjs.addUser = function() {
   };
 
   scnjs.execCmd('useradd', params, scnjs.updateUserCb);
+
+  return true;
 };
 
 //-----------------------------------------------------------------------------
@@ -1338,7 +1343,7 @@ scnjs.updateUser = function() {
   var clnsRes = scnjs.cleansePW(pw1, pw2, 'edit');
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   var pw = clnsRes.val;
 
@@ -1363,6 +1368,8 @@ scnjs.updateUser = function() {
   }
 
   scnjs.execCmd('usermod', params, scnjs.updateUserCb);
+
+  return true;
 };
 
 scnjs.updateUserCb = function(xhr, res) {
