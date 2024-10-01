@@ -106,7 +106,7 @@ def cmd_logout(context):
 # Logout by SID
 def logout_by_sid(context, current_sid, sid):
     self_logout = False
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         current_uid = context.get_user_id()
         target_session_info = sessionmgr.get_session_info(sid)
         if target_session_info is None:
@@ -129,7 +129,7 @@ def logout_by_uid(context, uid):
     if uid == current_uid:
         self_logout = True
     else:
-        if not context.is_admin():
+        if not context.has_permission('sysadmin'):
             raise Exception('FORBIDDEN')
 
     i = sessionmgr.clear_user_sessions(uid)
@@ -140,7 +140,7 @@ def logout_by_uid(context, uid):
 
 # ALL Logout
 def all_logout(context, current_sid, self_logout=False):
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         raise Exception('FORBIDDEN')
 
     sessions = sessionmgr.get_all_sessions_info()
@@ -182,7 +182,7 @@ def cmd_sessions(context):
     if all is None:
         session_list = get_session_list_from_session(context)
     else:
-        if context.is_admin():
+        if context.has_permission('sysadmin'):
             session_list = []
             sessions = sessionmgr.get_all_sessions_info()
             for sid in sessions:
@@ -215,7 +215,7 @@ def cmd_user(context):
           if uid == current_uid:
               user_info = usermgr.get_user_info(uid, w_memo=w_memo)
           else:
-              if context.is_admin():
+              if context.has_permission('sysadmin'):
                   user_info = usermgr.get_user_info(uid, w_memo=w_memo)
                   if user_info is None:
                       status = 'NG'
@@ -232,7 +232,7 @@ def cmd_users(context):
         on_auth_error()
         return
 
-    if context.is_admin():
+    if context.has_permission('sysadmin'):
         status = 'OK'
         user_list = usermgr.get_all_user_info()
         guest_user_list = usermgr.get_all_guest_user_info()
@@ -253,7 +253,7 @@ def cmd_useradd(context):
         return
 
     status = 'ERROR'
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         websys.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -325,7 +325,7 @@ def cmd_usermod(context):
 
     uid = websys.get_request_param('uid')
 
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         user_info = context.get_user_info()
         if uid != user_info['uid']:
             websys.send_result_json('FORBIDDEN', body=None)
@@ -358,7 +358,7 @@ def cmd_usermod(context):
     u_flags = None
     memo = None
 
-    if context.is_admin():
+    if context.has_permission('sysadmin'):
         p_admin = websys.get_request_param('is_admin')
         if p_admin is not None:
             is_admin = p_admin == 'true'
@@ -419,7 +419,7 @@ def cmd_passwd(context):
 
     uid = websys.get_request_param('uid')
 
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         user_info = context.get_user_info()
         if uid != user_info['uid']:
             websys.send_result_json('FORBIDDEN', body=None)
@@ -453,7 +453,7 @@ def cmd_gencode(context):
         return
 
     uid = None
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         websys.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -502,7 +502,7 @@ def cmd_userdel(context):
         return
 
     status = 'ERROR'
-    if context.is_admin():
+    if context.has_permission('sysadmin'):
         uid = websys.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
@@ -543,7 +543,7 @@ def cmd_unlockuser(context):
         return
 
     status = 'ERROR'
-    if context.is_admin():
+    if context.has_permission('sysadmin'):
         uid = websys.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
@@ -566,7 +566,7 @@ def cmd_guests(context):
         on_auth_error()
         return
 
-    if context.is_admin():
+    if context.has_permission('sysadmin'):
         status = 'OK'
         guest_user_list = usermgr.get_all_guest_user_info()
 
@@ -587,7 +587,7 @@ def cmd_group(context):
     if gid is None:
         status = 'NO_GID'
     else:
-        if context.is_admin():
+        if context.has_permission('sysadmin'):
             group_info = groupmgr.get_group_info(gid)
             if group_info is None:
                 status = 'NG'
@@ -605,7 +605,7 @@ def cmd_addgroup(context):
         return
 
     status = 'ERROR'
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         websys.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -643,7 +643,7 @@ def cmd_modgroup(context):
 
     gid = websys.get_request_param('gid')
 
-    if not context.is_admin():
+    if not context.has_permission('sysadmin'):
         websys.send_result_json('FORBIDDEN', body=None)
         return
 
@@ -687,7 +687,7 @@ def cmd_delgroup(context):
         return
 
     status = 'ERROR'
-    if context.is_admin():
+    if context.has_permission('sysadmin'):
         gid = websys.get_request_param('gid')
         if gid is None:
             status = 'ERR_NO_GID'
@@ -717,7 +717,7 @@ def cmd_hello(context):
             on_auth_error()
             return
 
-        if context.is_admin():
+        if context.has_permission('sysadmin'):
             msg= 'Hello, ' + q
         else:
             msg = 'Hi!'
