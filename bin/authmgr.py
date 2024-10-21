@@ -76,6 +76,9 @@ def _login(uid, pw, ext_auth=False):
             user_status_info['login_failed_count'] = 0
             user_status_info['login_failed_time'] = 0
 
+    if usermgr.is_expired(user_info, now):
+        raise Exception('EXPIRED')
+
     user_pw = usermgr.get_user_password(uid)
     pw2 = util.hash(pw, ALGOTRITHM)
     if pw2 != user_pw:

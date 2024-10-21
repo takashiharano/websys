@@ -20,6 +20,7 @@ GUEST_USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users_guest.txt'
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
 PASSWORD_LIST_FILE_PATH = websysconf.PASSWORD_LIST_FILE_PATH
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
+PW_RESET_LOGIN_EXPIRE_SEC = websysconf.PW_RESET_LOGIN_EXPIRE_SEC
 
 U_FLG_NEED_PW_CHANGE = 1
 U_FLG_DISABLED = 1 << 2
@@ -586,6 +587,13 @@ def save_user_memo(uid, memo):
 #------------------------------------------------------------------------------
 def is_disabled(user_info):
     return has_user_flag(user_info, U_FLG_DISABLED)
+
+def is_expired(user_info, now):
+    if has_user_flag(user_info, U_FLG_NEED_PW_CHANGE):
+        updated_at = user_info['updated_at']
+        if round(now - updated_at) > PW_RESET_LOGIN_EXPIRE_SEC:
+            return True
+    return False
 
 def has_user_flag(user_info, flg):
     flags =  0
