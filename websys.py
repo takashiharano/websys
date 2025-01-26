@@ -19,7 +19,7 @@ import sessionmgr
 import authmgr
 
 LOCK_FILE_PATH = websysconf.LOCK_FILE_PATH
-root_path = ''
+g_root_path = ''
 query = None
 sendrecv_encryption = True
 recv_encryption_key = 1
@@ -35,8 +35,8 @@ def init(http_encryption):
 # set root path
 #----------------------------------------------------------
 def set_root_path(path):
-    global root_path
-    root_path = path
+    global g_root_path
+    g_root_path = path
 
 #-----------------
 # WebContext Class
@@ -504,28 +504,35 @@ body, pre {
 
 #----------------------------------------------------------
 # Auth Redirection
-def redirect_auth_screen():
-    global root_path
-    html = '''<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-'''
-    html += '<script src="' + root_path + 'libs/util.js"></script>\n'
-    html += '<script src="' + root_path + 'websys/websys.js"></script>\n'
-    html += '<script>\n'
-    html += 'onLoad = function() {\n'
-    html +='  websys.init(\'' + root_path + '\');\n'
-    html += 'websys.authRedirection(location.href);';
-    html += '};\n'
-    html += '''window.addEventListener('load', onLoad, true);
-</script>
-</head>
-<body>
-</body>
-</html>'''
+#
+#    if context.is_authorized() or context.has_permission('privilege_name'):
+#        websys.redirect_auth_screen('../')
+#        return
+#
+def redirect_auth_screen(root_path=None):
+    if root_path is None:
+        global g_root_path
+        root_path = g_root_path
+
+    html = build_auth_redirection_screen(root_path)
     send_response(html, 'text/html')
+
+#------------------------------------------------------------------------------
+def build_auth_redirection_screen(root_path):
+    html = '<!DOCTYPE html>'
+    html += '<html>'
+    html += '<head>'
+    html += '<meta charset="utf-8">'
+    html += '<script src="' + root_path + 'libs/util.js"></script>'
+    html += '<script src="' + root_path + 'websys/websys.js"></script>'
+    html += '<script>'
+    html += 'websys.init(\'' + root_path + '\');'
+    html += '$onLoad = function() {websys.authRedirection(location.href);};'
+    html += '</script>'
+    html += '</head>'
+    html += '<body></body>'
+    html += '</html>'
+    return html
 
 #----------------------------------------------------------
 def get_user_fullname(uid, default=None):
