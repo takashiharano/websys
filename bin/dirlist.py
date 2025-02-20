@@ -26,19 +26,17 @@ def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
         return
 
     dir_info = util.get_dir_info('.', recursive=1)
-    dir_list = dir_info['children']
+    file_list = dir_info['children']
 
     dirs = []
     files = []
-    for key in dir_list:
-        item = dir_list[key]
+    for i in range(len(file_list)):
+        item = file_list[i]
+        filename = item['filename']
         if item['isdir']:
-            dirs.append(key)
+            dirs.append(item)
         else:
-            files.append(key)
-
-    dirs.sort()
-    files.sort()
+            files.append(item)
 
     html = '''<!DOCTYPE html>
 <html>
@@ -194,13 +192,11 @@ util.postSubmit = function(url, params, uriEnc) {
 '''
     html += '<table>'
     for i in range(len(dirs)):
-        key = dirs[i]
-        item = dir_list[key]
+        item = dirs[i]
         html += dir_item(item, upload)
 
     for i in range(len(files)):
-        key = files[i]
-        item = dir_list[key]
+        item = files[i]
         filename = item['filename']
         if filename == util.get_filename(self_path):
             continue
