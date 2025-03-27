@@ -1419,11 +1419,11 @@ websys.authRedirection = function(srcUrl, extAuthUrl) {
   util.submit(authUrl, 'POST', params);
 };
 
-websys.buildClientSig = function() {
+websys.getClientInfo = function() {
   var b = util.getBrowserInfo();
-  var brw = b.name;
+  var brws = b.name;
   if (b.version) {
-    brw += '_' + b.version;
+    brws += ' ' + b.version;
   }
   var lngs = navigator.languages;
   var ln = '';
@@ -1437,10 +1437,18 @@ websys.buildClientSig = function() {
   } else {
     ln = navigator.language;
   }
-  var scrn = 'W' + screen.width + 'xH' + screen.height;
+  var scr = screen.width + 'x' + screen.height;
   var tz = util.getLocalTZ();
-  var sig = brw + '_' + scrn + '_TZ' + tz + '_' + ln;
-  return sig;
+  var tznm = util.getLocalTzName();
+  var o = {
+    tz: tz, // +0900
+    tzname: tznm, // Asia/Tokyo
+    ua: brws, // Chrome 134.0.0.0
+    lang: ln, // ja,en-US
+    screen: scr // 1920x1200
+  };
+  var j = JSON.stringify(o);
+  return j;
 };
 
 //-----------------------------------------------------------------------------
