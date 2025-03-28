@@ -645,7 +645,10 @@ scnjs.drawSessionList = function(sessions) {
   html += '<td class="session-info-head"style="font-weight:normal;">' + scnjs.buildTimeLineHeader1(now) + scnjs.buildTimeLineHeader2(now) + '</td>';
   html += '<td class="session-info-head">Addr</td>';
   html += '<td class="session-info-head">User-Agent</td>';
+  html += '<td class="session-info-head">Screen</td>';
+  html += '<td class="session-info-head">Time Zone</td>';
   html += '<td class="session-info-head">Logged in</td>';
+  html += '<td class="session-info-head">Lang</td>';
   html += '</tr>';
   html += scnjs.buildSessionInfoHtml(sessions, now);
   html += '</table>';
@@ -747,6 +750,10 @@ scnjs.buildSessionInfoOne = function(session, now) {
   var laTime = session['time'];
   var sid = session['sid'];
   var addr = session['addr'];
+  var lang = session['lang'];
+  var screen = session['screen'];
+  var zoom = session['zoom'];
+  var tzname = session['tzname'];
   if (scnjs.INSEC) laTime = Math.floor(laTime * 1000);
   var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var laTimeStr = util.getDateTimeString(laTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
@@ -774,7 +781,10 @@ scnjs.buildSessionInfoOne = function(session, now) {
   html += '<td>' + timeline + '</td>';
   html += '<td style="padding-right:10px;">' + addr + '</td>';
   html += '<td style="padding-right:10px;">' + dispUa + '</td>';
+  html += '<td style="padding-right:10px;">' + screen + ' ' + zoom + '%</td>';
+  html += '<td style="padding-right:10px;">' + tzname + '</td>';
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
+  html += '<td style="padding-right:10px;">' + lang + '</td>';
   html += '</tr>';
 
   setTimeout(scnjs.startElapsedCounter, 0, {timeId: '#' + timeId, laTime: laTime});

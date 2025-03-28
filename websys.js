@@ -583,14 +583,16 @@ websys.buildSessinInfo = function(info, flgA) {
   var s = '';
   s += 'uid     : ' + info['uid'] + (info.is_guest ? ' (GUEST)' : '') + '\n';
   s += 'sid     : ' + info['sid'] + '\n';
-  s += 'time    : ' + util.getDateTimeString(info['time']) + ' <span style="color:#ccc;">' + info['tz'] + '\n';
+  s += 'time    : ' + util.getDateTimeString(info['time'], '%YYYY-%MM-%DD %HH:%MI:%SS') + ' <span style="color:#ccc;">' + info['tz'] + ' ' + info['tzname'] + '\n';
   s += 'host    : ' + info['addr'] + '  ' + info['host'] + '\n';
   s += 'ua      : ' + brwL.name + ' ' + brwL.version + '\n';
+  s += 'screen  : ' + info['screen'] + ' ' + info['zoom'] + '%\n';
+  s += 'lang    : ' + info['lang'] + '\n';
   s += '</span>';
   if (flgA) {
     s += '<span style="color:#aaa;">';
     s += ' created:\n';
-    s += '    time: ' + util.getDateTimeString(info['c_time']) + ' ' + info['c_tz'] + '\n';
+    s += '    time: ' + util.getDateTimeString(info['c_time'], '%YYYY-%MM-%DD %HH:%MI:%SS') + ' ' + info['c_tz'] + ' ' + info['c_tzname'] + '\n';
     s += '    host: ' + info['c_addr'] + '  ' + info['c_host'] + '\n';
     s += '    ua  : ' + brwC.name + ' ' + brwC.version + '\n';
     s += '</span>';
@@ -1338,7 +1340,13 @@ websys.http = function(req, cb) {
   if (!data) data = {};
   var tz = util.getLocalTzName();
   if (!tz) tz = util.getLocalTZ();
-  data['_tz'] = tz;
+
+  var clinfo = websys.getClientInfo();
+  data['_tz'] = clinfo['tz'];
+  data['_tzname'] = clinfo['tzname'];
+  data['_screen'] = clinfo['screen'];
+  data['_zoom'] = clinfo['zoom'];
+
   var newReq = {
     url: req.url,
     method: req.method,
@@ -1420,6 +1428,8 @@ websys.authRedirection = function(srcUrl, extAuthUrl) {
 };
 
 websys.getClientInfo = function() {
+  var tz = util.getLocalTZ();
+  var tznm = util.getLocalTzName();
   var b = util.getBrowserInfo();
   var brws = b.name;
   if (b.version) {
@@ -1438,17 +1448,16 @@ websys.getClientInfo = function() {
     ln = navigator.language;
   }
   var scr = screen.width + 'x' + screen.height;
-  var tz = util.getLocalTZ();
-  var tznm = util.getLocalTzName();
+  var zoom = util.getZoomRatio();
   var o = {
     tz: tz, // +0900
     tzname: tznm, // Asia/Tokyo
     ua: brws, // Chrome 134.0.0.0
     lang: ln, // ja,en-US
-    screen: scr // 1920x1200
+    screen: scr, // 1920x1200
+    zoom: zoom // 100
   };
-  var j = JSON.stringify(o);
-  return j;
+  return o;
 };
 
 //-----------------------------------------------------------------------------

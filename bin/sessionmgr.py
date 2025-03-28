@@ -28,11 +28,16 @@ SESSION_DATA_STRUCT = [
    {'name': 'uid'},
    {'name': 'time', 'type': 'float'},
    {'name': 'tz'},
+   {'name': 'tzname'},
    {'name': 'addr'},
    {'name': 'host'},
    {'name': 'ua'},
+   {'name': 'lang'},
+   {'name': 'screen'},
+   {'name': 'zoom'},
    {'name': 'c_time', 'type': 'float'},
    {'name': 'c_tz'},
+   {'name': 'c_tzname'},
    {'name': 'c_addr'},
    {'name': 'c_host'},
    {'name': 'c_ua'},
@@ -175,18 +180,30 @@ def build_session_info(sid, uid, now, is_guest=False):
     addr = websys.get_ip_addr()
     host = websys.get_host_name()
     useragent = websys.get_user_agent()
-    tz = websys.get_request_param('_tz')
+
+    tz = websys.get_request_param('_tz', '+0000')
+    tzname = websys.get_request_param('_tzname', '')
+    screen = websys.get_request_param('_screen', '')
+    zoom = websys.get_request_param('_zoom', '')
+
+    lang = ln = os.environ.get('HTTP_ACCEPT_LANGUAGE', '')
+    lang = util.replace(lang, ';q=[^,]+', '')
 
     session_info = {
         'sid': sid,
         'uid': uid,
         'time': now,
         'tz': tz,
+        'tzname': tzname,
         'addr': addr,
         'host': host,
         'ua': useragent,
+        'lang': lang,
+        'screen': screen,
+        'zoom': zoom,
         'c_time': now,
         'c_tz': tz,
+        'c_tzname': tzname,
         'c_addr': addr,
         'c_host': host,
         'c_ua': useragent,
@@ -259,14 +276,22 @@ def update_last_access_info(uid, sid):
     addr = websys.get_ip_addr()
     host = websys.get_host_name()
     useragent = websys.get_user_agent()
-    tz = websys.get_request_param('_tz')
-    session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz)
+
+    tz = websys.get_request_param('_tz', '+0000')
+    tzname = websys.get_request_param('_tzname', '+0000')
+    screen = websys.get_request_param('_screen', '')
+    zoom = websys.get_request_param('_zoom', '')
+
+    lang = ln = os.environ.get('HTTP_ACCEPT_LANGUAGE', '')
+    lang = util.replace(lang, ';q=[^,]+', '')
+
+    session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz, tzname, lang, screen, zoom)
     return session
 
 #----------------------------------------------------------
 # Update session info
 #----------------------------------------------------------
-def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua=None, tz=None):
+def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua=None, tz=None, tzname=None, lang=None, screen=None, zoom=None):
     sessions = get_user_sessions(uid)
 
     if sessions is None:
@@ -284,6 +309,9 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
     if tz is not None:
         session['tz'] = tz
 
+    if tzname is not None:
+        session['tzname'] = tzname
+
     if addr is not None:
         session['addr'] = addr
 
@@ -292,6 +320,15 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
 
     if ua is not None:
         session['ua'] = ua
+
+    if lang is not None:
+        session['lang'] = lang
+
+    if screen is not None:
+        session['screen'] = screen
+
+    if zoom is not None:
+        session['zoom'] = zoom
 
     elapsed = time - prev_time
     if elapsed > MIN_FILE_UPDATE_INTERVAL_SEC:
