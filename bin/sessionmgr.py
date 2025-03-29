@@ -278,7 +278,7 @@ def update_last_access_info(uid, sid):
     useragent = websys.get_user_agent()
 
     tz = websys.get_request_param('_tz', '+0000')
-    tzname = websys.get_request_param('_tzname', '+0000')
+    tzname = websys.get_request_param('_tzname', '')
     screen = websys.get_request_param('_screen', '')
     zoom = websys.get_request_param('_zoom', '')
 

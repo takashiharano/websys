@@ -580,13 +580,18 @@ websys.buildSessinInfo = function(info, flgA) {
   var brwC = util.getBrowserInfo(info['c_ua']);
   var brwL = util.getBrowserInfo(info['ua']);
 
+  var screen = info['screen'].replace(/x/, ' x ');
+  var zoom = info['zoom'];
+  if (zoom) zoom += '%';
+  var scr = screen + ' ' + zoom;
+
   var s = '';
   s += 'uid     : ' + info['uid'] + (info.is_guest ? ' (GUEST)' : '') + '\n';
   s += 'sid     : ' + info['sid'] + '\n';
   s += 'time    : ' + util.getDateTimeString(info['time'], '%YYYY-%MM-%DD %HH:%MI:%SS') + ' <span style="color:#ccc;">' + info['tz'] + ' ' + info['tzname'] + '\n';
   s += 'host    : ' + info['addr'] + '  ' + info['host'] + '\n';
   s += 'ua      : ' + brwL.name + ' ' + brwL.version + '\n';
-  s += 'screen  : ' + info['screen'] + ' ' + info['zoom'] + '%\n';
+  s += 'screen  : ' + scr + '\n';
   s += 'lang    : ' + info['lang'] + '\n';
   s += '</span>';
   if (flgA) {

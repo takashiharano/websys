@@ -637,8 +637,8 @@ scnjs.drawSessionList = function(sessions) {
   var html = '<table>';
   html += '<tr style="font-weight:bold;">';
   html += '<td></td>';
-  html += '<td class="session-info-head">UID</td>';
   html += '<td class="session-info-head">Name</td>';
+  html += '<td class="session-info-head">UID</td>';
   html += '<td class="session-info-head"><span style="margin-left:8px;">Session</span></td>';
   html += '<td class="session-info-head">Last Access</td>';
   html += '<td class="session-info-head" style="min-width:98px;">Elapsed</td>';
@@ -646,6 +646,9 @@ scnjs.drawSessionList = function(sessions) {
   html += '<td class="session-info-head">Addr</td>';
   html += '<td class="session-info-head">User-Agent</td>';
   html += '<td class="session-info-head">Screen</td>';
+  html += '<td class="session-info-head">&nbsp;</td>';
+  html += '<td class="session-info-head">&nbsp;</td>';
+  html += '<td class="session-info-head">&nbsp;</td>';
   html += '<td class="session-info-head">Time Zone</td>';
   html += '<td class="session-info-head">Logged in</td>';
   html += '<td class="session-info-head">Lang</td>';
@@ -750,10 +753,16 @@ scnjs.buildSessionInfoOne = function(session, now) {
   var laTime = session['time'];
   var sid = session['sid'];
   var addr = session['addr'];
+  var host = session['host'];
   var lang = session['lang'];
-  var screen = session['screen'];
-  var zoom = session['zoom'];
   var tzname = session['tzname'];
+
+  var scrres = session['screen'].split('x');
+  var x = scrres[0] | 0;
+  var y = scrres[1] | 0;
+  var zoom = session['zoom'];
+  if (zoom) zoom += '%';
+
   if (scnjs.INSEC) laTime = Math.floor(laTime * 1000);
   var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
   var laTimeStr = util.getDateTimeString(laTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
@@ -773,15 +782,22 @@ scnjs.buildSessionInfoOne = function(session, now) {
   var html = '';
   html += '<tr class="item-list">';
   html += '<td style="padding-right:4px;">' + led + '</td>';
-  html += '<td style="padding-right:10px;">' + uid + '</td>';
-  html += '<td style="padding-right:6px;">' + fullname + '</td>';
+  html += '<td style="padding-right:10px;">' + fullname + '</td>';
+  html += '<td style="padding-right:6px;">' + uid + '</td>';
   html += '<td style="padding-right:10px;">' + dispSid + '</td>';
   html += '<td style="padding-right:10px;">' + laTimeStr + '</td>';
   html += '<td style="padding-right:10px;text-align:right;">' + tmspan + '</td>';
   html += '<td>' + timeline + '</td>';
-  html += '<td style="padding-right:10px;">' + addr + '</td>';
+  html += '<td style="padding-right:10px;"';
+  if (host) {
+    html += ' data-tooltip="' + host + '"';
+  }
+  html += '>' + addr + '</td>';
   html += '<td style="padding-right:10px;">' + dispUa + '</td>';
-  html += '<td style="padding-right:10px;">' + screen + ' ' + zoom + '%</td>';
+  html += '<td style="text-align:right;">' + x + '</td>';
+  html += '<td style="">x</td>';
+  html += '<td style="text-align:right;">' + y + '</td>';
+  html += '<td style="padding-right:10px;text-align:right;">' + zoom + '</td>';
   html += '<td style="padding-right:10px;">' + tzname + '</td>';
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '<td style="padding-right:10px;">' + lang + '</td>';
