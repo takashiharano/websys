@@ -796,7 +796,7 @@ scnjs.buildSessionInfoOne = function(session, now) {
   html += '<td style="">x</td>';
   html += '<td style="text-align:right;">' + y + '</td>';
   html += '<td style="padding-right:10px;text-align:right;">' + zoom + '</td>';
-  html += '<td style="padding-right:10px;">' + tz + '</td>';
+  html += '<td style="padding-right:6px;">' + tz + '</td>';
   html += '<td style="padding-right:10px;">' + tzname + '</td>';
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '<td style="padding-right:10px;">' + lang + '</td>';
