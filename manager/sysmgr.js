@@ -63,7 +63,7 @@ scnjs.timelineDayOffset = 0;
 scnjs.letterCase = 0;
 
 $onReady = function() {
-  util.clock('#clock');
+  util.clock('#clock', '%YYYY-%MM-%DD %W %HH:%mm:%SS %Z');
   $el('#user-list').innerHTML = '<span class="progdot">Loading</span>';
   scnjs.drawGroupStatus('<span class="progdot">Loading</span>');
   scnjs.updateLetterCaseButton();
@@ -645,11 +645,8 @@ scnjs.drawSessionList = function(sessions) {
   html += '<td class="session-info-head"style="font-weight:normal;">' + scnjs.buildTimeLineHeader1(now) + scnjs.buildTimeLineHeader2(now) + '</td>';
   html += '<td class="session-info-head">Addr</td>';
   html += '<td class="session-info-head">User-Agent</td>';
-  html += '<td class="session-info-head">Screen</td>';
-  html += '<td class="session-info-head">&nbsp;</td>';
-  html += '<td class="session-info-head">&nbsp;</td>';
-  html += '<td class="session-info-head">&nbsp;</td>';
-  html += '<td class="session-info-head">Time Zone</td>';
+  html += '<td class="session-info-head" colspan="4">Screen</td>';
+  html += '<td class="session-info-head" colspan="2">Time Zone</td>';
   html += '<td class="session-info-head">Logged in</td>';
   html += '<td class="session-info-head">Lang</td>';
   html += '</tr>';
@@ -755,6 +752,7 @@ scnjs.buildSessionInfoOne = function(session, now) {
   var addr = session['addr'];
   var host = session['host'];
   var lang = session['lang'];
+  var tz = session['tz'];
   var tzname = session['tzname'];
 
   var scrres = session['screen'].split('x');
@@ -798,6 +796,7 @@ scnjs.buildSessionInfoOne = function(session, now) {
   html += '<td style="">x</td>';
   html += '<td style="text-align:right;">' + y + '</td>';
   html += '<td style="padding-right:10px;text-align:right;">' + zoom + '</td>';
+  html += '<td style="padding-right:10px;">' + tz + '</td>';
   html += '<td style="padding-right:10px;">' + tzname + '</td>';
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '<td style="padding-right:10px;">' + lang + '</td>';
