@@ -132,6 +132,10 @@ tr.item-list:hover {
   background: #444;
 }
 
+.row-selected {
+  background: #484848 !important;
+}
+
 .row-odd {
   background: #282828;
 }

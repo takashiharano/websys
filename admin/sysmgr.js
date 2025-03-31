@@ -404,7 +404,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
     var ttFlg = scnjs.buildFlagsTooltip(flags);
 
-    htmlList += '<tr class="item-list ' + clz + '">';
+    htmlList += '<tr class="item-list user-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'user-info\');">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + dispFullname + '</td>';
@@ -778,7 +778,7 @@ scnjs.buildSessionInfoOne = function(session, now) {
   var timeline = scnjs.buildTimeLine(now, laTime, slotTimestampHistories);
 
   var html = '';
-  html += '<tr class="item-list">';
+  html += '<tr class="item-list session-info" ondblclick="sysmgr.onListRowDblClick(this, \'session-info\');">';
   html += '<td style="padding-right:4px;">' + led + '</td>';
   html += '<td style="padding-right:10px;">' + fullname + '</td>';
   html += '<td style="padding-right:6px;">' + uid + '</td>';
@@ -992,6 +992,12 @@ scnjs.logoutSessionCb = function(xhr, res) {
   }
   scnjs.showInfotip(res.status);
   scnjs.reloadUserInfo();
+};
+
+sysmgr.onListRowDblClick = function(el, clz) {
+  var f = $el(el).hasClass('row-selected');
+  $el('.' + clz).removeClass('row-selected');
+  if (!f) $el(el).addClass('row-selected');
 };
 
 //-----------------------------------------------------------------------------
@@ -1621,7 +1627,7 @@ scnjs.drawGroupList = function(list) {
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
-    html += '<tr class="item-list ' + clz + '">';
+    html += '<tr class="item-list group-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'group-info\');">';
     html += '<td class="item-list"><span class="pseudo-link link-button" onclick="scnjs.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + gid + '</span></td>';
     html += '<td class="item-list">' + name + '</td>';
     html += '<td class="item-list">' + privs + '</td>';
