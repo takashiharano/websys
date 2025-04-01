@@ -1343,8 +1343,6 @@ websys.updateUserInfo = function() {
 websys.http = function(req, cb) {
   var data = req.data;
   if (!data) data = {};
-  var tz = util.getLocalTzName();
-  if (!tz) tz = util.getLocalTZ();
 
   var clinfo = websys.getClientInfo();
   data['_tz'] = clinfo['tz'];
