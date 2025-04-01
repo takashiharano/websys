@@ -181,7 +181,7 @@ def build_session_info(sid, uid, now, is_guest=False):
     host = websys.get_host_name()
     useragent = websys.get_user_agent()
 
-    tz = websys.get_request_param('_tz', '+0000')
+    tz = websys.get_request_param('_tz', '')
     tzname = websys.get_request_param('_tzname', '')
     screen = websys.get_request_param('_screen', '')
     zoom = websys.get_request_param('_zoom', '')
@@ -277,10 +277,10 @@ def update_last_access_info(uid, sid):
     host = websys.get_host_name()
     useragent = websys.get_user_agent()
 
-    tz = websys.get_request_param('_tz', '+0000')
-    tzname = websys.get_request_param('_tzname', '')
-    screen = websys.get_request_param('_screen', '')
-    zoom = websys.get_request_param('_zoom', '')
+    tz = websys.get_request_param('_tz', None)
+    tzname = websys.get_request_param('_tzname', None)
+    screen = websys.get_request_param('_screen', None)
+    zoom = websys.get_request_param('_zoom', None)
 
     lang = ln = os.environ.get('HTTP_ACCEPT_LANGUAGE', '')
     lang = util.replace(lang, ';q=[^,]+', '')

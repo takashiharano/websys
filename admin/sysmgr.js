@@ -758,6 +758,12 @@ scnjs.buildSessionInfoOne = function(session, now) {
   var scrres = session['screen'].split('x');
   var x = scrres[0] | 0;
   var y = scrres[1] | 0;
+  var sx = 'x';
+  if (!x || !y) {
+    x = '';
+    y = '';
+    sx = '';
+  }
   var zoom = session['zoom'];
   if (zoom) zoom += '%';
 
@@ -793,7 +799,7 @@ scnjs.buildSessionInfoOne = function(session, now) {
   html += '>' + addr + '</td>';
   html += '<td style="padding-right:10px;">' + dispUa + '</td>';
   html += '<td style="text-align:right;">' + x + '</td>';
-  html += '<td style="">x</td>';
+  html += '<td style="">' + sx + '</td>';
   html += '<td style="text-align:right;">' + y + '</td>';
   html += '<td style="padding-right:10px;text-align:right;">' + zoom + '</td>';
   html += '<td style="padding-right:6px;">' + tz + '</td>';
