@@ -1110,11 +1110,11 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
 
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Password</td>';
-  html += '    <td><input type="password" id="pw1" style="width:100%;"></td>';
+  html += '    <td><input type="password" id="pw1" style="width:100%;" autocomplete="new-password"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Re-type</td>';
-  html += '    <td><input type="password" id="pw2" style="width:100%;"></td>';
+  html += '    <td><input type="password" id="pw2" style="width:100%;" autocomplete="new-password"></td>';
   html += '  </tr>';
   html += '</table>';
 

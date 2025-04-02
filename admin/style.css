@@ -44,6 +44,11 @@ input[type="text"]:disabled, input[type="password"]:disabled {
   color: #eee;
 }
 
+input:-webkit-autofill {
+  -webkit-transition: all 86400s;
+  transition: all 86400s;
+}
+
 textarea {
   outline: none;
   background: transparent;
