@@ -1401,6 +1401,48 @@ main.updateUser = function() {
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
 
+  clnsRes = main.cleanseFullName(fullname);
+  if (clnsRes.msg) {
+    main.showInfotip(clnsRes.msg, 2000);
+    return false;
+  }
+  fullname = clnsRes.val;
+
+  clnsRes = main.cleanseFullName(localfullname);
+  if (clnsRes.msg) {
+    main.showInfotip(clnsRes.msg, 2000);
+    return false;
+  }
+  localfullname = clnsRes.val;
+
+  clnsRes = main.cleanseFullName(kananame);
+  if (clnsRes.msg) {
+    main.showInfotip(clnsRes.msg, 2000);
+    return false;
+  }
+  kananame = clnsRes.val;
+
+  clnsRes = main.cleanseFullName(a_name);
+  if (clnsRes.msg) {
+    main.showInfotip(clnsRes.msg, 2000);
+    return false;
+  }
+  a_name = clnsRes.val;
+
+  clnsRes = main.cleanseGroups(groups);
+  if (clnsRes.msg) {
+    main.showInfotip(clnsRes.msg, 2000);
+    return false;
+  }
+  groups = clnsRes.val;
+
+  clnsRes = main.cleansePrivileges(privs);
+  if (clnsRes.msg) {
+    main.showInfotip(clnsRes.msg, 2000);
+    return false;
+  }
+  privs = clnsRes.val;
+
   var clnsRes = main.cleansePW(pw1, pw2, 'edit');
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
@@ -1524,7 +1566,7 @@ main.sortList = function(itemList, sortKey, isDesc) {
 //-----------------------------------------------------------------------------
 main.cleanseCommon = function(s) {
   s = s.trim();
-  s = s.replace(/\t/g, ' ');
+  s = s.replace(/[\tu00A0\200B\u3000]/g, ' ');
   var res = {
     val: s,
     msg: null
@@ -1548,18 +1590,6 @@ main.cleanseUid = function(s) {
 };
 
 main.cleanseFullName = function(s) {
-  var res = main.cleanseCommon(s);
-  if (res.msg) {
-    return res;
-  }
-  var msg = null;
-  s = res.val;
-  res.val = s;
-  res.msg = msg;
-  return res;
-};
-
-main.cleanseLocalFullName = function(s) {
   var res = main.cleanseCommon(s);
   if (res.msg) {
     return res;
