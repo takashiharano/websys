@@ -1566,7 +1566,7 @@ main.sortList = function(itemList, sortKey, isDesc) {
 //-----------------------------------------------------------------------------
 main.cleanseCommon = function(s) {
   s = s.trim();
-  s = s.replace(/[\tu00A0\200B\u3000]/g, ' ');
+  s = s.replace(/[\t\u00A0\200B\u3000]/g, ' ');
   var res = {
     val: s,
     msg: null
