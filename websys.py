@@ -75,6 +75,7 @@ class WebContext:
     #   "uid": "root", # guest: "123456"
     #   "fullname": "root", # guest: "GUEST"
     #   "localfullname": "root_L", # guest: "GUEST_L"
+    #   "kananame": "", # guest: ""
     #   "a_name": "root_A", # guest: "GUEST_A"
     #   "is_admin": true,
     #   "groups": "GROUP1 GROUP2",
@@ -118,6 +119,12 @@ class WebContext:
         user_info = self.user_info
         if user_info is not None and 'localfullname' in user_info:
             return user_info['localfullname']
+        return ''
+
+    def get_user_kananame(self):
+        user_info = self.user_info
+        if user_info is not None and 'kananame' in user_info:
+            return user_info['kananame']
         return ''
 
     def get_user_a_name(self):
@@ -553,7 +560,16 @@ def get_user_local_fullname(uid, default=None):
         user_local_fullname = user_info['localfullname']
     return user_local_fullname
 
+def get_user_kananame(uid, default=None):
+    user_kananame = default
+    if user_info is not None and 'kananame' in user_info:
+        user_kananame = user_info['kananame']
+    if default is None:
+        user_kananame = ''
+    return user_kananame
+
 def get_user_a_name(uid, default=None):
+    user_a_name = default
     if user_info is not None and 'a_name' in user_info:
         user_a_name = user_info['a_name']
     if default is None:

@@ -27,6 +27,7 @@ scnjs.USER_LIST_COLUMNS = [
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'fullname', label: 'Full name', style: 'min-width:8em;'},
   {key: 'localfullname', label: 'Local full name', style: 'min-width:8em;'},
+  {key: 'kananame', label: 'Kana name', style: 'min-width:5em;'},
   {key: 'a_name', label: 'Alias name', style: 'min-width:5em;'},
   {key: 'email', label: 'Email', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
@@ -323,6 +324,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     var uid = item.uid;
     var fullname = item.fullname;
     var localfullname = item.localfullname;
+    var kananame = item.kananame;
     var a_name = item.a_name;
     var email = item.email;
     var groups = item.groups;
@@ -357,6 +359,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     var dispUid = uid;
     var dispFullname = fullname;
     var dispLocalFullname = localfullname;
+    var dispKananame = kananame;
     var dispAname = a_name;
     var dispEmail = email;
     var dispGroups = groups;
@@ -369,6 +372,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
       dispUid = scnjs.highlightKeyword(uid, searchKey, searchCaseSensitive);
       dispFullname = scnjs.highlightKeyword(fullname, searchKey, searchCaseSensitive);
       dispLocalFullname = scnjs.highlightKeyword(localfullname, searchKey, searchCaseSensitive);
+      dispKananame = scnjs.highlightKeyword(kananame, searchKey, searchCaseSensitive);
       dispAname = scnjs.highlightKeyword(a_name, searchKey, searchCaseSensitive);
       dispEmail = scnjs.highlightKeyword(email, searchKey, searchCaseSensitive);
       dispGroups = scnjs.highlightKeyword(groups, searchKey, searchCaseSensitive);
@@ -381,6 +385,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     dispUid = cInd + '<span class="pseudo-link link-button" onclick="scnjs.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
     dispFullname = scnjs.buildCopyableLabel(fullname, dispFullname);
     dispLocalFullname = scnjs.buildCopyableLabel(localfullname, dispLocalFullname);
+    dispKananame = scnjs.buildCopyableLabel(kananame, dispKananame);
     dispAname = scnjs.buildCopyableLabel(a_name, dispAname);
     dispEmail = scnjs.buildCopyableLabel(email, dispEmail);
     dispInfo1 = scnjs.buildCopyableLabel(info1, dispInfo1);
@@ -409,6 +414,7 @@ scnjs._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + dispFullname + '</td>';
     htmlList += '<td class="item-list">' + dispLocalFullname + '</td>';
+    htmlList += '<td class="item-list">' + dispKananame + '</td>';
     htmlList += '<td class="item-list">' + dispAname + '</td>';
     htmlList += '<td class="item-list">' + dispEmail + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
@@ -523,6 +529,7 @@ scnjs.searchUserByKeyword = function(item, key, caseSensitive) {
   targets.push(item.uid);
   targets.push(item.fullname);
   targets.push(item.localfullname);
+  targets.push(item.kananame);
   targets.push(item.a_name);
   targets.push(item.email);
   targets.push(item.groups);
@@ -1062,6 +1069,10 @@ scnjs.openUserInfoEditorWindow = function(mode, uid) {
   html += '    <td><input type="text" id="localfullname" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
+  html += '    <td class="user-edit-field-name">Kana name</td>';
+  html += '    <td><input type="text" id="kananame" style="width:100%;"></td>';
+  html += '  </tr>';
+  html += '  <tr>';
   html += '    <td class="user-edit-field-name">Alias name</td>';
   html += '    <td><input type="text" id="a_name" style="width:100%;"></td>';
   html += '  </tr>';
@@ -1219,6 +1230,7 @@ scnjs.setUserInfoToEditor = function(info) {
   }
   $el('#fullname').value = info.fullname;
   $el('#localfullname').value = info.localfullname;
+  $el('#kananame').value = info.kananame;
   $el('#a_name').value = info.a_name;
   $el('#email').value = info.email;
   $el('#isadmin').checked = info.is_admin;
@@ -1243,6 +1255,7 @@ scnjs.clearUserInfoEditor = function() {
     uid: '',
     fullname: '',
     localfullname: '',
+    kananame: '',
     a_name: '',
     email: '',
     is_admin: false,
@@ -1274,6 +1287,7 @@ scnjs.addUser = function() {
   var uid = $el('#uid').value;
   var fullname = $el('#fullname').value;
   var localfullname = $el('#localfullname').value;
+  var kananame = $el('#kananame').value;
   var a_name = $el('#a_name').value;
   var email = $el('#email').value;
   var isAdmin = $el('#isadmin').checked;
@@ -1308,6 +1322,13 @@ scnjs.addUser = function() {
   }
   localfullname = clnsRes.val;
 
+  clnsRes = scnjs.cleanseFullName(kananame);
+  if (clnsRes.msg) {
+    scnjs.showInfotip(clnsRes.msg, 2000);
+    return false;
+  }
+  kananame = clnsRes.val;
+
   clnsRes = scnjs.cleanseFullName(a_name);
   if (clnsRes.msg) {
     scnjs.showInfotip(clnsRes.msg, 2000);
@@ -1341,6 +1362,7 @@ scnjs.addUser = function() {
     uid: uid,
     fullname: fullname,
     localfullname: localfullname,
+    kananame: kananame,
     a_name: a_name,
     email: email,
     is_admin: isAdmin,
@@ -1364,6 +1386,7 @@ scnjs.updateUser = function() {
   var uid = $el('#uid').value;
   var fullname = $el('#fullname').value;
   var localfullname = $el('#localfullname').value;
+  var kananame = $el('#kananame').value;
   var a_name = $el('#a_name').value;
   var email = $el('#email').value;
   var isAdmin = $el('#isadmin').checked;
@@ -1388,6 +1411,7 @@ scnjs.updateUser = function() {
     uid: uid,
     fullname: fullname,
     localfullname: localfullname,
+    kananame: kananame,
     a_name: a_name,
     email: email,
     is_admin: isAdmin,

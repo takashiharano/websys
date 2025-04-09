@@ -260,6 +260,7 @@ def cmd_useradd(context):
     uid = websys.get_request_param('uid')
     fullname = websys.get_request_param('fullname')
     localfullname = websys.get_request_param('localfullname')
+    kananame = websys.get_request_param('kananame')
     a_name = websys.get_request_param('a_name')
     email = websys.get_request_param('email')
     pw = websys.get_request_param('pw')
@@ -307,7 +308,7 @@ def cmd_useradd(context):
         p_flags = None
 
     try:
-        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo)
+        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -337,6 +338,7 @@ def cmd_usermod(context):
 
     fullname = websys.get_request_param('fullname')
     localfullname = websys.get_request_param('localfullname')
+    kananame = websys.get_request_param('kananame')
     a_name = websys.get_request_param('a_name')
     email = websys.get_request_param('email')
 
@@ -390,7 +392,7 @@ def cmd_usermod(context):
             u_flags = p_flags
 
     try:
-        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo)
+        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
