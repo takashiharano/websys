@@ -260,6 +260,11 @@ def _on_access(context, allow_guest):
         session_info = sessionmgr.update_last_access_info(uid, sid)
         authorized = authmgr.auth(allow_guest)
         context.set_user_info(user_info) # see usermgr.create_user() for object fields
+
+        flags = user_info['flags']
+        if flags & usermgr.U_FLG_NEED_PW_CHANGE:
+            authorized = False
+
         context.set_authorized(authorized)
 
     return context
@@ -338,6 +343,11 @@ def login(context, id, pw, ext_auth):
 
         sid = session_info['sid']
         status = 'OK'
+
+        flags = user_info['flags']
+        if flags & usermgr.U_FLG_NEED_PW_CHANGE:
+            status = 'PWD_CHG'
+
         body = {
             'sid': sid
         }
