@@ -299,7 +299,6 @@ websys.login.cancel = function() {
 };
 websys.login.doLogin = function(id, pw) {
   id = id.trim();
-  pw = pw.trim();
   var param = {
     cmd: 'login',
     id: id
