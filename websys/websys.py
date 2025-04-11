@@ -342,11 +342,7 @@ def login(context, id, pw, ext_auth):
         context.set_user_info(user_info)
 
         sid = session_info['sid']
-        status = 'OK'
-
-        flags = user_info['flags']
-        if flags & usermgr.U_FLG_NEED_PW_CHANGE:
-            status = 'PWD_CHG'
+        status = login_info['status']
 
         body = {
             'sid': sid

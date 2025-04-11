@@ -49,7 +49,15 @@ def do_login(uid, pw, ext_auth=False):
     session_info = login_info['session_info']
     sessionmgr.set_current_session_info_to_global(session_info)
 
-    write_login_log('OK', uid, session_info)
+    status = 'OK'
+    user_info = login_info['user_info']
+    flags = user_info['flags']
+    if flags & usermgr.U_FLG_NEED_PW_CHANGE:
+        status = 'NEED_PWD_CHG'
+
+    login_info['status'] = status
+
+    write_login_log(status, uid, session_info)
     return login_info
 
 def _login(uid, pw, ext_auth=False):

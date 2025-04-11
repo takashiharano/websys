@@ -436,10 +436,13 @@ def cmd_passwd(context):
     if pw is not None:
         pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
+    own_uid = context.get_user_id()
+    target = 'self' if uid == own_uid else uid
+
     try:
         usermgr.modify_user(uid, pw_hash, chg_pw=True)
         status = 'OK'
-        logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + uid)
+        logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + target)
     except Exception as e:
         status = 'ERR_' + str(e)
 

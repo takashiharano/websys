@@ -165,7 +165,7 @@ auth.loginCb = function(xhr, res) {
     if (status == 'OK') {
       var sid = data.sid;
       auth.onLoginOK(sid);
-    } else if (status == 'PWD_CHG') {
+    } else if (status == 'NEED_PWD_CHG') {
       sid = data.sid;
       var uid = data.uid;
       auth.changeToPwChangeScreen(uid, sid);
