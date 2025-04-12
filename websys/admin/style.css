@@ -111,6 +111,12 @@ button:disabled, input[type="button"]:disabled, input[type="submit"]:disabled {
   background: #d55;
 }
 
+.button-small {
+  height: 13px;
+  min-width: 40px;
+  font-size: 10px;
+}
+
 .text-red {
   color: #f88;
 }

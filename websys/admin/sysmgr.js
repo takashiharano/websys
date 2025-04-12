@@ -1122,11 +1122,11 @@ main.openUserInfoEditorWindow = function(mode, uid) {
 
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Password</td>';
-  html += '    <td><input type="password" id="pw1" style="width:100%;" autocomplete="new-password"></td>';
+  html += '    <td><input type="password" id="pw1" style="width:calc(100% - 100px);" autocomplete="new-password"><button class="button-small" style="margin-left:4px" onclick="main.setRandomPasswordT();">RANDOM</button><button class="button-small" style="margin-left:4px" onclick="main.setRandomPasswordN();">4 DIGIT</button></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Re-type</td>';
-  html += '    <td><input type="password" id="pw2" style="width:100%;" autocomplete="new-password"></td>';
+  html += '    <td><input type="password" id="pw2" style="width:calc(100% - 100px);" autocomplete="new-password"><button id="pwdtxt-button" class="button-small" style="margin-left:4px" onclick="main.togglePasswordAndText();">SHOW</button></td>';
   html += '  </tr>';
   html += '</table>';
 
@@ -1943,6 +1943,37 @@ main.onUserEditWindowClose = function() {
 main.onGroupEditWindowClose = function() {
   main.groupEditWindow = null;
   main.groupEditMode = null;
+};
+
+main.togglePasswordAndText = function() {
+  var m = (($el('#pw1').type == 'text') ? 'P' : 'T');
+  main.setPasswordTextMode(m);
+};
+main.setPasswordTextMode = function(m) {
+  var tp = 'text';
+  var label = 'HIDE';
+  if (m == 'P') {
+    tp = 'password';
+    label = 'SHOW';
+  }
+  $el('#pw1').type = tp;
+  $el('#pw2').type = tp;
+  $el('#pwdtxt-button').innerText = label;
+};
+
+main.setRandomPasswordT = function() {
+  var tbl = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+  main.setRandomPassword(tbl, 8);
+};
+main.setRandomPasswordN = function() {
+  var tbl = '0123456789'
+  main.setRandomPassword(tbl, 4);
+};
+main.setRandomPassword = function(tbl, n) {
+  var v = util.randomString(tbl, n);
+  $el('#pw1').value = v;
+  $el('#pw2').value = v;
+  main.setPasswordTextMode('T');
 };
 
 main.copy = function(s) {
