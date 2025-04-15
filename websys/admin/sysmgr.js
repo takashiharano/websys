@@ -789,7 +789,7 @@ main.buildSessionInfoOne = function(session, now) {
   var tmspan = '<span id="' + timeId + '"></span>';
 
   var slotTimestampHistories = session['timeline_log'];
-  var timeline = main.buildTimeLine(now, laTime, slotTimestampHistories);
+  var timeline = main.buildTimeLine(now, laTime, slotTimestampHistories, session);
 
   var html = '';
   html += '<tr class="item-list session-info" ondblclick="sysmgr.onListRowDblClick(this, \'session-info\');">';
@@ -824,7 +824,7 @@ main.startElapsedCounter = function(param) {
   util.timecounter.start(param.timeId, param.laTime, o);
 };
 
-main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
+main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories, session) {
   var os = main.timelineDayOffset;
   if (os > 0) {
     now = now - (main.DAY * os);
@@ -863,7 +863,7 @@ main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
 
     var s = '';
     if (i == accTp) {
-      s += main.getLatestAccInd(accTime, dispAccTime);
+      s += main.getLatestAccInd(accTime, dispAccTime, session);
       i += dispAccTime.length;
     } else {
       var d = objList[i];
@@ -877,8 +877,10 @@ main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories) {
   return html;
 };
 
-main.getLatestAccInd = function(accTime, dispAccTime) {
-  var s = '<span class="timeline-acc-ind" data-tooltip="' + accTime + '">*</span>';
+main.getLatestAccInd = function(accTime, dispAccTime, session) {
+  var path = session['path'];
+  var tt = accTime + ' ' + path;
+  var s = '<span class="timeline-acc-ind" data-tooltip="' + tt + '">*</span>';
   s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
   return s;
 };
@@ -886,9 +888,13 @@ main.getLatestAccInd = function(accTime, dispAccTime) {
 main.getTimeslotInd = function(d) {
   if (!d) return '-';
   var ind = '*';
-  if (d.i == 'LOGIN') {
+  var i = d.i;
+  if (i == 'LOGIN') {
     ind = 'I';
     d.tt += ' Login';
+  } else if (i && i.startsWith('PATH')) {
+    var i = i.replace(/PATH=/, '');
+    d.tt += ' ' + i;
   }
   var s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + d.tt + '">' + ind + '</span>';
   return s;

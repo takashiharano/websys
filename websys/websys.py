@@ -257,7 +257,12 @@ def _on_access(context, allow_guest):
     context.set_session_info(session_info)
 
     if is_managed:
-        session_info = sessionmgr.update_last_access_info(uid, sid)
+        uri = os.environ.get('REQUEST_URI', '')
+        simple_path = util.extract_string(uri, '.*\/([^/?]+)\/.*')
+        if simple_path == '':
+            simple_path = '/'
+
+        session_info = sessionmgr.update_last_access_info(uid, sid, simple_path)
         authorized = authmgr.auth(allow_guest)
         context.set_user_info(user_info) # see usermgr.create_user() for object fields
 

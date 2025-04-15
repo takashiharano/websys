@@ -41,7 +41,8 @@ SESSION_DATA_STRUCT = [
    {'name': 'c_addr'},
    {'name': 'c_host'},
    {'name': 'c_ua'},
-   {'name': 'is_guest', 'type': 'bool'}
+   {'name': 'is_guest', 'type': 'bool'},
+   {'name': 'path'}
 ]
 
 current_session_info = None
@@ -271,7 +272,7 @@ def generate_session_id(uid):
 #----------------------------------------------------------
 # Update last access info
 #----------------------------------------------------------
-def update_last_access_info(uid, sid):
+def update_last_access_info(uid, sid, path):
     now = util.get_timestamp()
     addr = websys.get_ip_addr()
     host = websys.get_host_name()
@@ -285,13 +286,13 @@ def update_last_access_info(uid, sid):
     lang = ln = os.environ.get('HTTP_ACCEPT_LANGUAGE', '')
     lang = util.replace(lang, ';q=[^,]+', '')
 
-    session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz, tzname, lang, screen, zoom)
+    session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz, tzname, lang, screen, zoom, path)
     return session
 
 #----------------------------------------------------------
 # Update session info
 #----------------------------------------------------------
-def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua=None, tz=None, tzname=None, lang=None, screen=None, zoom=None):
+def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua=None, tz=None, tzname=None, lang=None, screen=None, zoom=None, path=None):
     sessions = get_user_sessions(uid)
 
     if sessions is None:
@@ -330,11 +331,16 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
     if zoom is not None:
         session['zoom'] = zoom
 
+    if path is not None:
+        session['path'] = path
+
     elapsed = time - prev_time
     if elapsed > MIN_FILE_UPDATE_INTERVAL_SEC:
         save_user_sessions(uid, sessions)
         usermgr.update_user_status_info(uid, 'last_access', time)
-        write_user_timeline_log(uid, sid, time)
+
+        info = 'PATH=' + path
+        write_user_timeline_log(uid, sid, time, info)
 
     return session
 
