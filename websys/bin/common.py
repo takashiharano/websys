@@ -95,7 +95,10 @@ def parse_tsv_field_values(tsv_text, data_fields_def, path):
                     as_true = field['as_true']
 
         try:
-            value = text_values[i]
+            if len(text_values) > i:
+                value = text_values[i]
+            else:
+                value = ''
             values[key] = util.from_text_value(value, data_type, as_true)
         except Exception as e:
             logger.write_system_log('ERROR', '-', 'common.parse_tsv_field_values() : path=' + path + ' : col=' + str(i + 1) + ' : ' + str(e) + ' : text=' + tsv_text)

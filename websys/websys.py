@@ -258,7 +258,7 @@ def _on_access(context, allow_guest):
 
     if is_managed:
         uri = os.environ.get('REQUEST_URI', '')
-        simple_path = util.extract_string(uri, '.*\/([^/?]+)\/.*')
+        simple_path = util.extract_string(uri, r'.*\/([^/?]+)\/.*')
         if simple_path == '':
             simple_path = '/'
 
