@@ -36,7 +36,7 @@ def build_main_screen(context):
 <div id="body1">
 
 <div style="margin-top:4px;margin-bottom:4px;">
-<b>Users</b><br>
+<b>Users</b> (<span id="user-num"></span>)<br>
 <button onclick="sysmgr.newUser();">+</button>
 <button onclick="sysmgr.reloadUserInfo();">Reload</button>
 <span style="margin-left:16px;">Search: <input type="text" id="search-text" style="width:150px;" oninput="main.onSearchInput(this);"></span><span style="margin-left:8px;"><input type="checkbox" id="search-filter" onchange="main.onFilterChange();" checked><label for="search-filter">Filter</label></span>
@@ -44,12 +44,12 @@ def build_main_screen(context):
 </div>
 <div id="user-list" style="width:100%;max-height:400px;overflow:auto;"></div>
 
-<pre style="margin-top:10px;"><span>Sessions</span><span style="margin-left:24px;"><span id="clock"></span></span>
+<pre style="margin-top:10px;"><span>Sessions</span> (<span id="session-num"></span>)<span style="margin-left:24px;"><span id="clock"></span></span>
 <div id="session-list" style="width:100%;max-height:250px;overflow:auto;"></div></pre>
 
 <div style="display:inline-block;margin-top:20px;margin-bottom:40px;">
 <div style="margin-bottom:4px;">
-<b>Groups</b><br>
+<b>Groups</b> (<span id="group-num"></span>)<br>
 <button onclick="sysmgr.newGroup();">+</button>
 <button onclick="sysmgr.getGroupList();">Reload</button>
 <span id="groups-status" style="margin-left:8px;"></span><br>

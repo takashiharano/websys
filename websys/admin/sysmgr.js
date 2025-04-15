@@ -436,16 +436,11 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     htmlList += '</tr>';
   }
 
-  var listInfo = 'count = ' + count;
-  if (count == 0) {
-    listInfo = '<div style="margin-top:8px;margin-bottom:40px;">- DATA NOT FOUND -</div>';
-  }
-
   var htmlHead = main.buildListHeader(main.USER_LIST_COLUMNS, sortIdx, sortOrder);
   var html = '<table>' + htmlHead + htmlList + '</table>';
-  html += '<div style="margin-bottom:4px;" class="list-info">' + listInfo + '</div>';
 
   $el('#user-list').innerHTML = html;
+  $el('#user-num').innerText = count;
 };
 
 main.changeLetterCase = function(s, letterCase) {
@@ -661,6 +656,7 @@ main.drawSessionList = function(sessions) {
   html += main.buildSessionInfoHtml(sessions, now);
   html += '</table>';
   $el('#session-list').innerHTML = html;
+  $el('#session-num').innerText = sessions.length;
   main.updateTimeline();
 };
 
@@ -1705,6 +1701,7 @@ main.drawGroupList = function(list) {
   }
   html += '</table>';
   $el('#group-list').innerHTML = html;
+  $el('#group-num').innerText = list.length;
 };
 
 //-----------------------------------------------------------------------------
