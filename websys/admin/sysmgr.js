@@ -848,8 +848,7 @@ main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories, sessi
     }
 
     if ((os == 0) && (i == 0) && (accTp == -1)) {
-      html += '<span class="timeline-acc-ind-out" data-tooltip="' + accYearDateTime + '">&lt;</span>';
-      html += '<span class="timeline-acc-ind-time">' + dispAccDateTime + '</san>';
+      html += main.getLatestAccInd(accYearDateTime, dispAccDateTime, session, 1);
       i += dispAccDateTime.length;
       continue;
     } else if (i % hrBlk == 0) {
@@ -859,7 +858,7 @@ main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories, sessi
 
     var s = '';
     if (i == accTp) {
-      s += main.getLatestAccInd(accTime, dispAccTime, session);
+      s += main.getLatestAccInd(accTime, dispAccTime, session, 0);
       i += dispAccTime.length;
     } else {
       var d = objList[i];
@@ -873,10 +872,16 @@ main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories, sessi
   return html;
 };
 
-main.getLatestAccInd = function(accTime, dispAccTime, session) {
+main.getLatestAccInd = function(accTime, dispAccTime, session, outOfRange) {
   var path = session['path'];
   var tt = accTime + ' ' + path;
-  var s = '<span class="timeline-acc-ind" data-tooltip="' + tt + '">*</span>';
+  var c = '*';
+  var clz = 'timeline-acc-ind';
+  if (outOfRange) {
+    c = '&lt;';
+    clz = 'timeline-acc-ind-out';
+  }
+  var s = '<span class="' + clz + '" data-tooltip="' + tt + '">' + c + '</span>';
   s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
   return s;
 };
