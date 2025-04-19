@@ -487,7 +487,8 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var dispInfo2 = info2;
     var dispInfo3 = info3;
 
-    dispGroups = main.makeFilterableGroupLabel(dispGroups);
+    dispGroups = main.makeFilterableFieldValueLabel('groups', dispGroups);
+    dispPrivs = main.makeFilterableFieldValueLabel('privs', dispPrivs);
 
     var searchFieldName = main.filteringFieldName;
     if (searchKeyword) {
@@ -564,21 +565,21 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
   $el('#user-num').innerText = count;
 };
 
-main.makeFilterableGroupLabel = function(s) {
+main.makeFilterableFieldValueLabel = function(fieldName, s) {
   var a = s.split(' ');
   var r = '';
   for (var i = 0; i < a.length; i++) {
     var v = a[i];
-    var w = '<span class="pseudo-link" onclick="main.filterUserGroup(\'' + v + '\')">' + v + '</span>';
+    var w = '<span class="filter-link" onclick="main.filterUserByFieldFromLink(\'' + fieldName + '\', \'' + v + '\')">' + v + '</span>';
     if (i > 0) r += ' ';
     r += w;
   }
   return r;
 };
 
-main.filterUserGroup = function(g) {
-  main.openUserFilterWindow('groups');
-  $el('#user-filter-keyword').value = g;
+main.filterUserByFieldFromLink = function(fieldName, v) {
+  main.openUserFilterWindow(fieldName);
+  $el('#user-filter-keyword').value = v;
   main.setUserFiltering();
 };
 
@@ -1263,7 +1264,7 @@ main.openUserInfoEditorWindow = function(mode, uid) {
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Flags</td>';
-  html += '    <td><input type="text" id="flags" style="width:1.5em;"></td>';
+  html += '    <td><input type="text" id="flags" style="width:2em;"></td>';
   html += '  </tr>';
 
   html += '  <tr>';

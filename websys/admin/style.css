@@ -286,3 +286,8 @@ tr.item-list:hover {
 .list-field-name:hover {
   cursor: pointer;
 }
+
+.filter-link:hover {
+  cursor: pointer;
+  background: rgba(168,168,168,0.5) !important;
+}
