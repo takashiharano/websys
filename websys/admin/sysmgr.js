@@ -31,8 +31,8 @@ main.USER_LIST_COLUMNS = [
   {key: 'a_name', label: 'Alias name', style: 'min-width:5em;'},
   {key: 'email', label: 'Email', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
-  {key: 'groups', label: 'Groups', style: 'min-width:8em;'},
-  {key: 'privs', label: 'Privileges'},
+  {key: 'groups', label: 'Groups', style: 'min-width:8em;', filterMatchType: 'exact'},
+  {key: 'privs', label: 'Privileges', filterMatchType: 'exact'},
   {key: 'info1', label: 'Info1'},
   {key: 'info2', label: 'Info2'},
   {key: 'info3', label: 'Info3'},
@@ -56,6 +56,11 @@ main.userList = [];
 main.sessions = null;
 main.userEditWindow = null;
 main.userEditMode = null;
+main.userFilterWindow = null;
+main.filteringFieldName = null;
+main.filteringKeyword = null;
+main.exactMatch = false;
+main.filtering = false;
 main.groupEditWindow = null;
 main.groupEditMode = null;
 main.tmrId = 0;
@@ -143,6 +148,17 @@ main.showInfotip = function(m, d) {
   util.infotip.show(m, d, opt);
 };
 
+main.getUserFieldDefinistion = function(key) {
+  var fields = main.USER_LIST_COLUMNS;
+  for (var i = 0; i < fields.length; i++) {
+    var field = fields[i];
+    if (field.key == key) {
+      return field;
+    }
+  }
+  return null;
+};
+
 main.getUserList = function() {
   main.callApi('get_user_list', null, main.getUserListCb);
 };
@@ -219,7 +235,7 @@ main.buildListHeader = function(columns, sortIdx, sortOrder) {
     if (column.style) {
       html += ' style="' + column.style + '"';
     }
-    html += '><span>' + label + '</span>';
+    html += '><span class="list-field-name" onclick="main.openUserFilterWindow(\'' + column.key + '\');">' + label + '</span>';
     if (sortable) {
       html += ' ' + sortButton;
     }
@@ -242,10 +258,105 @@ main.clearSeachKey = function() {
   }
 };
 
-main.searchUserList = function(searchKey, filter) {
+main.searchUserList = function(searchKey, filter, filterCol, exactMatch) {
   var userList = main.userList;
   var listStatus = main.listStatus;
-  main._drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, searchKey, filter);
+  main._drawUserList(userList, listStatus.sortIdx, listStatus.sortOrder, searchKey, filter, filterCol, exactMatch);
+};
+
+main.filterUserByField = function(fieldName, keyword, exactMatch, filtering) {
+  main.searchUserList(keyword, filtering, fieldName, exactMatch);
+};
+
+main.onUserFiltering = function() {
+  main.exactMatch = false;
+  main.filtering = false;
+  main.updateUserFiltering();
+};
+
+main.updateUserFiltering = function() {
+  var fieldName = main.filteringFieldName;
+  var keyword = $el('#user-filter-keyword').value;
+  var exactMatch = main.exactMatch;
+  var filtering = main.filtering;
+  main.filterUserByField(fieldName, keyword, exactMatch, filtering);
+  main.filteringKeyword = keyword;
+};
+
+main.setUserFiltering = function() {
+  var fieldName = main.filteringFieldName;
+  var field = main.getUserFieldDefinistion(fieldName);
+  main.exactMatch = (field.filterMatchType == 'exact');
+  main.filtering = true;
+  main.updateUserFiltering();
+};
+
+main.openUserFilterWindow = function(fieldName) {
+  var win = main.userFilterWindow;
+  if (!win) {
+    win = main.createUserFilterWindow(fieldName);
+    main.userFilterWindow = win;
+  }
+  var field = main.getUserFieldDefinistion(fieldName);
+  win.setTitle('User Filter: ' + field.label);
+  main.filteringFieldName = fieldName;
+  $el('#user-filter-keyword').focus();
+};
+main.createUserFilterWindow = function(fieldName) {
+  var html = '';
+  html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
+
+  html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:calc(100% - 50px);height:30px;text-align:left;">';
+  html += '<table class="edit-table" style="width:100%;">';
+  html += '  <tr>';
+  html += '    <td>Search</td>';
+  html += '    <td><input type="text" id="user-filter-keyword" style="width:calc(100% - 60px);" oninput="main.onUserFiltering();"><button style="margin-left:8px;" onclick="main.setUserFiltering();">Filter</button></td>';
+  html += '  </tr>';
+  html += '</table>';
+  html += '</div>';
+
+  html += '</div>';
+
+  var opt = {
+    draggable: true,
+    resizable: false,
+    maximize: false,
+    pos: 'c',
+    closeButton: true,
+    width: 400,
+    height: 100,
+    minWidth: 400,
+    minHeight: 100,
+    scale: 1,
+    hidden: false,
+    modal: false,
+    title: {
+      text: '',
+      style: {
+        color: main.dialogTitleFgColor,
+        background: main.dialogTitleBgColor
+      }
+    },
+    body: {
+      style: {
+        color: main.dialogFgColor,
+        background: main.dialogBgColor
+      }
+    },
+    onclose: main.onUserFilterWindowClose,
+    content: html
+  };
+
+  var win = util.newWindow(opt);
+  return win;
+};
+main.onUserFilterWindowClose = function() {
+  main.userFilterWindow = null;
+  main.filteringFieldName = null;
+  main.filteringKeyword = null,
+  main.exactMatch = false;
+  main.filtering = false;
+  main.filterUserByField('', '');
 };
 
 main.onFilterChange = function() {
@@ -290,12 +401,19 @@ main.redrawUserList = function() {
 };
 
 main.drawUserList = function(userList, sortIdx, sortOrder) {
-  var searchKey = $el('#search-text').value;
-  var filter = $el('#search-filter').checked;
-  main._drawUserList(userList, sortIdx, sortOrder, searchKey, filter);
+  var searchKeyword = $el('#search-text').value;
+  var filtering = (main.filtering ? true : $el('#search-filter').checked);
+  var fieldName = main.filteringFieldName;
+  var keyword = main.filteringKeyword;
+  var exactMatch = main.exactMatch;
+  if (fieldName && keyword) {
+    main.filterUserByField(fieldName, keyword, exactMatch, filtering);
+  } else {
+    main._drawUserList(userList, sortIdx, sortOrder, searchKeyword, filtering);
+  }
 };
 
-main._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
+main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, filterCol, exactMatch) {
   var now = util.now();
   var currentUid = websys.getUserId();
 
@@ -319,7 +437,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
   var htmlList = '';
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
-    if (filter && !main.searchUserByKeyword(item, searchKey, searchCaseSensitive)) continue;
+    if (filter && !main.searchUserByKeyword(item, filterCol, searchKeyword, searchCaseSensitive, exactMatch)) continue;
     count++;
     var uid = item.uid;
     var fullname = item.fullname;
@@ -369,18 +487,19 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKey, filter) {
     var dispInfo2 = info2;
     var dispInfo3 = info3;
 
-    if (searchKey) {
-      dispUid = main.highlightKeyword(uid, searchKey, searchCaseSensitive);
-      dispFullname = main.highlightKeyword(fullname, searchKey, searchCaseSensitive);
-      dispLocalFullname = main.highlightKeyword(localfullname, searchKey, searchCaseSensitive);
-      dispKananame = main.highlightKeyword(kananame, searchKey, searchCaseSensitive);
-      dispAname = main.highlightKeyword(a_name, searchKey, searchCaseSensitive);
-      dispEmail = main.highlightKeyword(email, searchKey, searchCaseSensitive);
-      dispGroups = main.highlightKeyword(groups, searchKey, searchCaseSensitive);
-      dispPrivs = main.highlightKeyword(privs, searchKey, searchCaseSensitive);
-      dispInfo1 = main.highlightKeyword(info1, searchKey, searchCaseSensitive);
-      dispInfo2 = main.highlightKeyword(info2, searchKey, searchCaseSensitive);
-      dispInfo3 = main.highlightKeyword(info3, searchKey, searchCaseSensitive);
+    var searchFieldName = main.filteringFieldName;
+    if (searchKeyword) {
+      if (!searchFieldName || (searchFieldName == 'uid'))dispUid = main.highlightKeyword(uid, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'fullname'))dispFullname = main.highlightKeyword(fullname, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'localfullname'))dispLocalFullname = main.highlightKeyword(localfullname, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'kananame'))dispKananame = main.highlightKeyword(kananame, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'a_name'))dispAname = main.highlightKeyword(a_name, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'email'))dispEmail = main.highlightKeyword(email, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'groups'))dispGroups = main.highlightKeyword(groups, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'privs'))dispPrivs = main.highlightKeyword(privs, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'info1'))dispInfo1 = main.highlightKeyword(info1, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'info2'))dispInfo2 = main.highlightKeyword(info2, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'info3'))dispInfo3 = main.highlightKeyword(info3, searchKeyword, searchCaseSensitive);
     }
 
     dispUid = cInd + '<span class="pseudo-link link-button" onclick="main.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
@@ -506,12 +625,12 @@ main.buildFlagsTooltip = function(flags) {
   return s;
 };
 
-main.highlightKeyword = function(v, searchKey, caseSensitive) {
-  if (!caseSensitive) searchKey = searchKey.toLowerCase();
+main.highlightKeyword = function(v, searchKeyword, caseSensitive) {
+  if (!caseSensitive) searchKeyword = searchKeyword.toLowerCase();
   try {
-    var pos = (caseSensitive ? v.indexOf(searchKey) : v.toLowerCase().indexOf(searchKey));
+    var pos = (caseSensitive ? v.indexOf(searchKeyword) : v.toLowerCase().indexOf(searchKeyword));
     if (pos != -1) {
-      var key = v.slice(pos, pos + searchKey.length);
+      var key = v.slice(pos, pos + searchKeyword.length);
       var hl = '<span class="search-highlight">' + key + '</span>';
       v = v.replace(key, hl, 'ig');
     }
@@ -519,28 +638,33 @@ main.highlightKeyword = function(v, searchKey, caseSensitive) {
   return v;
 };
 
-main.searchUserByKeyword = function(item, key, caseSensitive) {
+main.searchUserByKeyword = function(item, filterCol, key, caseSensitive, exactMatch) {
   if (!key) return true;
   var targets = [];
-  targets.push(item.uid);
-  targets.push(item.fullname);
-  targets.push(item.localfullname);
-  targets.push(item.kananame);
-  targets.push(item.a_name);
-  targets.push(item.email);
-  targets.push(item.groups);
-  targets.push(item.privs);
-  targets.push(item.info1);
-  targets.push(item.info2);
-  targets.push(item.info3);
-  return main.searchByKeyword(targets, key, caseSensitive);
+  if (filterCol) {
+    targets.push(item[filterCol]);
+  } else {
+    targets.push(item.uid);
+    targets.push(item.fullname);
+    targets.push(item.localfullname);
+    targets.push(item.kananame);
+    targets.push(item.a_name);
+    targets.push(item.email);
+    targets.push(item.groups);
+    targets.push(item.privs);
+    targets.push(item.info1);
+    targets.push(item.info2);
+    targets.push(item.info3);
+  }
+  return main.searchByKeyword(targets, key, caseSensitive, exactMatch);
 };
-main.searchByKeyword = function(targets, key, caseSensitive) {
+main.searchByKeyword = function(targets, keyword, caseSensitive, exactMatch) {
   var flg = (caseSensitive ? 'g' : 'gi');
   for (var i = 0; i < targets.length; i++) {
     var v = targets[i];
     try {
-      var re = new RegExp(key, flg);
+      var ptn = (exactMatch ? (keyword + ' |' + keyword + '$') : keyword);
+      var re = new RegExp(ptn, flg);
       var r = re.exec(v);
       if (r != null) return true;
     } catch (e) {}
@@ -1774,8 +1898,6 @@ main.openGroupInfoEditorWindow = function(mode, gid) {
     closeButton: true,
     width: 480,
     height: 240,
-    minWidth: 480,
-    minHeight: 240,
     scale: 1,
     hidden: false,
     modal: false,
@@ -2001,16 +2123,23 @@ main.showInfotip = function(m, d, o) {
 $onEnterKey = function(e) {
   if ($el('#timeline-offset').hasFocus()) {
     main.getSessionListN();
+  } else if ($el('#user-filter-keyword').hasFocus()) {
+    main.setUserFiltering();
   }
 };
 
 $onEscKey = function(e) {
-  if ($el('#search-text').hasFocus()) {
+  if (main.userFilterWindow) {
+    main.userFilterWindow.close();
+  } else if ($el('#search-text').hasFocus()) {
     main.clearSeachKey();
   }
 };
 
 $onCtrlS = function(e) {
+  if (main.userEditWindow) {
+    main.saveUserInfo();
+  }
 };
 
 $onBeforeUnload = function(e) {
