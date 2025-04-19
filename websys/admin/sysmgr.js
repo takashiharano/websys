@@ -487,6 +487,8 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var dispInfo2 = info2;
     var dispInfo3 = info3;
 
+    dispGroups = main.makeFilterableGroupLabel(dispGroups);
+
     var searchFieldName = main.filteringFieldName;
     if (searchKeyword) {
       if (!searchFieldName || (searchFieldName == 'uid'))dispUid = main.highlightKeyword(uid, searchKeyword, searchCaseSensitive);
@@ -560,6 +562,24 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
 
   $el('#user-list').innerHTML = html;
   $el('#user-num').innerText = count;
+};
+
+main.makeFilterableGroupLabel = function(s) {
+  var a = s.split(' ');
+  var r = '';
+  for (var i = 0; i < a.length; i++) {
+    var v = a[i];
+    var w = '<span class="pseudo-link" onclick="main.filterUserGroup(\'' + v + '\')">' + v + '</span>';
+    if (i > 0) r += ' ';
+    r += w;
+  }
+  return r;
+};
+
+main.filterUserGroup = function(g) {
+  main.openUserFilterWindow('groups');
+  $el('#user-filter-keyword').value = g;
+  main.setUserFiltering();
 };
 
 main.changeLetterCase = function(s, letterCase) {
