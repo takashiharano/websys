@@ -2113,8 +2113,8 @@ main.setPasswordTextMode = function(m) {
 };
 
 main.setRandomPasswordT = function() {
-  var tbl = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
-  main.setRandomPassword(tbl, 8);
+  var tbl = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  main.setRandomPassword(tbl, 12);
 };
 main.setRandomPasswordN = function() {
   var tbl = '0123456789'
