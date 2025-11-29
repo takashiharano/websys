@@ -290,12 +290,9 @@ auth.changePw = function() {
   var id = auth.uid;
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
-  if (pw1 != pw2) {
-    var m = 'Password mismatched';
-    auth.textseq($el('#message'), m, 2, auth.onTextSeqCompleted);
+  if (auth.checkPw(pw1, pw2)) {
     return;
   }
-
   var hash = websys.getHash('SHA-256', pw1, id);
   var param = {
     cmd: 'passwd',
@@ -310,6 +307,20 @@ auth.changePw = function() {
     cb: auth.changePwCb
   };
   websys.http(req);
+};
+
+auth.checkPw = function(pw1, pw2) {
+  var m;
+  if (pw1 != pw2) {
+    m = 'Password mismatched';
+  } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z0-9]{12,}$/.test(pw1)) {
+    m = 'Password must be 12+ chars with upper/lowercase letters and numbers.';
+  }
+  if (m) {
+    auth.textseq($el('#message'), m, 2, auth.onTextSeqCompleted);
+    return true;
+  }
+  return false;
 };
 
 auth.changePwCb = function(xhr, res) {
