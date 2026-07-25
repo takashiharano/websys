@@ -1,6 +1,6 @@
 #==============================================================================
 # Group Manager
-# Copyright (c) 2024 Takashi Harano
+# Copyright 2024 Takashi Harano
 #==============================================================================
 import os
 import sys
@@ -21,7 +21,9 @@ GROUP_DATA_FIELDS = [
     {'name': 'privs'},
     {'name': 'desc'},
     {'name': 'created_at', 'type': 'float'},
-    {'name': 'updated_at', 'type': 'float'}
+    {'name': 'created_by'},
+    {'name': 'updated_at', 'type': 'float'},
+    {'name': 'updated_by'}
 ]
 
 # Object structure
@@ -31,13 +33,21 @@ GROUP_DATA_FIELDS = [
 #     "gid": "g1",
 #     "name": "Group1",
 #     "privs": "p1 p2",
-#     "desc": "foo"
+#     "desc": "foo",
+#     "created_at": 1784967352.923123,
+#     "created_by": "John Doe",
+#     "updated_at": 1784967352.923123,
+#     "updated_by": "John Doe"
 #   },
 #   "g2": {
 #     "gid": "g2",
 #     "name": "Group2",
 #     "privs": "p1",
-#     "desc": "bar"
+#     "desc": "bar",
+#     "created_at": 1784967352.923123,
+#     "created_by": "John Doe",
+#     "updated_at": 1784967352.923123,
+#     "updated_by": "John Doe"
 #   },
 # }
 
@@ -71,7 +81,7 @@ def get_group_list():
     return group_list
 
 # Add a group
-def add_group(gid, name='', privs='', desc='', status=None):
+def add_group(gid, name='', privs='', desc='', status=None, operator_full_name=''):
     groups = get_all_group_info()
     if groups is None:
         groups = {}
@@ -87,7 +97,9 @@ def add_group(gid, name='', privs='', desc='', status=None):
         'privs': privs,
         'desc': desc,
         'created_at': now,
-        'updated_at': now
+        'created_by': operator_full_name,
+        'updated_at': now,
+        'updated_by': operator_full_name
     }
 
     groups[gid] = group
@@ -95,7 +107,7 @@ def add_group(gid, name='', privs='', desc='', status=None):
     return group
 
 # Modify a group
-def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None):
+def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None, operator_full_name=''):
     now = util.get_timestamp()
 
     groups = get_all_group_info()
@@ -130,6 +142,8 @@ def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None
 
     if updated:
         group['updated_at'] = now
+
+    group['updated_by'] = operator_full_name
 
     groups[gid] = group
     save_groups(groups)

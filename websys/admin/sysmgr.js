@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2023 Takashi Harano
+ * Copyright 2023 Takashi Harano
  */
 var sysmgr = {};
 var main = sysmgr;
@@ -42,9 +42,11 @@ main.USER_LIST_COLUMNS = [
   {key: 'status_info.last_access', label: 'Last Access'},
   {key: 'status_info.last_login', label: 'Last Login'},
   {key: 'status_info.last_logout', label: 'Last Logout'},
-  {key: 'created_at', label: 'Created'},
-  {key: 'updated_at', label: 'Updated'},
-  {key: 'status_info.pw_changed_at', label: 'PwChanged'}
+  {key: 'created_at', label: 'Created at'},
+  {key: 'created_by', label: 'Created by'},
+  {key: 'updated_at', label: 'Updated at'},
+  {key: 'updated_by', label: 'Updated by'},
+  {key: 'status_info.pw_changed_at', label: 'PwChanged at'}
 ];
 
 main.listStatus = {
@@ -456,7 +458,9 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var lastLoginDate = main.getDateTimeString(statusInfo.last_login, main.INSEC);
     var lastLogoutDate = main.getDateTimeString(statusInfo.last_logout, main.INSEC);
     var createdDate = main.getDateTimeString(item.created_at, main.INSEC);
+    var createdBy = item.created_by;
     var updatedDate = main.getDateTimeString(item.updated_at, main.INSEC);
+    var updatedBy = item.updated_by;
     var pwChangedDate = main.getDateTimeString(statusInfo.pw_changed_at, main.INSEC);
     var info1 = item.info1;
     var info2 = item.info2;
@@ -553,7 +557,9 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     htmlList += '<td class="item-list" style="text-align:center;">' + lastLoginDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastLogoutDate + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + createdDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:left;">' + createdBy + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + updatedDate + '</td>';
+    htmlList += '<td class="item-list" style="text-align:left;">' + updatedBy + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + pwChangedDate + '</td>';
     htmlList += '</tr>';
   }
@@ -1825,8 +1831,10 @@ main.drawGroupList = function(list) {
   html += '<th class="item-list" style="min-width:15em;">Name</th>';
   html += '<th class="item-list" style="min-width:20em;">Prvileges</th>';
   html += '<th class="item-list" style="min-width:20em;">Description</th>';
-  html += '<th class="item-list">Created</th>';
-  html += '<th class="item-list">Updated</th>';
+  html += '<th class="item-list">Created at</th>';
+  html += '<th class="item-list">Created by</th>';
+  html += '<th class="item-list">Updated at</th>';
+  html += '<th class="item-list">Updated by</th>';
   html += '</tr>';
 
   for (var i = 0; i < list.length; i++) {
@@ -1836,7 +1844,9 @@ main.drawGroupList = function(list) {
     var privs = (group.privs ? group.privs : '');
     var desc = (group.desc ? group.desc : '');
     var createdDate = main.getDateTimeString(group.created_at, main.INSEC);
+    var createdBy = group.created_by;
     var updatedDate = main.getDateTimeString(group.updated_at, main.INSEC);
+    var updatedBy = group.updated_by;
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
@@ -1846,7 +1856,9 @@ main.drawGroupList = function(list) {
     html += '<td class="item-list">' + privs + '</td>';
     html += '<td class="item-list">' + desc + '</td>';
     html += '<td class="item-list">' + createdDate + '</td>';
+    html += '<td class="item-list">' + createdBy + '</td>';
     html += '<td class="item-list">' + updatedDate + '</td>';
+    html += '<td class="item-list">' + updatedBy + '</td>';
     html += '</tr>';
   }
   html += '</table>';

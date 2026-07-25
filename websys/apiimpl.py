@@ -1,6 +1,6 @@
 #==============================================================================
 # Web System API Implementations
-# Copyright (c) 2020 Takashi Harano
+# Copyright 2020 Takashi Harano
 #==============================================================================
 import os
 import sys
@@ -307,8 +307,11 @@ def cmd_useradd(context):
     if p_flags == '':
         p_flags = None
 
+    user_info = context.get_user_info()
+    operator_full_name = user_info['fullname']
+
     try:
-        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo)
+        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -326,8 +329,8 @@ def cmd_usermod(context):
 
     uid = websys.get_request_param('uid')
 
+    user_info = context.get_user_info()
     if not context.has_permission('sysadmin'):
-        user_info = context.get_user_info()
         if uid != user_info['uid']:
             websys.send_result_json('FORBIDDEN', body=None)
             return
@@ -391,8 +394,10 @@ def cmd_usermod(context):
         if p_flags is not None:
             u_flags = p_flags
 
+    operator_full_name = user_info['fullname']
+
     try:
-        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo)
+        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -421,8 +426,8 @@ def cmd_passwd(context):
 
     uid = websys.get_request_param('uid')
 
+    user_info = context.get_user_info()
     if not context.has_permission('sysadmin'):
-        user_info = context.get_user_info()
         if uid != user_info['uid']:
             websys.send_result_json('FORBIDDEN', body=None)
             return
@@ -439,8 +444,10 @@ def cmd_passwd(context):
     own_uid = context.get_user_id()
     target = 'self' if uid == own_uid else uid
 
+    operator_full_name = user_info['fullname']
+
     try:
-        usermgr.modify_user(uid, pw_hash, chg_pw=True)
+        usermgr.modify_user(uid, pw_hash, chg_pw=True, operator_full_name=operator_full_name)
         status = 'OK'
         logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + target)
     except Exception as e:
@@ -490,8 +497,11 @@ def cmd_gencode(context):
         privs = util.replace(privs, r'\s{2,}', ' ')
         privs = privs.strip()
 
+    user_info = context.get_user_info()
+    operator_full_name = user_info['fullname']
+
     try:
-        uid = usermgr.add_guest(uid=id, valid_min=valid_min, groups=groups, privs=privs)
+        uid = usermgr.add_guest(uid=id, valid_min=valid_min, groups=groups, privs=privs, operator_full_name=operator_full_name)
     except Exception as e:
         status = str(e)
 
@@ -629,8 +639,11 @@ def cmd_addgroup(context):
         privs = util.replace(privs, r'\s{2,}', ' ')
         privs = privs.strip()
 
+    user_info = context.get_user_info()
+    operator_full_name = user_info['fullname']
+
     try:
-        groupmgr.add_group(gid, name=name, privs=privs, desc=desc)
+        groupmgr.add_group(gid, name=name, privs=privs, desc=desc, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'ADD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:
@@ -673,8 +686,11 @@ def cmd_modgroup(context):
 
     desc = websys.get_request_param('desc', '')
 
+    user_info = context.get_user_info()
+    operator_full_name = user_info['fullname']
+
     try:
-        groupmgr.modify_group(gid, name=name, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc)
+        groupmgr.modify_group(gid, name=name, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'MOD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:

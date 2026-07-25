@@ -1,6 +1,6 @@
 #==============================================================================
 # User Manager
-# Copyright (c) 2020 Takashi Harano
+# Copyright 2020 Takashi Harano
 #==============================================================================
 import os
 import sys
@@ -41,7 +41,9 @@ USER_DATA_STRUCT = [
     {'name': 'info3'},
     {'name': 'flags', 'type': 'int'},
     {'name': 'created_at', 'type': 'float'},
-    {'name': 'updated_at', 'type': 'float'}
+    {'name': 'created_by'},
+    {'name': 'updated_at', 'type': 'float'},
+    {'name': 'updated_by'}
 ]
 
 USER_DATA_STRUCT_FOR_GUEST = [
@@ -61,7 +63,7 @@ USER_STATUS_DATA_STRUCT = [
 ]
 
 # User data format
-# #uid	fullname	localfullname	kananame	a_name	is_admin	groups	privs	info1	info2	info3	flags	created_at	updated_at
+# #uid	fullname	localfullname	kananame	a_name	is_admin	groups	privs	info1	info2	info3	flags	created_at	created_by	updated_at	updated_by
 # admin	Admin	ADMIN		Administrator	1	g1	p1	Info1	Info2	Info3	0	1721446496.789123	1721446496.789123
 
 # Object structure
@@ -82,7 +84,9 @@ USER_STATUS_DATA_STRUCT = [
 #     "info3": "Info3",
 #     "flags": 0,
 #     "created_at": 1667047612.967891,
-#     "updated_at": 1667047612.967891,
+#     "created_by": "John Doe",
+#     "updated_at": 1784954916.927123,
+#     "updated_by": "John Doe",
 #     "memo": "TEXT"
 #   },
 #   ...
@@ -104,9 +108,11 @@ USER_STATUS_DATA_STRUCT = [
 #     "info2": "",
 #     "info3": "",
 #     "flags": 0,
-#     "created_at": 1706947022.714497
-#     "updated_at": 1706947022.714497
-#     "is_guest": true
+#     "created_at": 1706947022.714497,
+#     "created_by": "John Doe",
+#     "updated_at": 1706947022.714497,
+#     "updated_by": "John Doe",
+#     "is_guest": true,
 #     "expires_at": 1706948822.714497
 #   },
 #   ...
@@ -192,7 +198,7 @@ def count_sessions_per_user():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def add_user(uid, pw, fullname=None, localfullname=None, kananame=None, a_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None):
+def add_user(uid, pw, fullname=None, localfullname=None, kananame=None, a_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None, operator_full_name=''):
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -201,7 +207,7 @@ def add_user(uid, pw, fullname=None, localfullname=None, kananame=None, a_name=N
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
-    user = create_new_user(now, uid, fullname, localfullname, kananame, a_name, email, is_admin, groups, privs, info1, info2, info3, flags)
+    user = create_new_user(now, uid, fullname, localfullname, kananame, a_name, email, is_admin, groups, privs, info1, info2, info3, flags, operator_full_name=operator_full_name)
 
     users[uid] = user
     save_users(users)
@@ -213,7 +219,7 @@ def add_user(uid, pw, fullname=None, localfullname=None, kananame=None, a_name=N
 
     return user
 
-def create_new_user(timestamp, uid, fullname=None, localfullname=None, kananame=None, a_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None):
+def create_new_user(timestamp, uid, fullname=None, localfullname=None, kananame=None, a_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, operator_full_name=''):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
@@ -234,13 +240,15 @@ def create_new_user(timestamp, uid, fullname=None, localfullname=None, kananame=
         'info3': info3,
         'flags': u_flags,
         'created_at': timestamp,
-        'updated_at': timestamp
+        'created_by': operator_full_name,
+        'updated_at': timestamp,
+        'updated_by': operator_full_name
     }
 
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, fullname=None, localfullname=None, kananame=None, a_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False):
+def modify_user(uid, pw=None, fullname=None, localfullname=None, kananame=None, a_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
     now = util.get_timestamp()
     is_guest = False
 
@@ -339,6 +347,8 @@ def modify_user(uid, pw=None, fullname=None, localfullname=None, kananame=None, 
     if updated:
         user['updated_at'] = now
 
+    user['updated_by'] = operator_full_name
+
     users[uid] = user
 
     if is_guest:
@@ -400,7 +410,7 @@ def get_guest_user_info(uid):
     return user
 
 # Create a guest user
-def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs=''):
+def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs='', operator_full_name=''):
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -428,7 +438,7 @@ def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs=''):
     kanname = ''
     a_name = ''
 
-    user = create_new_user(now, new_uid, fullname, localfullname, kanname, a_name, is_admin=False, groups=groups, privs=privs, flags=0)
+    user = create_new_user(now, new_uid, fullname, localfullname, kanname, a_name, is_admin=False, groups=groups, privs=privs, flags=0, operator_full_name=operator_full_name)
     user['is_guest'] = True
     user['expires_at'] = now + valid_min * 60
 
