@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2020 Takashi Harano
+ * Copyright 2020 Takashi Harano
  */
 var websys = {};
 

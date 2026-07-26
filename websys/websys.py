@@ -1,6 +1,6 @@
 #==============================================================================
 # Web System Basic Functions
-# Copyright (c) 2020 Takashi Harano
+# Copyright 2020 Takashi Harano
 #==============================================================================
 import os
 import sys
