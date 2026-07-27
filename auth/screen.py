@@ -1,5 +1,5 @@
 # Authentication Screen
-# Copyright (c) 2023 Takashi Harano
+# Copyright 2023 Takashi Harano
 
 import os
 import sys
