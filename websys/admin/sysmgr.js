@@ -42,11 +42,11 @@ main.USER_LIST_COLUMNS = [
   {key: 'status_info.last_access', label: 'Last Access'},
   {key: 'status_info.last_login', label: 'Last Login'},
   {key: 'status_info.last_logout', label: 'Last Logout'},
-  {key: 'created_at', label: 'Created at'},
-  {key: 'created_by', label: 'Created by'},
-  {key: 'updated_at', label: 'Updated at'},
-  {key: 'updated_by', label: 'Updated by'},
-  {key: 'status_info.pw_changed_at', label: 'PwChanged at'}
+  {key: 'created_at', label: 'Created At'},
+  {key: 'created_by', label: 'Created By'},
+  {key: 'updated_at', label: 'Updated At'},
+  {key: 'updated_by', label: 'Updated By'},
+  {key: 'status_info.pw_changed_at', label: 'PwChanged At'}
 ];
 
 main.listStatus = {
@@ -459,8 +459,10 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var lastLogoutDate = main.getDateTimeString(statusInfo.last_logout, main.INSEC);
     var createdDate = main.getDateTimeString(item.created_at, main.INSEC);
     var createdBy = item.created_by;
+    if (!createdBy) createdBy = '-';
     var updatedDate = main.getDateTimeString(item.updated_at, main.INSEC);
     var updatedBy = item.updated_by;
+    if (!updatedBy) updatedBy = '-';
     var pwChangedDate = main.getDateTimeString(statusInfo.pw_changed_at, main.INSEC);
     var info1 = item.info1;
     var info2 = item.info2;
@@ -1831,10 +1833,10 @@ main.drawGroupList = function(list) {
   html += '<th class="item-list" style="min-width:15em;">Name</th>';
   html += '<th class="item-list" style="min-width:20em;">Prvileges</th>';
   html += '<th class="item-list" style="min-width:20em;">Description</th>';
-  html += '<th class="item-list">Created at</th>';
-  html += '<th class="item-list">Created by</th>';
-  html += '<th class="item-list">Updated at</th>';
-  html += '<th class="item-list">Updated by</th>';
+  html += '<th class="item-list">Created At</th>';
+  html += '<th class="item-list">Created By</th>';
+  html += '<th class="item-list">Updated At</th>';
+  html += '<th class="item-list">Updated By</th>';
   html += '</tr>';
 
   for (var i = 0; i < list.length; i++) {
@@ -1845,8 +1847,10 @@ main.drawGroupList = function(list) {
     var desc = (group.desc ? group.desc : '');
     var createdDate = main.getDateTimeString(group.created_at, main.INSEC);
     var createdBy = group.created_by;
+    if (!createdBy) createdBy = '-';
     var updatedDate = main.getDateTimeString(group.updated_at, main.INSEC);
     var updatedBy = group.updated_by;
+    if (!updatedBy) updatedBy = '-';
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
