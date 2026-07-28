@@ -141,16 +141,7 @@ main.http = function(req, cb) {
   websys.http(req);
 };
 
-main.showInfotip = function(m, d) {
-  var opt = {
-    style: {
-      'font-size': '14px'
-    }
-  };
-  util.infotip.show(m, d, opt);
-};
-
-main.getUserFieldDefinistion = function(key) {
+main.getUserFieldDefinition = function(key) {
   var fields = main.USER_LIST_COLUMNS;
   for (var i = 0; i < fields.length; i++) {
     var field = fields[i];
@@ -252,7 +243,7 @@ main.onSearchInput = function(el) {
   main.searchUserList(el.value, filter);
 };
 
-main.clearSeachKey = function() {
+main.clearSearchKey = function() {
   var elId = '#search-text';
   if ($el(elId).value) {
     $el(elId).value = '';
@@ -287,7 +278,7 @@ main.updateUserFiltering = function() {
 
 main.setUserFiltering = function() {
   var fieldName = main.filteringFieldName;
-  var field = main.getUserFieldDefinistion(fieldName);
+  var field = main.getUserFieldDefinition(fieldName);
   main.exactMatch = (field.filterMatchType == 'exact');
   main.filtering = true;
   main.updateUserFiltering();
@@ -299,7 +290,7 @@ main.openUserFilterWindow = function(fieldName) {
     win = main.createUserFilterWindow(fieldName);
     main.userFilterWindow = win;
   }
-  var field = main.getUserFieldDefinistion(fieldName);
+  var field = main.getUserFieldDefinition(fieldName);
   win.setTitle('User Filter: ' + field.label);
   main.filteringFieldName = fieldName;
   $el('#user-filter-keyword').focus();
@@ -1726,7 +1717,7 @@ main.sortList = function(itemList, sortKey, isDesc) {
 //-----------------------------------------------------------------------------
 main.cleanseCommon = function(s) {
   s = s.trim();
-  s = s.replace(/[\t\u00A0\200B\u3000]/g, ' ');
+  s = s.replace(/[\t\u00A0\u200B\u3000]/g, ' ');
   var res = {
     val: s,
     msg: null
@@ -1831,7 +1822,7 @@ main.drawGroupList = function(list) {
   html += '<tr class="item-list-header">';
   html += '<th class="item-list" style="min-width:10em;">GID</th>';
   html += '<th class="item-list" style="min-width:15em;">Name</th>';
-  html += '<th class="item-list" style="min-width:20em;">Prvileges</th>';
+  html += '<th class="item-list" style="min-width:20em;">Privileges</th>';
   html += '<th class="item-list" style="min-width:20em;">Description</th>';
   html += '<th class="item-list">Created At</th>';
   html += '<th class="item-list">Created By</th>';
@@ -2169,7 +2160,7 @@ $onEscKey = function(e) {
   if (main.userFilterWindow) {
     main.userFilterWindow.close();
   } else if ($el('#search-text').hasFocus()) {
-    main.clearSeachKey();
+    main.clearSearchKey();
   }
 };
 
