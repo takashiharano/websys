@@ -1201,7 +1201,7 @@ main.openUserInfoEditorWindow = function(mode, uid) {
     html += '<button id="user-copy-button" onclick="main.duplicateUser();">DUP</button>';
   }
   if (uid && (uid != currentUid)) {
-    html += '<button id="user-del-button" style="margin-left:8px;" class="button-red" onclick="main.deleteUser(\'' + uid + '\');">DEL</button>';
+    html += '<button id="user-del-button" style="margin-left:8px;" class="button-red" onclick="main.deleteCurrentTargetUser();">DEL</button>';
   }
   html += '</div>';
 
@@ -1371,6 +1371,8 @@ main.GetUserInfoCb = function(xhr, res) {
 };
 
 main.setUserInfoToEditor = function(info) {
+  var currentUid = websys.getUserId();
+
   var uid = info.uid;
   $el('#uid').value = uid;
   if (uid) {
@@ -1380,6 +1382,13 @@ main.setUserInfoToEditor = function(info) {
     $el('#uid').disabled = false;
     $el('#uid').removeClass('edit-disabled');
   }
+
+  if (uid == currentUid) {
+    $el('#user-del-button').hide();
+  } else {
+    $el('#user-del-button').show();
+  }
+
   $el('#fullname').value = info.fullname;
   $el('#localfullname').value = info.localfullname;
   $el('#kananame').value = info.kananame;
@@ -1643,6 +1652,11 @@ main.updateUserCb = function(xhr, res) {
 };
 
 //-----------------------------------------------------------------------------
+main.deleteCurrentTargetUser = function() {
+  var uid = $el('#uid').value;
+  main.deleteUser(uid);
+};
+
 main.deleteUser = function(uid) {
   var opt = {
     data: uid
