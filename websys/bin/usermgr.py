@@ -538,8 +538,8 @@ def get_groups_for_user(uid):
     user_info = get_user_info(uid)
     if user_info is None:
         return None
-    if groups is not None:
-        return None
     groups = user_info['groups']
+    if groups == '':
+        return []
     group_list = groups.split(' ')
     return group_list
