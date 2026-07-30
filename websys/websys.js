@@ -208,25 +208,6 @@ websys.gencode.cb = function(xhr, res) {
 };
 
 /**
- * guests
- */
-websys.guests = function(arg, tbl, echo) {
-  var param = {
-    cmd: 'guests'
-  };
-  var req = {
-    url: websys.basePath + 'websys/api.cgi',
-    method: 'POST',
-    data: param,
-    cb: websys.guests.cb
-  };
-  websys.http(req);
-};
-websys.guests.cb = function(xhr, res) {
-  websys.onResponseReceived(xhr, res, true);
-};
-
-/**
  * hello
  */
 websys.hello = function(arg, tbl, echo) {
@@ -585,7 +566,7 @@ websys.buildSessinInfo = function(info, flgA) {
   var scr = screen + ' ' + zoom;
 
   var s = '';
-  s += 'uid     : ' + info['uid'] + (info.is_guest ? ' (GUEST)' : '') + '\n';
+  s += 'uid     : ' + info['uid'] + '\n';
   s += 'sid     : ' + info['sid'] + '\n';
   s += 'time    : ' + util.getDateTimeString(info['time'], '%YYYY-%MM-%DD %HH:%MI:%SS') + ' <span style="color:#ccc;">' + info['tz'] + ' ' + info['tzname'] + '\n';
   s += 'host    : ' + info['addr'] + '  ' + info['host'] + '\n';
@@ -1576,15 +1557,6 @@ websys.isAdmin = function() {
   return false;
 };
 
-websys.isGuest = function() {
-  var sessionInfo = websys.sessionInfo;
-  if (sessionInfo) {
-    return sessionInfo.is_guest;
-  } else {
-    return false;
-  }
-};
-
 websys.getUserFlags = function() {
   var userInfo = websys.getUserInfo();
   var flags = 0;
@@ -1714,8 +1686,6 @@ websys.init = function(basePath, readyFn) {
 websys.CMD_TBL = [
   {cmd: 'addgroup', fn: websys.cmdAddGroup, desc: 'Add a group', help: 'addgroup GID [-privs "PRIVILEGE1 PRIVILEGE2"]'},
   {cmd: 'delgroup', fn: websys.delgroup, desc: 'Delete a group', help: 'delgroup gid'},
-  {cmd: 'gencode', fn: websys.gencode, desc: 'Make a guest user', help: 'gencode [ID(A-Za-z0-9_-)] [-valid MIN] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"]'},
-  {cmd: 'guests', fn: websys.guests, desc: 'Show all guest user info'},
   {cmd: 'hello', fn: websys.hello, desc: 'Hello'},
   {cmd: 'login', fn: websys.login, desc: 'Login', help: 'login [ID [-p PW]]'},
   {cmd: 'logout', fn: websys.cmdLogout, desc: 'Logout', help: 'logout [-sid sid]|[-u uid]'},

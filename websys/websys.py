@@ -72,11 +72,11 @@ class WebContext:
     #
     # Returns:
     # user: {
-    #   "uid": "root", # guest: "123456"
-    #   "full_name": "root", # guest: "GUEST"
-    #   "native_name": "root_L", # guest: "GUEST_L"
-    #   "kana_name": "", # guest: ""
-    #   "localized_name": "root_L", # guest: "GUEST_L"
+    #   "uid": "root",
+    #   "full_name": "root",
+    #   "native_name": "root_L",
+    #   "kana_name": "",
+    #   "localized_name": "root_L",
     #   "is_admin": true,
     #   "groups": "GROUP1 GROUP2",
     #   "privs": "PRIVILEGE1 PRIVILEGE2",
@@ -84,9 +84,7 @@ class WebContext:
     #   "status": 0,
     #   "created_at": 1667047612.967891,
     #   "updated_at": 1667047612.967891,
-    #   "pw_changed_at": 1667047612.967891,
-    #   "is_guest": true, # for guest only
-    #   "expires_at": 1571476916.59936 # for guest only
+    #   "pw_changed_at": 1667047612.967891
     # }
     #
     # or None
@@ -177,14 +175,6 @@ class WebContext:
             gid = groups[i]
             if groupmgr.has_privilege_in_group(gid, priv_name):
                 return True
-
-        return False
-
-    def is_guest(self):
-        session_info = self.session_info
-        if session_info is not None:
-            if 'is_guest' in session_info and session_info['is_guest']:
-                return True
         return False
 
     def get_timestamp(self):
@@ -196,7 +186,7 @@ class WebContext:
 #----------------------------------------------------------
 # on access
 #----------------------------------------------------------
-def on_access(allow_guest=True):
+def on_access():
     #context = {
     #    'status': '',
     #    'session_info': None,
@@ -207,7 +197,7 @@ def on_access(allow_guest=True):
     context = WebContext()
 
     if synchronize_start():
-        context = _on_access(context, allow_guest)
+        context = _on_access(context)
         context.set_status('OK')
         synchronize_end()
     else:
@@ -217,7 +207,7 @@ def on_access(allow_guest=True):
 
     return context
 
-def _on_access(context, allow_guest):
+def _on_access(context):
     now = util.get_timestamp()
     now_ms = int(now * 1000)
     sessionmgr.clear_all_expired_sessions()
@@ -263,7 +253,7 @@ def _on_access(context, allow_guest):
             simple_path = '/'
 
         session_info = sessionmgr.update_last_access_info(uid, sid, simple_path)
-        authorized = authmgr.auth(allow_guest)
+        authorized = authmgr.auth()
         context.set_user_info(user_info) # see usermgr.create_user() for object fields
 
         flags = user_info['flags']
@@ -333,8 +323,6 @@ def get_raw_request_param(key=None, default=None):
 # login
 #----------------------------------------------------------
 def login(context, id, pw, ext_auth):
-    usermgr.delete_expired_guest()
-
     if not ext_auth:
         invalidate_existing_session(context)
 

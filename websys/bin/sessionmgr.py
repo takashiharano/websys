@@ -41,7 +41,6 @@ SESSION_DATA_STRUCT = [
    {'name': 'c_addr'},
    {'name': 'c_host'},
    {'name': 'c_ua'},
-   {'name': 'is_guest', 'type': 'bool'},
    {'name': 'path'}
 ]
 
@@ -94,8 +93,7 @@ def get_user_sessions(uid):
 #   "c_tz": "+0900",
 #   "c_addr": "::1",
 #   "c_host": "hostname",
-#   "c_ua": "Mozilla/5.0",
-#   "is_guest": False
+#   "c_ua": "Mozilla/5.0"
 # }
 #
 # Returns None id the session does not exist.
@@ -145,7 +143,7 @@ def get_user_info_from_sid(sid):
         return None
 
     uid = session_info['uid']
-    user_info = usermgr.get_user_info(uid, guest=True)
+    user_info = usermgr.get_user_info(uid)
 
     return user_info
 
@@ -161,9 +159,9 @@ def get_anonymous_session_period_sec():
 #----------------------------------------------------------
 # Create and register new session info
 #----------------------------------------------------------
-def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
+def create_and_register_session_info(uid, ext_auth=False):
     now = util.get_timestamp()
-    new_session_info = create_new_session_info(uid, now, is_guest)
+    new_session_info = create_new_session_info(uid, now)
     if ext_auth:
         new_session_info['ext_auth'] = True
     append_session_info_to_session_file(uid, new_session_info)
@@ -172,12 +170,12 @@ def create_and_register_session_info(uid, is_guest=False, ext_auth=False):
 #----------------------------------------------------------
 # Create session info
 #----------------------------------------------------------
-def create_new_session_info(uid, now, is_guest=False):
+def create_new_session_info(uid, now):
     sid = generate_session_id(uid)
-    new_session = build_session_info(sid, uid, now, is_guest=is_guest)
+    new_session = build_session_info(sid, uid, now)
     return new_session
 
-def build_session_info(sid, uid, now, is_guest=False):
+def build_session_info(sid, uid, now):
     addr = websys.get_ip_addr()
     host = websys.get_host_name()
     useragent = websys.get_user_agent()
@@ -207,8 +205,7 @@ def build_session_info(sid, uid, now, is_guest=False):
         'c_tzname': tzname,
         'c_addr': addr,
         'c_host': host,
-        'c_ua': useragent,
-        'is_guest': is_guest
+        'c_ua': useragent
     }
 
     return session_info

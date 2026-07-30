@@ -45,12 +45,7 @@ def proc_get_user_list(context):
     if not context.has_permission('sysadmin'):
         websys.send_result_json('FORBIDDEN', body=None)
         return
-
     user_dict = usermgr.get_all_user_info(True)
-    guest_user_dict = usermgr.get_all_guest_user_info(True)
-    if guest_user_dict is not None:
-        user_dict.update(guest_user_dict)
-
     websys.send_result_json('OK', body=user_dict)
 
 #------------------------------------------------------------------------------
@@ -136,8 +131,7 @@ def get_timeline_logs_by_session(sessions, target_offset):
 #   "c_tz": "+0900",
 #   "c_addr": "::1",
 #   "c_host": "hostname",
-#   "c_ua": "Mozilla/5.0",
-#   "is_guest": False
+#   "c_ua": "Mozilla/5.0"
 #  },
 #  ...
 # ]

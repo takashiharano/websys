@@ -61,12 +61,9 @@ def do_login(uid, pw, ext_auth=False):
     return login_info
 
 def _login(uid, pw, ext_auth=False):
-    user_info = usermgr.get_user_info(uid, guest=False)
+    user_info = usermgr.get_user_info(uid)
     if user_info is None:
-        try:
-            return _guest_login(uid, ext_auth)
-        except Exception as e:
-            raise e
+        raise Exception('USER_NOT_FOUND')
 
     if usermgr.is_disabled(user_info):
         raise Exception('DISABLED')
@@ -95,7 +92,7 @@ def _login(uid, pw, ext_auth=False):
         usermgr.write_user_status_info(uid, user_status_info)
         raise Exception('NG')
 
-    new_session_info = sessionmgr.create_and_register_session_info(uid, is_guest=False, ext_auth=ext_auth)
+    new_session_info = sessionmgr.create_and_register_session_info(uid, ext_auth=ext_auth)
     loggedin_user_info = user_info
     login_info = {
         'session_info': new_session_info,
@@ -113,27 +110,6 @@ def _login(uid, pw, ext_auth=False):
 
     return login_info
 
-# guest login
-def _guest_login(uid, ext_auth=False):
-    user_info = usermgr.get_guest_user_info(uid)
-    if user_info is None:
-        raise Exception('USER_NOT_FOUND')
-
-    if 'expires_at' in user_info:
-        now = util.get_timestamp()
-        if user_info['expires_at'] < now:
-            raise Exception('EXPIRED')
-
-    new_session_info = sessionmgr.create_and_register_session_info(uid, is_guest=True, ext_auth=ext_auth)
-    sid = new_session_info['sid']
-
-    login_info = {
-        'session_info': new_session_info,
-        'user_info': user_info
-    }
-
-    return login_info
-
 #----------------------------------------------------------
 # logout
 # return cleared session info
@@ -148,13 +124,13 @@ def logout(sid, renew=False):
 #----------------------------------------------------------
 # auth
 #----------------------------------------------------------
-def auth(allow_guest=True):
-    status = _auth(allow_guest=allow_guest)
+def auth():
+    status = _auth()
     if status == 'OK':
         return True
     return False
 
-def _auth(allow_guest):
+def _auth():
     session_info = sessionmgr.get_current_session_info_from_global()
     if session_info is None:
         return 'SESSION_INFO_NOT_FOUND'
@@ -174,9 +150,6 @@ def _auth(allow_guest):
         now = util.get_timestamp()
         if user_info['expires_at'] < now:
             return 'USER_IS_EXPIRED'
-
-    if not allow_guest and 'guest' in user_info and user_info['is_guest']:
-        return 'GUEST_USER_NOT_ALLOWED'
 
     if 'path' in user_info and user_info['path'] is not None:
         req_uri = util.get_request_uri()

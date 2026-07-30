@@ -16,7 +16,6 @@ import common
 import sessionmgr
 
 USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users.txt'
-GUEST_USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users_guest.txt'
 GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
 PASSWORD_LIST_FILE_PATH = websysconf.PASSWORD_LIST_FILE_PATH
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
@@ -45,13 +44,6 @@ USER_DATA_STRUCT = [
     {'name': 'updated_at', 'type': 'float'},
     {'name': 'updated_by'}
 ]
-
-USER_DATA_STRUCT_FOR_GUEST = [
-    {'name': 'is_guest', 'type': 'bool'},
-    {'name': 'expires_at', 'type': 'float'}
-]
-
-GUEST_DATA_STRUCT = USER_DATA_STRUCT + USER_DATA_STRUCT_FOR_GUEST
 
 USER_STATUS_DATA_STRUCT = [
     {'name': 'last_access', 'type': 'float', 'default': 0},
@@ -91,36 +83,10 @@ USER_STATUS_DATA_STRUCT = [
 #   },
 #   ...
 # }
-#
-# users_guest
-# {
-#   "123456": {
-#     "uid": "123456",
-#     "full_name": "GUEST",
-#     "native_name": "GUEST_N",
-#     "kana_name": "",
-#     "localized_name": "GUEST_L",
-#     "email": "",
-#     "is_admin": true,
-#     "groups": "GROUP1",
-#     "privs": "",
-#     "info1": "",
-#     "info2": "",
-#     "info3": "",
-#     "flags": 0,
-#     "created_at": 1706947022.714497,
-#     "created_by": "John Doe",
-#     "updated_at": 1706947022.714497,
-#     "updated_by": "John Doe",
-#     "is_guest": true,
-#     "expires_at": 1706948822.714497
-#   },
-#   ...
-# }
 
 # get user info
 # return None is not exist
-def get_user_info(uid, guest=True, w_memo=False):
+def get_user_info(uid, w_memo=False):
     user = None
 
     users = get_all_user_info()
@@ -129,11 +95,6 @@ def get_user_info(uid, guest=True, w_memo=False):
         if w_memo:
             memo_text = get_user_memo_text(uid)
             user['memo'] = memo_text
-
-    if user is None and guest:
-        users = get_all_guest_user_info()
-        if users is not None and uid in users:
-            user = users[uid]
 
     return user
 
@@ -158,10 +119,6 @@ def get_all_user_info(extra_info=False):
 
 def load_all_users():
     users = _load_all_users(USER_LIST_FILE_PATH, USER_DATA_STRUCT)
-    return users
-
-def load_all_guest_users():
-    users = _load_all_users(GUEST_USER_LIST_FILE_PATH, GUEST_DATA_STRUCT)
     return users
 
 #----
@@ -250,18 +207,13 @@ def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=
 # Modify a user
 def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
     now = util.get_timestamp()
-    is_guest = False
 
     users = get_all_user_info()
     if users is None:
         users = {}
 
     if uid not in users:
-        users = get_all_guest_user_info()
-        if users is None or uid not in users:
-            raise Exception('NOT_EXISTS')
-        else:
-            is_guest = True
+        raise Exception('NOT_EXISTS')
 
     user = users[uid]
 
@@ -350,11 +302,7 @@ def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, 
     user['updated_by'] = operator_full_name
 
     users[uid] = user
-
-    if is_guest:
-        save_guest_users(users)
-    else:
-        save_users(users)
+    save_users(users)
 
     return user
 
@@ -377,115 +325,6 @@ def save_users(users):
 def delete_user_dir(uid):
     path = USER_ROOT_PATH + '/' + uid
     util.rmdir(path, True)
-
-#------------------------------------------------------------------------------
-# Guest user
-#------------------------------------------------------------------------------
-# Get all guest user
-def get_all_guest_user_info(extra_info=False):
-    users = load_all_guest_users()
-    if not extra_info:
-        return users
-
-    for uid in users:
-        status_info = load_user_status_info(uid)
-        users[uid]['status_info'] = status_info
-
-    user_sessions = count_sessions_per_user()
-    for uid in users:
-        if uid in user_sessions:
-            users[uid]['status_info']['sessions'] = user_sessions[uid]
-        else:
-            users[uid]['status_info']['sessions'] = 0
-
-    return users
-
-# get guest user info
-# return None is not exist
-def get_guest_user_info(uid):
-    user = None
-    users = get_all_guest_user_info()
-    if users is not None and uid in users:
-        user = users[uid]
-    return user
-
-# Create a guest user
-def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs='', operator_full_name=''):
-    now = util.get_timestamp()
-    users = get_all_user_info()
-
-    guest_users = get_all_guest_user_info()
-    if guest_users is None:
-        guest_users = {}
-
-    if uid is None:
-        new_uid = _generate_code(uid_len)
-    else:
-        new_uid = uid
-
-    if new_uid in users or new_uid in guest_users:
-        if uid is None:
-            for i in range(10):
-                new_uid = _generate_code(uid_len)
-                if new_uid not in users and new_uid not in guest_users:
-                    break
-        else:
-            raise Exception('ALREADY_EXISTS')
-
-    gid = len(guest_users) + 1
-    full_name = 'GUEST' + str(gid)
-    native_name = full_name
-    kana_name = ''
-    localized_name = ''
-
-    user = create_new_user(now, new_uid, full_name, native_name, kana_name, localized_name, is_admin=False, groups=groups, privs=privs, flags=0, operator_full_name=operator_full_name)
-    user['is_guest'] = True
-    user['expires_at'] = now + valid_min * 60
-
-    guest_users[new_uid] = user
-    save_guest_users(guest_users)
-    create_user_status_info(new_uid)
-
-    return new_uid
-
-def _generate_code(code_len):
-    cd = util.random_string(min=code_len, max=code_len, tbl='0123456789')
-    return cd
-
-# Delete expired guest
-def delete_expired_guest():
-    users = get_all_guest_user_info()
-    if users is None:
-        return
-
-    now = util.get_timestamp()
-    new_users = {}
-    for uid in users:
-        user = users[uid]
-        if user['expires_at'] >= now:
-            new_users[uid] = user
-        else:
-            delete_user_dir(uid)
-
-    save_guest_users(new_users)
-
-# Delete a guest user
-def delete_guest_user(uid):
-    users = get_all_guest_user_info()
-    if users is None or uid not in users:
-        return False
-    sessionmgr.clear_user_sessions(uid)
-    users.pop(uid)
-    save_guest_users(users)
-    delete_user_dir(uid)
-    return True
-
-# Save Guest Users
-def save_guest_users(users):
-    if len(users) == 0:
-        util.delete_file(GUEST_USER_LIST_FILE_PATH)
-    else:
-        common.save_to_tsv_file(GUEST_USER_LIST_FILE_PATH, users, GUEST_DATA_STRUCT)
 
 #----------------------------------------------------------
 def is_admin(user_info):

@@ -13,7 +13,6 @@ sys.path.append(websysconf.UTIL_PATH)
 import util
 import authmgr
 
-ALLOW_GUESTS = False
 DEBUG = False
 
 post_url = '../test/' if DEBUG else './'
@@ -21,7 +20,7 @@ post_url = '../test/' if DEBUG else './'
 # dir list
 def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
     websys.on_access()
-    if auth_required and not authmgr.auth(allow_guest=ALLOW_GUESTS):
+    if auth_required and not authmgr.auth():
         websys.redirect_auth_screen()
         return
 

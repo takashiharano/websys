@@ -235,9 +235,6 @@ def cmd_users(context):
     if context.has_permission('sysadmin'):
         status = 'OK'
         user_list = usermgr.get_all_user_info()
-        guest_user_list = usermgr.get_all_guest_user_info()
-        if guest_user_list is not None:
-            user_list.update(guest_user_list)
     else:
         status = 'FORBIDDEN'
         user_list = None
@@ -456,58 +453,6 @@ def cmd_passwd(context):
     websys.send_result_json(status, body=None)
 
 #----------------------------------------------------------
-# gencode
-# ?validsec=1800
-#----------------------------------------------------------
-def cmd_gencode(context):
-    if not authmgr.auth():
-        on_auth_error()
-        return
-
-    uid = None
-    if not context.has_permission('sysadmin'):
-        websys.send_result_json('FORBIDDEN', body=None)
-        return
-
-    status = 'OK'
-    valid_min = 30
-    p_valid_time = websys.get_request_param('validtime')
-    if p_valid_time is not None:
-        try:
-            valid_min = int(p_valid_time)
-        except:
-            pass
-
-    id = None
-    p_id = websys.get_request_param('id')
-    if p_id is not None:
-        id = p_id
-
-    p_groups = websys.get_request_param('groups')
-    groups = ''
-    if p_groups is not None:
-        groups = p_groups
-        groups = util.replace(groups, r'\s{2,}', ' ')
-        groups = groups.strip()
-
-    p_privs = websys.get_request_param('privs')
-    privs = ''
-    if p_privs is not None:
-        privs = p_privs
-        privs = util.replace(privs, r'\s{2,}', ' ')
-        privs = privs.strip()
-
-    user_info = context.get_user_info()
-    operator_full_name = user_info['full_name']
-
-    try:
-        uid = usermgr.add_guest(uid=id, valid_min=valid_min, groups=groups, privs=privs, operator_full_name=operator_full_name)
-    except Exception as e:
-        status = str(e)
-
-    websys.send_result_json(status, body=uid)
-
-#----------------------------------------------------------
 # userdel
 # ?uid=UID
 #----------------------------------------------------------
@@ -526,15 +471,10 @@ def cmd_userdel(context):
                 status = 'ERR_PROHIBITED_UID'
             else:
                 status = 'ERR_NO_SUCH_UID'
-                deleted = usermgr.delete_guest_user(uid)
+                deleted = usermgr.delete_user(uid)
                 if deleted:
+                    logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
                     status = 'OK'
-                else:
-                    deleted = usermgr.delete_user(uid)
-                    if deleted:
-                        logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
-                        status = 'OK'
-
     else:
         status = 'FORBIDDEN'
 
@@ -570,26 +510,6 @@ def cmd_unlockuser(context):
         status = 'FORBIDDEN'
 
     websys.send_result_json(status, body=None)
-
-#----------------------------------------------------------
-# guests
-#----------------------------------------------------------
-def cmd_guests(context):
-    usermgr.delete_expired_guest()
-
-    if not authmgr.auth():
-        on_auth_error()
-        return
-
-    if context.has_permission('sysadmin'):
-        status = 'OK'
-        guest_user_list = usermgr.get_all_guest_user_info()
-
-    else:
-        status = 'FORBIDDEN'
-        guest_user_list = None
-
-    websys.send_result_json(status, body=guest_user_list)
 
 #----------------------------------------------------------
 # group

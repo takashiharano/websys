@@ -45,9 +45,9 @@ def output_text_file(root_path, path):
     html += '</script></head><body><pre id="t"></pre></body></html>'
     websys.send_response(html, 'text/html')
 
-def main(root_path, path, allow_guest=False, auth_required=True):
+def main(root_path, path, auth_required=True):
     websys.on_access()
-    if auth_required and  not authmgr.auth(allow_guest=allow_guest):
+    if auth_required and  not authmgr.auth():
         util.send_response('FORBIDDEN')
     else:
         if is_text_file(path):
