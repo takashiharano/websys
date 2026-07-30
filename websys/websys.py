@@ -73,10 +73,10 @@ class WebContext:
     # Returns:
     # user: {
     #   "uid": "root", # guest: "123456"
-    #   "fullname": "root", # guest: "GUEST"
-    #   "localfullname": "root_L", # guest: "GUEST_L"
-    #   "kananame": "", # guest: ""
-    #   "a_name": "root_A", # guest: "GUEST_A"
+    #   "full_name": "root", # guest: "GUEST"
+    #   "native_name": "root_L", # guest: "GUEST_L"
+    #   "kana_name": "", # guest: ""
+    #   "localized_name": "root_L", # guest: "GUEST_L"
     #   "is_admin": true,
     #   "groups": "GROUP1 GROUP2",
     #   "privs": "PRIVILEGE1 PRIVILEGE2",
@@ -109,28 +109,28 @@ class WebContext:
             return user_info['uid']
         return None
 
-    def get_user_fullname(self):
+    def get_user_full_name(self):
         user_info = self.user_info
-        if user_info is not None and 'fullname' in user_info:
-            return user_info['fullname']
+        if user_info is not None and 'full_name' in user_info:
+            return user_info['full_name']
         return ''
 
-    def get_user_local_fullname(self):
+    def get_user_native_name(self):
         user_info = self.user_info
-        if user_info is not None and 'localfullname' in user_info:
-            return user_info['localfullname']
+        if user_info is not None and 'native_name' in user_info:
+            return user_info['native_name']
         return ''
 
-    def get_user_kananame(self):
+    def get_user_kana_name(self):
         user_info = self.user_info
-        if user_info is not None and 'kananame' in user_info:
-            return user_info['kananame']
+        if user_info is not None and 'kana_name' in user_info:
+            return user_info['kana_name']
         return ''
 
-    def get_user_a_name(self):
+    def get_user_localized_name(self):
         user_info = self.user_info
-        if user_info is not None and 'a_name' in user_info:
-            return user_info['a_name']
+        if user_info is not None and 'localized_name' in user_info:
+            return user_info['localized_name']
         return ''
 
     def is_admin(self):
@@ -553,39 +553,39 @@ def build_auth_redirection_screen(root_path):
     return html
 
 #----------------------------------------------------------
-def get_user_fullname(uid, default=None):
-    user_fullname = default
+def get_user_full_name(uid, default=None):
+    user_full_name = default
     if default is None:
-        user_fullname = uid
+        user_full_name = uid
     user_info = usermgr.get_user_info(uid)
-    if user_info is not None and 'fullname' in user_info:
-        user_fullname = user_info['fullname']
-    return user_fullname
+    if user_info is not None and 'full_name' in user_info:
+        user_full_name = user_info['full_name']
+    return user_full_name
 
-def get_user_local_fullname(uid, default=None):
-    user_local_fullname = default
+def get_user_native_name(uid, default=None):
+    user_native_name = default
     if default is None:
-        user_local_fullname = uid
+        user_native_name = uid
     user_info = usermgr.get_user_info(uid)
-    if user_info is not None and 'localfullname' in user_info:
-        user_local_fullname = user_info['localfullname']
-    return user_local_fullname
+    if user_info is not None and 'native_name' in user_info:
+        user_native_name = user_info['native_name']
+    return user_native_name
 
-def get_user_kananame(uid, default=None):
-    user_kananame = default
-    if user_info is not None and 'kananame' in user_info:
-        user_kananame = user_info['kananame']
+def get_user_kana_name(uid, default=None):
+    user_kana_name = default
+    if user_info is not None and 'kana_name' in user_info:
+        user_kana_name = user_info['kana_name']
     if default is None:
-        user_kananame = ''
-    return user_kananame
+        user_kana_name = ''
+    return user_kana_name
 
-def get_user_a_name(uid, default=None):
-    user_a_name = default
-    if user_info is not None and 'a_name' in user_info:
-        user_a_name = user_info['a_name']
+def get_user_localized_name(uid, default=None):
+    user_localized_name = default
+    if user_info is not None and 'localized_name' in user_info:
+        user_localized_name = user_info['localized_name']
     if default is None:
-        user_a_name = get_user_local_fullname(uid)
-    return user_a_name
+        user_localized_name = get_user_native_name(uid)
+    return localized_name
 
 #----------------------------------------------------------
 def synchronize_start():

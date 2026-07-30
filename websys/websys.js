@@ -677,10 +677,10 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     return;
   }
   var p = dbg.getOptVal(arg, 'p');
-  var fullname = dbg.getOptVal(arg, 'n');
+  var full_name = dbg.getOptVal(arg, 'n');
+  var nameN = dbg.getOptVal(arg, 'nname');
+  var nameK = dbg.getOptVal(arg, 'kana');
   var nameL = dbg.getOptVal(arg, 'lname');
-  var nameK = dbg.getOptVal(arg, 'kname');
-  var nameA = dbg.getOptVal(arg, 'aname');
   var email = dbg.getOptVal(arg, 'email');
   var admin = dbg.getOptVal(arg, 'admin');
   var groups = dbg.getOptVal(arg, 'g');
@@ -697,23 +697,23 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
     uid: uid,
     pw: pw
   };
-  if (fullname) {
+  if (full_name) {
     try {
-      fullname = eval(fullname);
+      full_name = eval(full_name);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.fullname = fullname;
+    param.full_name = full_name;
   }
-  if (nameL) {
+  if (nameN) {
     try {
-      nameL = eval(nameL);
+      nameN = eval(nameN);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.localfullname = nameL;
+    param.native_name = nameN;
   }
   if (nameK) {
     try {
@@ -722,16 +722,16 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.kananame = nameK;
+    param.kana_name = nameK;
   }
-  if (nameA) {
+  if (nameL) {
     try {
-      nameA = eval(nameA);
+      nameL = eval(nameL);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.a_name = nameA;
+    param.localized_name = nameL;
   }
   if (email) {
     try {
@@ -825,9 +825,10 @@ websys.cmdUserAdd.cb = function(xhr, res) {
 websys.cmdUserMod = function(arg, tbl, echo) {
   var uid = dbg.getOptVal(arg, 'u');
   var p = dbg.getOptVal(arg, 'p');
-  var fullname = dbg.getOptVal(arg, 'n');
+  var full_name = dbg.getOptVal(arg, 'n');
+  var nameN = dbg.getOptVal(arg, 'nname');
+  var nameK = dbg.getOptVal(arg, 'kana');
   var nameL = dbg.getOptVal(arg, 'lname');
-  var nameA = dbg.getOptVal(arg, 'aname');
   var email = dbg.getOptVal(arg, 'email');
   var admin = dbg.getOptVal(arg, 'admin');
   var groups = dbg.getOptVal(arg, 'g');
@@ -850,23 +851,23 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     cmd: 'usermod',
     uid: uid
   };
-  if (fullname) {
+  if (full_name) {
     try {
-      fullname = eval(fullname);
+      full_name = eval(full_name);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.fullname = fullname;
+    param.full_name = full_name;
   }
-  if (nameL) {
+  if (nameN) {
     try {
-      nameL = eval(nameL);
+      nameN = eval(nameN);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.localfullname = nameL;
+    param.native_name = nameN;
   }
   if (nameK) {
     try {
@@ -875,16 +876,16 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.kananame = nameK;
+    param.kana_name = nameK;
   }
-  if (nameA) {
+  if (nameL) {
     try {
-      nameA = eval(nameA);
+      nameL = eval(nameL);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.a_name = nameA;
+    param.localized_name = nameL;
   }
   if (email) {
     try {
@@ -1531,40 +1532,40 @@ websys.getUserId = function() {
   return uid;
 };
 
-websys.getUserFullname = function() {
-  var fullname = null;
+websys.getUserFullName = function() {
+  var full_name = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {
-    fullname = userInfo.fullname;
+    full_name = userInfo.full_name;
   }
-  return fullname;
+  return full_name;
 };
 
-websys.getUserLocalName = function() {
-  var nameL = null;
+websys.getUserNativeName = function() {
+  var nameN = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {
-    nameL = userInfo.localfullname;
+    nameN = userInfo.native_name;
   }
-  return nameL;
+  return nameN;
 };
 
 websys.getUserKanaName = function() {
   var nameK = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {
-    nameK = userInfo.kananame;
+    nameK = userInfo.kana_name;
   }
   return nameK;
 };
 
-websys.getUserAliasName = function() {
-  var nameA = null;
+websys.getUserLocalizedName = function() {
+  var nameL = null;
   var userInfo = websys.getUserInfo();
   if (userInfo) {
-    nameA = userInfo.a_name;
+    nameL = userInfo.localized_name;
   }
-  return nameA;
+  return nameL;
 };
 
 websys.isAdmin = function() {
@@ -1725,9 +1726,9 @@ websys.CMD_TBL = [
   {cmd: 'syslog', fn: websys.syslog, desc: 'Show sysyem log'},
   {cmd: 'unlockuser', fn: websys.unlockuser, desc: 'Unlock user login', help: 'unlockuser uid'},
   {cmd: 'user', fn: websys.cmdUser, desc: 'Show user info', help: 'user [uid]'},
-  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-lname "LOCAL_NAME"] [-kname "KANA_NAME"] [-aname "ALIAS_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-flags FLAGS]'},
+  {cmd: 'useradd', fn: websys.cmdUserAdd, desc: 'Add a user', help: 'useradd -u UID -p PW [-n "NAME"] [-nname "NATIVE_NAME"] [-kana "KANA_NAME"] [-aname "LOCALIZED_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-flags FLAGS]'},
   {cmd: 'userdel', fn: websys.userdel, desc: 'Delete a user', help: 'userdel uid'},
-  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-lname "LOCAL_NAME"] [-kname "KANA_NAME"] [-aname "ALIAS_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"] [-flags FLAGS]'},
+  {cmd: 'usermod', fn: websys.cmdUserMod, desc: 'Mod a user', help: 'usermod -u UID [-p PW] [-n "NAME"] [-nname "NATIVE_NAME"] [-kana "KANA_NAME"] [-aname "LOCALIZED_NAME"] [-admin true|false] [-g "GROUP1 GROUP2"] [-aG "GROUP"] [-rG "GROUP"] [-privs "PRIVILEGE1 PRIVILEGE2"] [-aPriv "PRIVILEGE"] [-rPriv "PRIVILEGE"] [-flags FLAGS]'},
   {cmd: 'users', fn: websys.cmdUsers, desc: 'Show all user info'},
   {cmd: 'whoami', fn: websys.cmdWhoAmI, desc: 'Print effective userid'}
 ];

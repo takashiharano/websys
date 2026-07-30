@@ -131,7 +131,7 @@ def get_timeline_logs_by_session(sessions, target_offset):
 #   "addr": "::1",
 #   "host": "hostname",
 #   "ua": "Mozilla/5.0",
-#   "user_fullname": "John Doe"
+#   "user_full_name": "John Doe"
 #   "c_time": 1234567890.123456,
 #   "c_tz": "+0900",
 #   "c_addr": "::1",
@@ -158,16 +158,16 @@ def get_sorted_session_list():
             session = sessions[sid]
             if session['time'] == time:
                 uid = session['uid']
-                user_fullname = _get_user_fullname(users, uid)
-                session['user_fullname'] = user_fullname
+                user_full_name = _get_user_full_name(users, uid)
+                session['user_full_name'] = user_full_name
                 new_list.append(session)
 
     return new_list
 
-def _get_user_fullname(users, uid):
+def _get_user_full_name(users, uid):
     if uid in users:
         user = users[uid]
-        return user['fullname']
+        return user['full_name']
     return ''
 
 #------------------------------------------------------------------------------

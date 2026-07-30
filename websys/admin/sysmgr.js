@@ -25,10 +25,10 @@ main.INTERVAL = 60000;
 main.USER_LIST_COLUMNS = [
   {key: 'elapsed', label: ''},
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
-  {key: 'fullname', label: 'Full name', style: 'min-width:8em;'},
-  {key: 'localfullname', label: 'Local full name', style: 'min-width:8em;'},
-  {key: 'kananame', label: 'Kana name', style: 'min-width:5em;'},
-  {key: 'a_name', label: 'Alias name', style: 'min-width:5em;'},
+  {key: 'full_name', label: 'Full name', style: 'min-width:8em;'},
+  {key: 'native_name', label: 'Native name', style: 'min-width:8em;'},
+  {key: 'kana_name', label: 'Kana name', style: 'min-width:5em;'},
+  {key: 'localized_name', label: 'Localized name', style: 'min-width:5em;'},
   {key: 'email', label: 'Email', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
   {key: 'groups', label: 'Groups', style: 'min-width:8em;', filterMatchType: 'exact'},
@@ -42,11 +42,11 @@ main.USER_LIST_COLUMNS = [
   {key: 'status_info.last_access', label: 'Last Access'},
   {key: 'status_info.last_login', label: 'Last Login'},
   {key: 'status_info.last_logout', label: 'Last Logout'},
-  {key: 'created_at', label: 'Created At'},
-  {key: 'created_by', label: 'Created By'},
-  {key: 'updated_at', label: 'Updated At'},
-  {key: 'updated_by', label: 'Updated By'},
-  {key: 'status_info.pw_changed_at', label: 'PwChanged At'}
+  {key: 'created_at', label: 'Created at'},
+  {key: 'created_by', label: 'Created by'},
+  {key: 'updated_at', label: 'Updated at'},
+  {key: 'updated_by', label: 'Updated by'},
+  {key: 'status_info.pw_changed_at', label: 'PwChanged at'}
 ];
 
 main.listStatus = {
@@ -433,10 +433,10 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     if (filter && !main.searchUserByKeyword(item, filterCol, searchKeyword, searchCaseSensitive, exactMatch)) continue;
     count++;
     var uid = item.uid;
-    var fullname = item.fullname;
-    var localfullname = item.localfullname;
-    var kananame = item.kananame;
-    var a_name = item.a_name;
+    var full_name = item.full_name;
+    var native_name = item.native_name;
+    var kana_name = item.kana_name;
+    var localized_name = item.localized_name;
     var email = item.email;
     var groups = item.groups;
     var privs = item.privs;
@@ -459,10 +459,10 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var info2 = item.info2;
     var info3 = item.info3;
 
-    fullname = main.changeLetterCase(fullname, letterCase);
-    localfullname = main.changeLetterCase(localfullname, letterCase);
-    kananame = main.changeLetterCase(kananame, letterCase);
-    a_name = main.changeLetterCase(a_name, letterCase);
+    full_name = main.changeLetterCase(full_name, letterCase);
+    native_name = main.changeLetterCase(native_name, letterCase);
+    kana_name = main.changeLetterCase(kana_name, letterCase);
+    localized_name = main.changeLetterCase(localized_name, letterCase);
     email = main.changeLetterCase4email(email, letterCase);
     info1 = main.changeLetterCase(info1, letterCase);
     info2 = main.changeLetterCase(info2, letterCase);
@@ -473,10 +473,10 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
 
     var dispUid = uid;
-    var dispFullname = fullname;
-    var dispLocalFullname = localfullname;
-    var dispKananame = kananame;
-    var dispAname = a_name;
+    var dispFullName = full_name;
+    var dispNativeName = native_name;
+    var dispKanaName = kana_name;
+    var dispLocalizedName = localized_name;
     var dispEmail = email;
     var dispGroups = groups;
     var dispPrivs = privs;
@@ -490,10 +490,10 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var searchFieldName = main.filteringFieldName;
     if (searchKeyword) {
       if (!searchFieldName || (searchFieldName == 'uid'))dispUid = main.highlightKeyword(uid, searchKeyword, searchCaseSensitive);
-      if (!searchFieldName || (searchFieldName == 'fullname'))dispFullname = main.highlightKeyword(fullname, searchKeyword, searchCaseSensitive);
-      if (!searchFieldName || (searchFieldName == 'localfullname'))dispLocalFullname = main.highlightKeyword(localfullname, searchKeyword, searchCaseSensitive);
-      if (!searchFieldName || (searchFieldName == 'kananame'))dispKananame = main.highlightKeyword(kananame, searchKeyword, searchCaseSensitive);
-      if (!searchFieldName || (searchFieldName == 'a_name'))dispAname = main.highlightKeyword(a_name, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'full_name'))dispFullName = main.highlightKeyword(full_name, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'native_name'))dispNativeName = main.highlightKeyword(native_name, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'kana_name'))dispKanaName = main.highlightKeyword(kana_name, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'localized_name'))dispLocalizedName = main.highlightKeyword(localized_name, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'email'))dispEmail = main.highlightKeyword(email, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'groups'))dispGroups = main.highlightKeyword(groups, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'privs'))dispPrivs = main.highlightKeyword(privs, searchKeyword, searchCaseSensitive);
@@ -503,10 +503,10 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     }
 
     dispUid = cInd + '<span class="pseudo-link link-button" onclick="main.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
-    dispFullname = main.buildCopyableLabel(fullname, dispFullname);
-    dispLocalFullname = main.buildCopyableLabel(localfullname, dispLocalFullname);
-    dispKananame = main.buildCopyableLabel(kananame, dispKananame);
-    dispAname = main.buildCopyableLabel(a_name, dispAname);
+    dispFullName = main.buildCopyableLabel(full_name, dispFullName);
+    dispNativeName = main.buildCopyableLabel(native_name, dispNativeName);
+    dispKanaName = main.buildCopyableLabel(kana_name, dispKanaName);
+    dispLocalizedName = main.buildCopyableLabel(localized_name, dispLocalizedName);
     dispEmail = main.buildCopyableLabel(email, dispEmail);
     dispInfo1 = main.buildCopyableLabel(info1, dispInfo1);
     dispInfo2 = main.buildCopyableLabel(info2, dispInfo2);
@@ -532,10 +532,10 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     htmlList += '<tr class="item-list user-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'user-info\');">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
-    htmlList += '<td class="item-list">' + dispFullname + '</td>';
-    htmlList += '<td class="item-list">' + dispLocalFullname + '</td>';
-    htmlList += '<td class="item-list">' + dispKananame + '</td>';
-    htmlList += '<td class="item-list">' + dispAname + '</td>';
+    htmlList += '<td class="item-list">' + dispFullName + '</td>';
+    htmlList += '<td class="item-list">' + dispNativeName + '</td>';
+    htmlList += '<td class="item-list">' + dispKanaName + '</td>';
+    htmlList += '<td class="item-list">' + dispLocalizedName + '</td>';
     htmlList += '<td class="item-list">' + dispEmail + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
     htmlList += '<td class="item-list">' + dispGroups + '</td>';
@@ -665,10 +665,10 @@ main.searchUserByKeyword = function(item, filterCol, key, caseSensitive, exactMa
     targets.push(item[filterCol]);
   } else {
     targets.push(item.uid);
-    targets.push(item.fullname);
-    targets.push(item.localfullname);
-    targets.push(item.kananame);
-    targets.push(item.a_name);
+    targets.push(item.full_name);
+    targets.push(item.native_name);
+    targets.push(item.kana_name);
+    targets.push(item.localized_name);
     targets.push(item.email);
     targets.push(item.groups);
     targets.push(item.privs);
@@ -892,7 +892,7 @@ main.buildSessionInfoHtml = function(sessions, now) {
 main.buildSessionInfoOne = function(session, now) {
   var cSid = websys.getSessionId();
   var uid = session['uid'];
-  var fullname = session['user_fullname'];
+  var full_name = session['user_full_name'];
   var loginT = session['c_time'];
   var ua = session['ua'];
   var laTime = session['time'];
@@ -934,7 +934,7 @@ main.buildSessionInfoOne = function(session, now) {
   var html = '';
   html += '<tr class="item-list session-info" ondblclick="sysmgr.onListRowDblClick(this, \'session-info\');">';
   html += '<td style="padding-right:4px;">' + led + '</td>';
-  html += '<td style="padding-right:10px;">' + fullname + '</td>';
+  html += '<td style="padding-right:10px;">' + full_name + '</td>';
   html += '<td style="padding-right:6px;">' + uid + '</td>';
   html += '<td style="padding-right:10px;">' + dispSid + '</td>';
   html += '<td style="padding-right:10px;">' + laTimeStr + '</td>';
@@ -1214,26 +1214,26 @@ main.openUserInfoEditorWindow = function(mode, uid) {
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Full name</td>';
-  html += '    <td><input type="text" id="fullname" spellcheck="false" style="width:100%;"></td>';
+  html += '    <td><input type="text" id="full-name" spellcheck="false" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
-  html += '    <td class="user-edit-field-name">Local Full name</td>';
-  html += '    <td><input type="text" id="localfullname" spellcheck="false" style="width:100%;"></td>';
+  html += '    <td class="user-edit-field-name">Native name</td>';
+  html += '    <td><input type="text" id="native-name" spellcheck="false" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Kana name</td>';
-  html += '    <td><input type="text" id="kananame" style="width:100%;"></td>';
+  html += '    <td><input type="text" id="kana-name" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
-  html += '    <td class="user-edit-field-name">Alias name</td>';
-  html += '    <td><input type="text" id="a_name" spellcheck="false" style="width:100%;"></td>';
+  html += '    <td class="user-edit-field-name">Localized name</td>';
+  html += '    <td><input type="text" id="localized-name" spellcheck="false" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Email</td>';
   html += '    <td><input type="text" id="email" spellcheck="false" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
-  html += '    <td class="user-edit-field-name">isAdmin</td>';
+  html += '    <td class="user-edit-field-name">Administrator</td>';
   html += '    <td><input type="checkbox" id="isadmin">';
   html += '    </td>';
   html += '  </tr>';
@@ -1336,11 +1336,11 @@ main.duplicateUser = function() {
 main.onUidBlur = function() {
   var uid = $el('#uid').value;
   if (!util.isEmailAddress(uid)) return;
-  var fullname = $el('#fullname').value;
-  if (!fullname) {
-    fullname = main.getNameFromEmail(uid);
-    fullname = util.capitalize(fullname, ' ');
-    $el('#fullname').value = fullname;
+  var full_name = $el('#full-name').value;
+  if (!full_name) {
+    full_name = main.getNameFromEmail(uid);
+    full_name = util.capitalize(full_name, ' ');
+    $el('#full-name').value = full_name;
   }
   var email = $el('#email').value;
   if (!email) {
@@ -1389,10 +1389,10 @@ main.setUserInfoToEditor = function(info) {
     $el('#user-del-button').show();
   }
 
-  $el('#fullname').value = info.fullname;
-  $el('#localfullname').value = info.localfullname;
-  $el('#kananame').value = info.kananame;
-  $el('#a_name').value = info.a_name;
+  $el('#full-name').value = info.full_name;
+  $el('#native-name').value = info.native_name;
+  $el('#kana-name').value = info.kana_name;
+  $el('#localized-name').value = info.localized_name;
   $el('#email').value = info.email;
   $el('#isadmin').checked = info.is_admin;
   $el('#groups').value = info.groups;
@@ -1414,10 +1414,10 @@ main.onInputFlags = function() {
 main.clearUserInfoEditor = function() {
   var info = {
     uid: '',
-    fullname: '',
-    localfullname: '',
-    kananame: '',
-    a_name: '',
+    full_name: '',
+    native_name: '',
+    kana_name: '',
+    localized_name: '',
     email: '',
     is_admin: false,
     groups: '',
@@ -1446,10 +1446,10 @@ main.saveUserInfo = function() {
 //-----------------------------------------------------------------------------
 main.addUser = function() {
   var uid = $el('#uid').value;
-  var fullname = $el('#fullname').value;
-  var localfullname = $el('#localfullname').value;
-  var kananame = $el('#kananame').value;
-  var a_name = $el('#a_name').value;
+  var full_name = $el('#full-name').value;
+  var native_name = $el('#native-name').value;
+  var kana_name = $el('#kana-name').value;
+  var localized_name = $el('#localized-name').value;
   var email = $el('#email').value;
   var isAdmin = $el('#isadmin').checked;
   var groups = $el('#groups').value;
@@ -1469,33 +1469,33 @@ main.addUser = function() {
   }
   uid = clnsRes.val;
 
-  clnsRes = main.cleanseFullName(fullname);
+  clnsRes = main.cleanseFullName(full_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  fullname = clnsRes.val;
+  full_name = clnsRes.val;
 
-  clnsRes = main.cleanseFullName(localfullname);
+  clnsRes = main.cleanseFullName(native_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  localfullname = clnsRes.val;
+  native_name = clnsRes.val;
 
-  clnsRes = main.cleanseFullName(kananame);
+  clnsRes = main.cleanseFullName(kana_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  kananame = clnsRes.val;
+  kana_name = clnsRes.val;
 
-  clnsRes = main.cleanseFullName(a_name);
+  clnsRes = main.cleanseFullName(localized_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  a_name = clnsRes.val;
+  localized_name = clnsRes.val;
 
   clnsRes = main.cleanseGroups(groups);
   if (clnsRes.msg) {
@@ -1521,10 +1521,10 @@ main.addUser = function() {
 
   var params = {
     uid: uid,
-    fullname: fullname,
-    localfullname: localfullname,
-    kananame: kananame,
-    a_name: a_name,
+    full_name: full_name,
+    native_name: native_name,
+    kana_name: kana_name,
+    localized_name: localized_name,
     email: email,
     is_admin: isAdmin,
     groups: groups,
@@ -1545,10 +1545,10 @@ main.addUser = function() {
 //-----------------------------------------------------------------------------
 main.updateUser = function() {
   var uid = $el('#uid').value;
-  var fullname = $el('#fullname').value;
-  var localfullname = $el('#localfullname').value;
-  var kananame = $el('#kananame').value;
-  var a_name = $el('#a_name').value;
+  var full_name = $el('#full-name').value;
+  var native_name = $el('#native-name').value;
+  var kana_name = $el('#kana-name').value;
+  var localized_name = $el('#localized-name').value;
   var email = $el('#email').value;
   var isAdmin = $el('#isadmin').checked;
   var groups = $el('#groups').value;
@@ -1561,33 +1561,33 @@ main.updateUser = function() {
   var pw1 = $el('#pw1').value;
   var pw2 = $el('#pw2').value;
 
-  clnsRes = main.cleanseFullName(fullname);
+  clnsRes = main.cleanseFullName(full_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  fullname = clnsRes.val;
+  full_name = clnsRes.val;
 
-  clnsRes = main.cleanseFullName(localfullname);
+  clnsRes = main.cleanseFullName(native_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  localfullname = clnsRes.val;
+  native_name = clnsRes.val;
 
-  clnsRes = main.cleanseFullName(kananame);
+  clnsRes = main.cleanseFullName(kana_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  kananame = clnsRes.val;
+  kana_name = clnsRes.val;
 
-  clnsRes = main.cleanseFullName(a_name);
+  clnsRes = main.cleanseFullName(localized_name);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  a_name = clnsRes.val;
+  localized_name = clnsRes.val;
 
   clnsRes = main.cleanseGroups(groups);
   if (clnsRes.msg) {
@@ -1612,10 +1612,10 @@ main.updateUser = function() {
 
   var params = {
     uid: uid,
-    fullname: fullname,
-    localfullname: localfullname,
-    kananame: kananame,
-    a_name: a_name,
+    full_name: full_name,
+    native_name: native_name,
+    kana_name: kana_name,
+    localized_name: localized_name,
     email: email,
     is_admin: isAdmin,
     groups: groups,
@@ -1838,10 +1838,10 @@ main.drawGroupList = function(list) {
   html += '<th class="item-list" style="min-width:15em;">Name</th>';
   html += '<th class="item-list" style="min-width:20em;">Privileges</th>';
   html += '<th class="item-list" style="min-width:20em;">Description</th>';
-  html += '<th class="item-list">Created At</th>';
-  html += '<th class="item-list">Created By</th>';
-  html += '<th class="item-list">Updated At</th>';
-  html += '<th class="item-list">Updated By</th>';
+  html += '<th class="item-list">Created at</th>';
+  html += '<th class="item-list">Created by</th>';
+  html += '<th class="item-list">Updated at</th>';
+  html += '<th class="item-list">Updated by</th>';
   html += '</tr>';
 
   for (var i = 0; i < list.length; i++) {

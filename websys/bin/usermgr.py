@@ -28,10 +28,10 @@ U_FLG_INVALID_DATA = 1 << 7
 
 USER_DATA_STRUCT = [
     {'name': 'uid'},
-    {'name': 'fullname'},
-    {'name': 'localfullname'},
-    {'name': 'kananame'},
-    {'name': 'a_name'},
+    {'name': 'full_name'},
+    {'name': 'native_name'},
+    {'name': 'kana_name'},
+    {'name': 'localized_name'},
     {'name': 'email'},
     {'name': 'is_admin', 'type': 'bool'},
     {'name': 'groups'},
@@ -63,7 +63,7 @@ USER_STATUS_DATA_STRUCT = [
 ]
 
 # User data format
-# #uid	fullname	localfullname	kananame	a_name	is_admin	groups	privs	info1	info2	info3	flags	created_at	created_by	updated_at	updated_by
+# #uid	full_name	native_name	kana_name	localized_name	is_admin	groups	privs	info1	info2	info3	flags	created_at	created_by	updated_at	updated_by
 # admin	Admin	ADMIN		Administrator	1	g1	p1	Info1	Info2	Info3	0	1721446496.789123	1721446496.789123
 
 # Object structure
@@ -71,10 +71,10 @@ USER_STATUS_DATA_STRUCT = [
 # {
 #   "root": {
 #     "uid": "root",
-#     "fullname": "root",
-#     "localfullname": "root_L",
-#     "kananame": "",
-#     "a_name": "root_A",
+#     "full_name": "root",
+#     "native_name": "root_N",
+#     "kana_name": "",
+#     "localized_name": "root_L",
 #     "email": "user@host",
 #     "is_admin": true,
 #     "groups": "GROUP1 GROUP2",
@@ -96,10 +96,10 @@ USER_STATUS_DATA_STRUCT = [
 # {
 #   "123456": {
 #     "uid": "123456",
-#     "fullname": "GUEST",
-#     "localfullname": "GUEST_L",
-#     "kananame": "",
-#     "a_name": "GUEST_A",
+#     "full_name": "GUEST",
+#     "native_name": "GUEST_N",
+#     "kana_name": "",
+#     "localized_name": "GUEST_L",
 #     "email": "",
 #     "is_admin": true,
 #     "groups": "GROUP1",
@@ -198,7 +198,7 @@ def count_sessions_per_user():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
-def add_user(uid, pw, fullname=None, localfullname=None, kananame=None, a_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None, operator_full_name=''):
+def add_user(uid, pw, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None, operator_full_name=''):
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -207,7 +207,7 @@ def add_user(uid, pw, fullname=None, localfullname=None, kananame=None, a_name=N
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
-    user = create_new_user(now, uid, fullname, localfullname, kananame, a_name, email, is_admin, groups, privs, info1, info2, info3, flags, operator_full_name=operator_full_name)
+    user = create_new_user(now, uid, full_name, native_name, kana_name, localized_name, email, is_admin, groups, privs, info1, info2, info3, flags, operator_full_name=operator_full_name)
 
     users[uid] = user
     save_users(users)
@@ -219,7 +219,7 @@ def add_user(uid, pw, fullname=None, localfullname=None, kananame=None, a_name=N
 
     return user
 
-def create_new_user(timestamp, uid, fullname=None, localfullname=None, kananame=None, a_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, operator_full_name=''):
+def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=None, localized_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, operator_full_name=''):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
@@ -227,10 +227,10 @@ def create_new_user(timestamp, uid, fullname=None, localfullname=None, kananame=
 
     user = {
         'uid': uid,
-        'fullname': fullname,
-        'localfullname': localfullname,
-        'kananame': kananame,
-        'a_name': a_name,
+        'full_name': full_name,
+        'native_name': native_name,
+        'kana_name': kana_name,
+        'localized_name': localized_name,
         'email': email,
         'is_admin': is_admin,
         'groups': groups,
@@ -248,7 +248,7 @@ def create_new_user(timestamp, uid, fullname=None, localfullname=None, kananame=
     return user
 
 # Modify a user
-def modify_user(uid, pw=None, fullname=None, localfullname=None, kananame=None, a_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
+def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
     now = util.get_timestamp()
     is_guest = False
 
@@ -266,20 +266,20 @@ def modify_user(uid, pw=None, fullname=None, localfullname=None, kananame=None, 
     user = users[uid]
 
     updated = False
-    if fullname is not None:
-        user['fullname'] = fullname
+    if full_name is not None:
+        user['full_name'] = full_name
         updated = True
 
-    if localfullname is not None:
-        user['localfullname'] = localfullname
+    if native_name is not None:
+        user['native_name'] = native_name
         updated = True
 
-    if kananame is not None:
-        user['kananame'] = kananame
+    if kana_name is not None:
+        user['kana_name'] = kana_name
         updated = True
 
-    if a_name is not None:
-        user['a_name'] = a_name
+    if localized_name is not None:
+        user['localized_name'] = localized_name
         updated = True
 
     if email is not None:
@@ -433,12 +433,12 @@ def add_guest(uid=None, uid_len=6, valid_min=30, groups='', privs='', operator_f
             raise Exception('ALREADY_EXISTS')
 
     gid = len(guest_users) + 1
-    fullname = 'GUEST' + str(gid)
-    localfullname = fullname
-    kanname = ''
-    a_name = ''
+    full_name = 'GUEST' + str(gid)
+    native_name = full_name
+    kana_name = ''
+    localized_name = ''
 
-    user = create_new_user(now, new_uid, fullname, localfullname, kanname, a_name, is_admin=False, groups=groups, privs=privs, flags=0, operator_full_name=operator_full_name)
+    user = create_new_user(now, new_uid, full_name, native_name, kana_name, localized_name, is_admin=False, groups=groups, privs=privs, flags=0, operator_full_name=operator_full_name)
     user['is_guest'] = True
     user['expires_at'] = now + valid_min * 60
 

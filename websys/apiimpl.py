@@ -258,10 +258,10 @@ def cmd_useradd(context):
         return
 
     uid = websys.get_request_param('uid')
-    fullname = websys.get_request_param('fullname')
-    localfullname = websys.get_request_param('localfullname')
-    kananame = websys.get_request_param('kananame')
-    a_name = websys.get_request_param('a_name')
+    full_name = websys.get_request_param('full_name')
+    native_name = websys.get_request_param('native_name')
+    kana_name = websys.get_request_param('kana_name')
+    localized_name = websys.get_request_param('localized_name')
     email = websys.get_request_param('email')
     pw = websys.get_request_param('pw')
     p_admin = websys.get_request_param('is_admin')
@@ -282,11 +282,11 @@ def cmd_useradd(context):
         return
     pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
-    if fullname is None:
-        fullname = uid
+    if full_name is None:
+        full_name = uid
 
-    if localfullname is None:
-        localfullname = fullname
+    if native_name is None:
+        native_name = full_name
 
     is_admin = False
     if p_admin is not None:
@@ -308,10 +308,10 @@ def cmd_useradd(context):
         p_flags = None
 
     user_info = context.get_user_info()
-    operator_full_name = user_info['fullname']
+    operator_full_name = user_info['full_name']
 
     try:
-        usermgr.add_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo, operator_full_name=operator_full_name)
+        usermgr.add_user(uid, pw_hash, full_name=full_name, native_name=native_name, kana_name=kana_name, localized_name=localized_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -339,10 +339,10 @@ def cmd_usermod(context):
         websys.send_result_json('ERR_UID', body=None)
         return
 
-    fullname = websys.get_request_param('fullname')
-    localfullname = websys.get_request_param('localfullname')
-    kananame = websys.get_request_param('kananame')
-    a_name = websys.get_request_param('a_name')
+    full_name = websys.get_request_param('full_name')
+    native_name = websys.get_request_param('native_name')
+    kana_name = websys.get_request_param('kana_name')
+    localized_name = websys.get_request_param('localized_name')
     email = websys.get_request_param('email')
 
     pw = websys.get_request_param('pw')
@@ -394,10 +394,10 @@ def cmd_usermod(context):
         if p_flags is not None:
             u_flags = p_flags
 
-    operator_full_name = user_info['fullname']
+    operator_full_name = user_info['full_name']
 
     try:
-        usermgr.modify_user(uid, pw_hash, fullname=fullname, localfullname=localfullname, kananame=kananame, a_name=a_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo, operator_full_name=operator_full_name)
+        usermgr.modify_user(uid, pw_hash, full_name=full_name, native_name=native_name, kana_name=kana_name, localized_name=localized_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -444,7 +444,7 @@ def cmd_passwd(context):
     own_uid = context.get_user_id()
     target = 'self' if uid == own_uid else uid
 
-    operator_full_name = user_info['fullname']
+    operator_full_name = user_info['full_name']
 
     try:
         usermgr.modify_user(uid, pw_hash, chg_pw=True, operator_full_name=operator_full_name)
@@ -498,7 +498,7 @@ def cmd_gencode(context):
         privs = privs.strip()
 
     user_info = context.get_user_info()
-    operator_full_name = user_info['fullname']
+    operator_full_name = user_info['full_name']
 
     try:
         uid = usermgr.add_guest(uid=id, valid_min=valid_min, groups=groups, privs=privs, operator_full_name=operator_full_name)
@@ -640,7 +640,7 @@ def cmd_addgroup(context):
         privs = privs.strip()
 
     user_info = context.get_user_info()
-    operator_full_name = user_info['fullname']
+    operator_full_name = user_info['full_name']
 
     try:
         groupmgr.add_group(gid, name=name, privs=privs, desc=desc, operator_full_name=operator_full_name)
@@ -687,7 +687,7 @@ def cmd_modgroup(context):
     desc = websys.get_request_param('desc', '')
 
     user_info = context.get_user_info()
-    operator_full_name = user_info['fullname']
+    operator_full_name = user_info['full_name']
 
     try:
         groupmgr.modify_group(gid, name=name, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, operator_full_name=operator_full_name)
