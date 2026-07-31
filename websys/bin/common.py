@@ -90,7 +90,7 @@ def parse_tsv_field_values(tsv_text, data_fields_def, path):
 
         if 'type' in field:
             data_type = field['type']
-            if 'data_type' == 'bool':
+            if data_type == 'bool':
                 if 'as_true' in field:
                     as_true = field['as_true']
 

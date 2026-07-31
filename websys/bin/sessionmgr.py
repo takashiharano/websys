@@ -159,11 +159,9 @@ def get_anonymous_session_period_sec():
 #----------------------------------------------------------
 # Create and register new session info
 #----------------------------------------------------------
-def create_and_register_session_info(uid, ext_auth=False):
+def create_and_register_session_info(uid):
     now = util.get_timestamp()
     new_session_info = create_new_session_info(uid, now)
-    if ext_auth:
-        new_session_info['ext_auth'] = True
     append_session_info_to_session_file(uid, new_session_info)
     return new_session_info
 

@@ -366,21 +366,6 @@ def get_password_list():
     pw_list = util.read_text_file_as_list(path)
     return pw_list
 
-def get_password_list_as_dict():
-    pw_list = get_password_list()
-    pws = {}
-    for i in range(len(pw_list)):
-        line = pw_list[i]
-        a = line.split('\t')
-        uid =  a[0]
-        pw = a[1]
-        ts = float(a[2])
-        pws[uid] = {
-            'pw': pw,
-            'updated_at': ts
-        }
-    return pws
-
 def save_password_list(pw_list):
     path = PASSWORD_LIST_FILE_PATH
     util.write_text_file_from_list(path, pw_list)

@@ -20,7 +20,7 @@ def force_unlock():
         if deleted:
             status = 'OK'
         else:
-            status = 'NG'
+            status = 'FAILED'
     else:
         status = 'NO_LOCK_FILE'
 

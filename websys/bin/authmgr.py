@@ -23,10 +23,10 @@ ALGOTRITHM = websysconf.ALGOTRITHM
 #  uid
 #  pw: SHA-256(pw + uid)
 #----------------------------------------------------------
-def login(uid, pw, ext_auth=False):
+def login(uid, pw):
     if websys.synchronize_start():
         try:
-            ret = do_login(uid, pw, ext_auth=ext_auth)
+            ret = do_login(uid, pw)
             websys.synchronize_end()
         except Exception as e:
             websys.synchronize_end()
@@ -34,14 +34,14 @@ def login(uid, pw, ext_auth=False):
         return ret
     raise Exception('ERROR')
 
-def do_login(uid, pw, ext_auth=False):
+def do_login(uid, pw):
     try:
-        login_info = _login(uid, pw, ext_auth)
+        login_info = _login(uid, pw)
     except Exception as e:
         status = str(e)
         if status == 'USER_NOT_FOUND':
             write_login_log(status, '')
-            status = 'NG'
+            status = 'FAILED'
         else:
             write_login_log(status, uid)
         raise Exception(status)
@@ -60,7 +60,7 @@ def do_login(uid, pw, ext_auth=False):
     write_login_log(status, uid, session_info)
     return login_info
 
-def _login(uid, pw, ext_auth=False):
+def _login(uid, pw):
     user_info = usermgr.get_user_info(uid)
     if user_info is None:
         raise Exception('USER_NOT_FOUND')
@@ -90,9 +90,9 @@ def _login(uid, pw, ext_auth=False):
         user_status_info['login_failed_count'] += 1
         user_status_info['login_failed_time'] = now
         usermgr.write_user_status_info(uid, user_status_info)
-        raise Exception('NG')
+        raise Exception('FAILED')
 
-    new_session_info = sessionmgr.create_and_register_session_info(uid, ext_auth=ext_auth)
+    new_session_info = sessionmgr.create_and_register_session_info(uid)
     loggedin_user_info = user_info
     login_info = {
         'session_info': new_session_info,
@@ -135,9 +135,6 @@ def _auth():
     if session_info is None:
         return 'SESSION_INFO_NOT_FOUND'
 
-    if 'ext_user' in session_info and session_info['ext_user']:
-        return 'OK'
-
     sid = session_info['sid']
     user_info = sessionmgr.get_user_info_from_sid(sid)
     if user_info is None:
@@ -145,19 +142,6 @@ def _auth():
 
     if usermgr.is_disabled(user_info):
         return 'USER_IS_DISABLED'
-
-    if 'expires_at' in user_info:
-        now = util.get_timestamp()
-        if user_info['expires_at'] < now:
-            return 'USER_IS_EXPIRED'
-
-    if 'path' in user_info and user_info['path'] is not None:
-        req_uri = util.get_request_uri()
-        pattern = '^' + user_info['path']
-        pattern = util.replace(pattern, '\\.', '\\\\.')
-        pattern = util.replace(pattern, '\\?', '\\\\?')
-        if not util.match(req_uri, pattern):
-            return 'FORBIDDEN_PATH'
 
     return 'OK'
 

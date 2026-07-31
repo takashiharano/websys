@@ -197,9 +197,11 @@ def on_access():
     context = WebContext()
 
     if synchronize_start():
-        context = _on_access(context)
-        context.set_status('OK')
-        synchronize_end()
+        try:
+            context = _on_access(context)
+            context.set_status('OK')
+        finally:
+            synchronize_end()
     else:
         context.set_status('SYSTEM_BUSY')
 
@@ -322,12 +324,11 @@ def get_raw_request_param(key=None, default=None):
 #----------------------------------------------------------
 # login
 #----------------------------------------------------------
-def login(context, id, pw, ext_auth):
-    if not ext_auth:
-        invalidate_existing_session(context)
+def login(context, id, pw):
+    invalidate_existing_session(context)
 
     try:
-        login_info = authmgr.login(id, pw, ext_auth)
+        login_info = authmgr.login(id, pw)
         session_info = login_info['session_info']
         user_info = login_info['user_info']
 
@@ -359,7 +360,7 @@ def invalidate_existing_session(context):
 #----------------------------------------------------------
 # logout
 #----------------------------------------------------------
-def logout(sid, renew=False):
+def logout(sid):
     return authmgr.logout(sid)
 
 def build_logout_cookies():
@@ -425,18 +426,18 @@ def get_response_cookies(context):
 def append_cookie(cookies, name, value, for_anonymous):
     if cookies is None:
         cookies = []
-    cookie = build_cookie_header_field(name, value, for_anonymous)
-    cookies.append(cookie)
-    return cookies
 
-def build_cookie_header_field(name, value, for_anonymous):
     if for_anonymous:
         max_age = sessionmgr.get_anonymous_session_period_sec()
         if max_age <= 0:
             return cookies
-    else:
-        max_age = sessionmgr.get_session_timeout_value()
 
+    cookie = build_cookie_header_field(name, value)
+    cookies.append(cookie)
+    return cookies
+
+def build_cookie_header_field(name, value):
+    max_age = sessionmgr.get_session_timeout_value()
     cookie = util.build_cookie(name, value, max_age=str(max_age), path='/', http_only=True)
     return {'Set-Cookie': cookie}
 
@@ -560,20 +561,25 @@ def get_user_native_name(uid, default=None):
     return user_native_name
 
 def get_user_kana_name(uid, default=None):
-    user_kana_name = default
+    user_kana_name = '' if default is None else default
+
+    user_info = usermgr.get_user_info(uid)
     if user_info is not None and 'kana_name' in user_info:
         user_kana_name = user_info['kana_name']
-    if default is None:
-        user_kana_name = ''
+
     return user_kana_name
 
 def get_user_localized_name(uid, default=None):
-    user_localized_name = default
-    if user_info is not None and 'localized_name' in user_info:
-        user_localized_name = user_info['localized_name']
     if default is None:
         user_localized_name = get_user_native_name(uid)
-    return localized_name
+    else:
+        user_localized_name = default
+
+    user_info = usermgr.get_user_info(uid)
+    if user_info is not None and 'localized_name' in user_info:
+        user_localized_name = user_info['localized_name']
+
+    return user_localized_name
 
 #----------------------------------------------------------
 def synchronize_start():

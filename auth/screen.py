@@ -103,7 +103,6 @@ input:-webkit-autofill {
 <script>
 var auth = {};
 auth.originUrl = '${%srcurl%}';
-auth.extAuth = ${%ext_auth%};
 auth.led = null;
 auth.elCode = null;
 auth.retryNum = 0;
@@ -145,9 +144,6 @@ auth.doLogin = function(id, pw) {
     id: id,
     pw: hash
   };
-  if (auth.extAuth) {
-    param.ext_auth = 'true';
-  }
   var req = {
     url: '../websys/api.cgi',
     method: 'POST',
@@ -186,7 +182,7 @@ auth.onLoginOK = function(sid) {
   auth.textseq($el('#message'), m, 2, auth.onLoginOkTextSeqComplete);
 };
 auth.onLoginOkTextSeqComplete = function() {
-  setTimeout(auth.redirect, 1000, auth.sid);
+  setTimeout(auth.redirect, 1000);
 };
 auth.onLoginNG = function(status) {
   auth.led.on('#f88');
@@ -243,18 +239,9 @@ auth.enableOpenBtn = function() {
 auth.disableOpenBtn = function() {
   $el('#enter-button').disabled = true;
 };
-auth.redirect = function(sid) {
+auth.redirect = function() {
   var url = auth.originUrl;
   if (!url) return;
-  if (auth.extAuth) {
-    if (url.match(/\?.+/)) {
-      url += '&sid=' + sid;
-    } else if (uri.match(/\?$/)) {
-      url += 'sid=' + sid;
-    } else {
-      url += '?sid=' + sid;
-    }
-  }
   location.href = url;
 };
 auth.goodBye = function() {
@@ -451,9 +438,6 @@ window.addEventListener('load', onLoad, true);
 
 def print_screen():
     srcurl = util.get_request_param('srcurl', '')
-    p_ext_auth = util.get_request_param('ext_auth', '')
-    ext_auth = 'true' if p_ext_auth == 'true' else 'false'
     html = build_html()
     html = util.replace(html, '\${%srcurl%}', srcurl);
-    html = util.replace(html, '\${%ext_auth%}', ext_auth);
     util.send_response(html, 'text/html')

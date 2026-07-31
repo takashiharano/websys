@@ -557,9 +557,9 @@ websys.cmdSessions.cb = function(xhr, res, req) {
 };
 
 websys.buildSessinInfo = function(info, flgA) {
+  var DATETIME_FORMAT = '%YYYY-%MM-%DD %HH:%mm:%SS';
   var brwC = util.getBrowserInfo(info['c_ua']);
   var brwL = util.getBrowserInfo(info['ua']);
-
   var screen = info['screen'].replace(/x/, ' x ');
   var zoom = info['zoom'];
   if (zoom) zoom += '%';
@@ -568,7 +568,7 @@ websys.buildSessinInfo = function(info, flgA) {
   var s = '';
   s += 'uid     : ' + info['uid'] + '\n';
   s += 'sid     : ' + info['sid'] + '\n';
-  s += 'time    : ' + util.getDateTimeString(info['time'], '%YYYY-%MM-%DD %HH:%MI:%SS') + ' <span style="color:#ccc;">' + info['tz'] + ' ' + info['tzname'] + '\n';
+  s += 'time    : ' + util.getDateTimeString(info['time'], DATETIME_FORMAT) + ' <span style="color:#ccc;">' + info['tz'] + ' ' + info['tzname'] + '\n';
   s += 'host    : ' + info['addr'] + '  ' + info['host'] + '\n';
   s += 'ua      : ' + brwL.name + ' ' + brwL.version + '\n';
   s += 'screen  : ' + scr + '\n';
@@ -577,7 +577,7 @@ websys.buildSessinInfo = function(info, flgA) {
   if (flgA) {
     s += '<span style="color:#aaa;">';
     s += ' created:\n';
-    s += '    time: ' + util.getDateTimeString(info['c_time'], '%YYYY-%MM-%DD %HH:%MI:%SS') + ' ' + info['c_tz'] + ' ' + info['c_tzname'] + '\n';
+    s += '    time: ' + util.getDateTimeString(info['c_time'], DATETIME_FORMAT) + ' ' + info['c_tz'] + ' ' + info['c_tzname'] + '\n';
     s += '    host: ' + info['c_addr'] + '  ' + info['c_host'] + '\n';
     s += '    ua  : ' + brwC.name + ' ' + brwC.version + '\n';
     s += '</span>';
@@ -1418,15 +1418,11 @@ websys.onHttpOff = function() {
   }
 };
 
-websys.authRedirection = function(srcUrl, extAuthUrl) {
+websys.authRedirection = function(srcUrl) {
   var authUrl = websys.basePath + 'auth/';
   var params = {
     srcurl: srcUrl
   };
-  if (extAuthUrl) {
-    authUrl = extAuthUrl;
-    params.ext_auth = 'true';
-  }
   util.submit(authUrl, 'POST', params);
 };
 

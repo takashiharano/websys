@@ -46,9 +46,7 @@ def cmd_syslog(context):
 def cmd_login(context):
     id = websys.get_request_param('id')
     pw = websys.get_request_param('pw')
-    p_ext_auth = websys.get_request_param('ext_auth')
-    ext_auth = True if p_ext_auth == 'true' else False
-    result = websys.login(context, id, pw, ext_auth)
+    result = websys.login(context, id, pw)
 
     cookies = []
     cookie = websys.build_cookie_for_clear('ts')
@@ -178,17 +176,19 @@ def cmd_session(context):
 #----------------------------------------------------------
 def cmd_sessions(context):
     status = 'OK'
-    all = websys.get_request_param('all')
-    if all is None:
-        session_list = get_session_list_from_session(context)
-    else:
-        if context.has_permission('sysadmin'):
-            session_list = []
-            sessions = sessionmgr.get_all_sessions_info()
-            for sid in sessions:
-                session_list.append(sessions[sid])
-        else:
+    session_list = []
+    if context.authorized:
+        all = websys.get_request_param('all')
+        if all is None:
             session_list = get_session_list_from_session(context)
+        else:
+            if context.has_permission('sysadmin'):
+                session_list = []
+                sessions = sessionmgr.get_all_sessions_info()
+                for sid in sessions:
+                    session_list.append(sessions[sid])
+            else:
+                session_list = get_session_list_from_session(context)
     websys.send_result_json(status, body=session_list)
 
 #----------------------------------------------------------
@@ -218,7 +218,7 @@ def cmd_user(context):
               if context.has_permission('sysadmin'):
                   user_info = usermgr.get_user_info(uid, w_memo=w_memo)
                   if user_info is None:
-                      status = 'NG'
+                      status = 'FAILED'
               else:
                   status = 'FORBIDDEN'
 
@@ -434,9 +434,11 @@ def cmd_passwd(context):
         return
 
     pw = websys.get_request_param('pw')
-    pw_hash = None
-    if pw is not None:
-        pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
+    if pw is None or pw == '':
+        websys.send_result_json('ERR_PW', body=None)
+        return
+
+    pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     own_uid = context.get_user_id()
     target = 'self' if uid == own_uid else uid
@@ -525,7 +527,7 @@ def cmd_group(context):
         if context.has_permission('sysadmin'):
             group_info = groupmgr.get_group_info(gid)
             if group_info is None:
-                status = 'NG'
+                status = 'FAILED'
         else:
             status = 'FORBIDDEN'
 
