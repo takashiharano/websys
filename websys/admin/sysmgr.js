@@ -794,8 +794,9 @@ main.drawSessionList = function(sessions) {
   html += '<td class="session-info-head">User-Agent</td>';
   html += '<td class="session-info-head" colspan="4">Screen</td>';
   html += '<td class="session-info-head" colspan="2">Time Zone</td>';
-  html += '<td class="session-info-head">Logged in</td>';
   html += '<td class="session-info-head">Lang</td>';
+  html += '<td class="session-info-head">Logged in</td>';
+  html += '<td class="session-info-head">Addr at Login</td>';
   html += '</tr>';
   html += main.buildSessionInfoHtml(sessions, now);
   html += '</table>';
@@ -902,6 +903,8 @@ main.buildSessionInfoOne = function(session, now) {
   var lang = session['lang'];
   var tz = session['tz'];
   var tzname = session['tzname'];
+  var cAddr = session['c_addr'];
+  var cHost = session['c_host'];
 
   var scrres = session['screen'].split('x');
   var x = scrres[0] | 0;
@@ -916,8 +919,9 @@ main.buildSessionInfoOne = function(session, now) {
   if (zoom) zoom += '%';
 
   if (main.INSEC) laTime = Math.floor(laTime * 1000);
-  var loginTime = util.getDateTimeString(loginT, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
-  var laTimeStr = util.getDateTimeString(laTime, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+  var DATETIME_FORMAT = '%YYYY-%MM-%DD %HH:%mm:%SS.%sss';
+  var loginTime = util.getDateTimeString(loginT, DATETIME_FORMAT);
+  var laTimeStr = util.getDateTimeString(laTime, DATETIME_FORMAT);
   var ssid = util.snip(sid, 7, 3, '..');
   var sid7 = util.snip(sid, 7, 0, '');
   var brws = util.getBrowserInfo(ua);
@@ -952,8 +956,13 @@ main.buildSessionInfoOne = function(session, now) {
   html += '<td style="padding-right:10px;text-align:right;">' + zoom + '</td>';
   html += '<td style="padding-right:6px;">' + tz + '</td>';
   html += '<td style="padding-right:10px;">' + tzname + '</td>';
-  html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '<td style="padding-right:10px;">' + lang + '</td>';
+  html += '<td style="padding-right:10px;">' + loginTime + '</td>';
+  html += '<td';
+  if (cHost) {
+    html += ' data-tooltip="' + cHost + '"';
+  }
+  html += '>' + cAddr + '</td>';
   html += '</tr>';
 
   setTimeout(main.startElapsedCounter, 0, {timeId: '#' + timeId, laTime: laTime});
