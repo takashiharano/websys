@@ -15,8 +15,7 @@ import logger
 import common
 import sessionmgr
 
-USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users.txt'
-GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
+USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users.tsv'
 PASSWORD_LIST_FILE_PATH = websysconf.PASSWORD_LIST_FILE_PATH
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 PW_RESET_LOGIN_EXPIRE_SEC = websysconf.PW_RESET_LOGIN_EXPIRE_SEC

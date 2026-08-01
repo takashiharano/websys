@@ -50,7 +50,7 @@ current_session_info = None
 # Get sessions file path
 #----------------------------------------------------------
 def get_sessions_file_path(uid):
-    path = USER_ROOT_PATH + '/' + uid + '/sessions.txt'
+    path = USER_ROOT_PATH + '/' + uid + '/sessions.tsv'
     return path
 
 #----------------------------------------------------------

@@ -13,7 +13,7 @@ import util
 
 import common
 
-GROUPS_FILE_PATH = websysconf.GROUPS_FILE_PATH
+GROUPS_FILE_PATH = websysconf.DATA_DIR + '/groups.tsv'
 
 GROUP_DATA_FIELDS = [
     {'name': 'gid'},
