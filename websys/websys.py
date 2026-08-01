@@ -553,32 +553,23 @@ def get_user_full_name(uid, default=None):
 
 def get_user_native_name(uid, default=None):
     user_native_name = default
-    if default is None:
-        user_native_name = uid
     user_info = usermgr.get_user_info(uid)
-    if user_info is not None and 'native_name' in user_info:
+    if user_info is not None and 'native_name' in user_info and user_info['native_name'] != '':
         user_native_name = user_info['native_name']
     return user_native_name
 
 def get_user_kana_name(uid, default=None):
-    user_kana_name = '' if default is None else default
-
+    user_kana_name = default
     user_info = usermgr.get_user_info(uid)
-    if user_info is not None and 'kana_name' in user_info:
+    if user_info is not None and 'kana_name' in user_info and  user_info['kana_name'] != '':
         user_kana_name = user_info['kana_name']
-
     return user_kana_name
 
 def get_user_localized_name(uid, default=None):
-    if default is None:
-        user_localized_name = get_user_native_name(uid)
-    else:
-        user_localized_name = default
-
+    user_localized_name = default
     user_info = usermgr.get_user_info(uid)
-    if user_info is not None and 'localized_name' in user_info:
+    if user_info is not None and 'localized_name' in user_info and user_info['localized_name'] != '':
         user_localized_name = user_info['localized_name']
-
     return user_localized_name
 
 #----------------------------------------------------------
