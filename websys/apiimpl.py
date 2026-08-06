@@ -1,6 +1,7 @@
 #==============================================================================
-# Web System API Implementations
+# Web System - API Implementation
 # Copyright 2020 Takashi Harano
+# Released under the MIT License
 #==============================================================================
 import os
 import sys

@@ -1,3 +1,8 @@
+#==============================================================================
+# Web System - JavaScript Bootstrap Generator
+# Copyright 2023 Takashi Harano
+# Released under the MIT License
+#==============================================================================
 import os
 import sys
 

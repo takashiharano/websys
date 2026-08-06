@@ -1,6 +1,7 @@
 #==============================================================================
-# websys
+# Web System - Web Entry Point
 # Copyright 2024 Takashi Harano
+# Released under the MIT License
 #==============================================================================
 import os
 import sys

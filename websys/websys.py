@@ -1,6 +1,7 @@
 #==============================================================================
-# Web System Basic Functions
+# Web System - Basic Functions
 # Copyright 2020 Takashi Harano
+# Released under the MIT License
 #==============================================================================
 import os
 import sys

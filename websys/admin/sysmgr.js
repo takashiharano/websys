@@ -1,5 +1,7 @@
 /*!
+ * Web System - System Manager
  * Copyright 2023 Takashi Harano
+ * Released under the MIT License
  */
 var sysmgr = {};
 var main = sysmgr;

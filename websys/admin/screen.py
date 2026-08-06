@@ -1,6 +1,7 @@
 #==============================================================================
-# Web System Management Screen
+# Web System - System Manager Screen
 # Copyright 2023 Takashi Harano
+# Released under the MIT License
 #==============================================================================
 import os
 import sys
