@@ -1,5 +1,6 @@
 # Authentication Screen
 # Copyright 2023 Takashi Harano
+# Released under the MIT License
 
 import os
 import sys
@@ -166,7 +167,7 @@ auth.loginCb = function(xhr, res) {
       var uid = data.uid;
       auth.changeToPwChangeScreen(uid, sid);
     } else {
-      auth.onLoginNG(status);
+      auth.onLoginFailed(status);
     }
   } else {
     auth.showInfo('ERROR: ' + xhr.status);
@@ -184,7 +185,7 @@ auth.onLoginOK = function(sid) {
 auth.onLoginOkTextSeqComplete = function() {
   setTimeout(auth.redirect, 1000);
 };
-auth.onLoginNG = function(status) {
+auth.onLoginFailed = function(status) {
   auth.led.on('#f88');
   var msg = '<span style="color:#f66;">' + status + '</span>';
   auth.textseq($el('#message'), msg, 2, auth.onLoginErr);
@@ -319,7 +320,7 @@ auth.changePwCb = function(xhr, res) {
       var sid = auth.sid;
       auth.onLoginOK(sid);
     } else {
-      auth.onLoginNG(status);
+      auth.onLoginFailed(status);
     }
   } else {
     auth.showInfo('ERROR: ' + xhr.status);
