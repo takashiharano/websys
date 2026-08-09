@@ -1214,6 +1214,11 @@ main.openUserInfoEditorWindow = function(mode, uid) {
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
 
+  html += '<div style="position:absolute;top:8px;left:8px;text-align:left;">';
+  html += '<div id="user-created" class="useredit-metadata" style="display-inline-block;width:400px;"></div>';
+  html += '<div id="user-updated" class="useredit-metadata" style="display-inline-block;width:400px;"></div>';
+  html += '</div>';
+
   html += '<div style="position:absolute;top:8px;right:8px;">';
   if (mode == 'edit') {
     html += '<button id="user-copy-button" onclick="main.duplicateUser();">DUP</button>';
@@ -1407,6 +1412,15 @@ main.setUserInfoToEditor = function(info) {
     $el('#user-del-button').show();
   }
 
+  var createdAt = main.getDateTimeString(info.created_at);
+  var createdBy = info.created_by || '-';
+  var updatedAt = main.getDateTimeString(info.updated_at);
+  var updatedBy = info.updated_by || '-';
+  var created = 'Created: ' + createdAt + '&nbsp;&nbsp;by ' + createdBy;
+  var updated = 'Updated: ' + updatedAt + '&nbsp;&nbsp;by ' + updatedBy;
+
+  $el('#user-created').innerHTML = created;
+  $el('#user-updated').innerHTML = updated;
   $el('#full-name').value = info.full_name;
   $el('#native-name').value = info.native_name;
   $el('#kana-name').value = info.kana_name;
