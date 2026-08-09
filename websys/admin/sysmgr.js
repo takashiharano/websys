@@ -11,7 +11,7 @@ main.dialogBgColor = '#1e1e1e';
 main.dialogTitleFgColor = '#fff';
 main.dialogTitleBgColor = 'linear-gradient(150deg, rgba(0,32,255,0.8),rgba(0,82,255,0.8))';
 main.userEditWindowW = 640;
-main.userEditWindowH = 580;
+main.userEditWindowH = 600;
 main.userEditWindowW1 = 500;
 main.userEditWindowH1 = 480;
 main.userEditMemoH = 74;
@@ -1412,15 +1412,17 @@ main.setUserInfoToEditor = function(info) {
     $el('#user-del-button').show();
   }
 
-  var createdAt = main.getDateTimeString(info.created_at);
-  var createdBy = info.created_by || '-';
-  var updatedAt = main.getDateTimeString(info.updated_at);
-  var updatedBy = info.updated_by || '-';
-  var created = 'Created: ' + createdAt + '&nbsp;&nbsp;by ' + createdBy;
-  var updated = 'Updated: ' + updatedAt + '&nbsp;&nbsp;by ' + updatedBy;
+  if (uid) {
+    var createdAt = main.getDateTimeString(info.created_at);
+    var createdBy = info.created_by || '-';
+    var updatedAt = main.getDateTimeString(info.updated_at);
+    var updatedBy = info.updated_by || '-';
+    var created = 'Created: ' + createdAt + '&nbsp;&nbsp;by ' + createdBy;
+    var updated = 'Updated: ' + updatedAt + '&nbsp;&nbsp;by ' + updatedBy;
+    $el('#user-created').innerHTML = created;
+    $el('#user-updated').innerHTML = updated;
+  }
 
-  $el('#user-created').innerHTML = created;
-  $el('#user-updated').innerHTML = updated;
   $el('#full-name').value = info.full_name;
   $el('#native-name').value = info.native_name;
   $el('#kana-name').value = info.kana_name;
