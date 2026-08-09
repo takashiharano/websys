@@ -26,6 +26,7 @@ main.DAY = 86400000;
 main.INTERVAL = 60000;
 main.USER_LIST_COLUMNS = [
   {key: 'elapsed', label: ''},
+  {key: 'status_info.last_access', label: 'Accessed'},
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'full_name', label: 'Full name', style: 'min-width:8em;'},
   {key: 'native_name', label: 'Native name', style: 'min-width:8em;'},
@@ -448,6 +449,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var loginFailedTime = util.getDateTimeString(statusInfo.login_failed_time);
     var sessions = statusInfo.sessions;
     var lastAccessDate = main.getDateTimeString(statusInfo.last_access, main.INSEC);
+    var lastAccessDateS = main.getDateTimeString(statusInfo.last_access, main.INSEC, '%YYYY-%MM-%DD %W %HH:%mm');
     var lastLoginDate = main.getDateTimeString(statusInfo.last_login, main.INSEC);
     var lastLogoutDate = main.getDateTimeString(statusInfo.last_logout, main.INSEC);
     var createdDate = main.getDateTimeString(item.created_at, main.INSEC);
@@ -533,6 +535,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
 
     htmlList += '<tr class="item-list user-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'user-info\');">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
+    htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessDateS + '</td>';
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + dispFullName + '</td>';
     htmlList += '<td class="item-list">' + dispNativeName + '</td>';
@@ -717,17 +720,21 @@ main.buildLedHtml = function(now, ts, inSec, active) {
       }
     }
   }
-  var dt = main.getDateTimeString(tMs);
-  var html = '<span class="led ' + ledColor + '" data-tooltip="Last access: ' + dt + '"></span>';
+  var html = '<span class="led ' + ledColor + '"></span>';
   return html;
 };
 
-main.getDateTimeString = function(ts, inSec) {
+main.getDateTimeString = function(ts, inSec, fmt) {
   var tMs = ts;
   if (inSec) tMs = Math.floor(tMs * 1000);
-  var s = '---------- --:--:--.---';
+  if (fmt) {
+    var s = '-';
+  } else {
+    fmt = '%YYYY-%MM-%DD %HH:%mm:%SS.%sss';
+    s = '---------- --:--:--.---';
+  }
   if (tMs > 0) {
-    s = util.getDateTimeString(tMs, '%YYYY-%MM-%DD %HH:%mm:%SS.%sss');
+    s = util.getDateTimeString(tMs, fmt);
   }
   return s;
 };
