@@ -49,6 +49,7 @@ class WebContext:
         self.status = ''
         self.session_info = None
         self.user_info = None
+        self.authenticated = False
         self.authorized = False
         self.timestamp = None
 
@@ -57,6 +58,12 @@ class WebContext:
 
     def set_status(self, status):
         self.status = status
+
+    def is_authenticated(self):
+        return self.authenticated
+
+    def set_authenticated(self, authenticated):
+        self.authenticated = authenticated
 
     def is_authorized(self):
         return self.authorized
@@ -259,8 +266,15 @@ def _on_access(context):
             simple_path = '/'
 
         session_info = sessionmgr.update_last_access_info(uid, sid, simple_path)
-        authorized = authmgr.auth()
+        sessionmgr.set_current_session_info_to_global(session_info)
+
+        context.set_session_info(session_info)
         context.set_user_info(user_info) # see usermgr.create_user() for object fields
+
+        authenticated = authmgr.auth(session_info, user_info)
+        context.set_authenticated(authenticated)
+
+        authorized = authenticated
 
         flags = user_info['flags']
         if flags & usermgr.U_FLG_NEED_PW_CHANGE:

@@ -154,7 +154,7 @@ def all_logout(context, current_sid, self_logout=False):
 #----------------------------------------------------------
 def cmd_auth(context):
     status = 'FORBIDDEN'
-    if authmgr.auth():
+    if context.is_authorized():
         status = 'OK'
     websys.send_result_json(status, body=None)
 
@@ -229,7 +229,7 @@ def cmd_user(context):
 # users
 #----------------------------------------------------------
 def cmd_users(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -246,7 +246,7 @@ def cmd_users(context):
 # add a user
 #----------------------------------------------------------
 def cmd_useradd(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -321,7 +321,7 @@ def cmd_useradd(context):
 # mod a user
 #----------------------------------------------------------
 def cmd_usermod(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -418,7 +418,7 @@ def _get_optional_param_by_list(key):
 # Change password
 #----------------------------------------------------------
 def cmd_passwd(context):
-    if not authmgr.auth():
+    if not context.is_authenticated():
         on_auth_error()
         return
 
@@ -460,7 +460,7 @@ def cmd_passwd(context):
 # ?uid=UID
 #----------------------------------------------------------
 def cmd_userdel(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -496,7 +496,7 @@ def _is_prohibited_uid(uid):
 # ?uid=UID
 #----------------------------------------------------------
 def cmd_unlockuser(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -538,7 +538,7 @@ def cmd_group(context):
 # add a group
 #----------------------------------------------------------
 def cmd_addgroup(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -578,7 +578,7 @@ def cmd_addgroup(context):
 # mod a group
 #----------------------------------------------------------
 def cmd_modgroup(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -626,7 +626,7 @@ def cmd_modgroup(context):
 # ?gid=GID
 #----------------------------------------------------------
 def cmd_delgroup(context):
-    if not authmgr.auth():
+    if not context.is_authorized():
         on_auth_error()
         return
 
@@ -657,7 +657,7 @@ def cmd_hello(context):
     if q is None:
         msg = 'Hello, World!'
     else:
-        if not authmgr.auth():
+        if not context.is_authorized():
             on_auth_error()
             return
 

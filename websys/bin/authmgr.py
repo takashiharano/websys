@@ -125,26 +125,23 @@ def logout(sid, renew=False):
 #----------------------------------------------------------
 # auth
 #----------------------------------------------------------
-def auth():
-    status = _auth()
-    if status == 'OK':
-        return True
-    return False
+def auth(session_info, user_info):
+    status = _auth(session_info=session_info, user_info=user_info)
+    return status == 'OK'
 
-def _auth():
-    session_info = sessionmgr.get_current_session_info_from_global()
+def _auth(session_info, user_info):
+    status = 'OK'
+
     if session_info is None:
-        return 'SESSION_INFO_NOT_FOUND'
+        status = 'SESSION_INFO_NOT_FOUND'
+    elif user_info is None:
+        status = 'USER_INFO_NOT_FOUND'
+    elif session_info['uid'] != user_info['uid']:
+        status = 'SESSION_USER_MISMATCH'
+    elif usermgr.is_disabled(user_info):
+        status = 'USER_IS_DISABLED'
 
-    sid = session_info['sid']
-    user_info = sessionmgr.get_user_info_from_sid(sid)
-    if user_info is None:
-        return 'USER_INFO_NOT_FOUND'
-
-    if usermgr.is_disabled(user_info):
-        return 'USER_IS_DISABLED'
-
-    return 'OK'
+    return status
 
 #----------------------------------------------------------
 # Write Login Log
