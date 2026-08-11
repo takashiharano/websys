@@ -172,6 +172,22 @@ def has_privilege_in_group(gid, priv_name):
     group = get_group_info(gid)
     return common.has_item(group, 'privs', priv_name)
 
+def has_privilege_in_groups(group_ids, priv_name, groups=None):
+    has_privilege = False
+
+    if groups is None:
+        groups = get_all_group_info()
+
+    if groups is not None:
+        for gid in group_ids:
+            if gid in groups:
+                group = groups[gid]
+                if common.has_item(group, 'privs', priv_name):
+                    has_privilege = True
+                    break
+
+    return has_privilege
+
 #------------------------------------------------------------------------------
 # Load Groups
 def load_all_groups(path, data_fields_def):

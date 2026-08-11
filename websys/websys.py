@@ -51,6 +51,8 @@ class WebContext:
         self.user_info = None
         self.authenticated = False
         self.authorized = False
+        self.all_group_info = None
+        self.all_group_info_loaded = False
         self.timestamp = None
 
     def get_status(self):
@@ -167,6 +169,12 @@ class WebContext:
         group_list = groups.split(' ')
         return group_list
 
+    def get_all_group_info(self):
+        if not self.all_group_info_loaded:
+            self.all_group_info = groupmgr.get_all_group_info()
+            self.all_group_info_loaded = True
+        return self.all_group_info
+
     # priv_name: case-insensitive
     def has_privilege(self, priv_name):
         user_info = self.user_info
@@ -177,15 +185,14 @@ class WebContext:
     # Returns if the user has privilege in privileges or groups
     # priv_name: case-insensitive
     def has_permission(self, priv_name):
-        if self.has_privilege(priv_name):
-            return True
+        permitted = self.has_privilege(priv_name)
 
-        groups = self.get_groups()
-        for i in range(len(groups)):
-            gid = groups[i]
-            if groupmgr.has_privilege_in_group(gid, priv_name):
-                return True
-        return False
+        if not permitted:
+            group_ids = self.get_groups()
+            all_group_info = self.get_all_group_info()
+            permitted = groupmgr.has_privilege_in_groups(group_ids, priv_name, groups=all_group_info)
+
+        return permitted
 
     def get_timestamp(self):
         return self.timestamp
