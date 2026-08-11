@@ -22,6 +22,7 @@ import authmgr
 LOCK_FILE_PATH = websysconf.LOCK_FILE_PATH
 g_root_path = ''
 query = None
+query_cached = False
 sendrecv_encryption = True
 recv_encryption_key = 1
 send_encryption_key = 7
@@ -31,6 +32,7 @@ current_context = None
 def init(http_encryption):
     global sendrecv_encryption
     sendrecv_encryption = http_encryption
+    reset_request_query_cache()
 
 #----------------------------------------------------------
 # set root path
@@ -188,13 +190,14 @@ class WebContext:
 # on access
 #----------------------------------------------------------
 def on_access():
+    reset_request_query_cache()
+
     #context = {
     #    'status': '',
     #    'session_info': None,
     #    'user_info': None,
     #    'authorized': False
     #}
-
     context = WebContext()
 
     if synchronize_start():
@@ -278,21 +281,44 @@ def set_context_to_global(context):
 #----------------------------------------------------------
 # Get Request Param
 #----------------------------------------------------------
+def reset_request_query_cache():
+    global query
+    global query_cached
+
+    query = None
+    query_cached = False
+
+def get_request_query():
+    global query
+    global query_cached
+
+    if query_cached:
+        return query
+
+    q = util.get_query()
+
+    if q is not None and util.typename(q) != 'FieldStorage':
+        if sendrecv_encryption:
+            q = util.replace(q, '&?_trcid=.+', '')
+            try:
+                q = bsb64.decode_string(q, recv_encryption_key)
+            except:
+                pass
+
+    query = q
+    query_cached = True
+
+    return query
+
 def get_request_param(key=None, default=None):
     content_type = os.environ.get('CONTENT_TYPE', '')
     if content_type.startswith('multipart/form-data'):
         return default
 
-    q = util.get_query()
+    q = get_request_query()
+
     if q is None or util.typename(q) == 'FieldStorage':
         return default
-
-    if sendrecv_encryption:
-        q = util.replace(q, '&?_trcid=.+', '')
-        try:
-            q = bsb64.decode_string(q, recv_encryption_key)
-        except:
-            pass
 
     if key is not None:
         if q == '':
