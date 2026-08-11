@@ -118,33 +118,33 @@ def parse_tsv_field_values(tsv_text, data_fields_def, path):
 
 #------------------------------------------------------------------------------
 def save_to_tsv_file(path, data_dict, fields):
-    header = _build_data_header(fields)
-    s = header + '\n'
+    lines = [_build_data_header(fields)]
+
     for data_key in data_dict:
         data = data_dict[data_key]
-        for i in range(len(fields)):
-            field = fields[i]
+        values = []
+
+        for field in fields:
             key = field['name']
             data_type = 'str'
             if 'type' in field:
                 data_type = field['type']
-            if i > 0:
-                s += '\t'
+
             if key not in data:
                 value_text = ''
             else:
                 value = data[key]
                 value_text = util.to_value_text(value, data_type)
-            s += value_text
-        s += '\n'
+
+            values.append(value_text)
+
+        lines.append('\t'.join(values))
+
+    s = '\n'.join(lines) + '\n'
     util.write_text_file(path, s)
 
 def _build_data_header(fields):
-    s = '#'
-    for i in range(len(fields)):
-        field = fields[i]
-        key = field['name']
-        if i > 0:
-            s += '\t'
-        s += key
-    return s
+    keys = []
+    for field in fields:
+        keys.append(field['name'])
+    return '#' + '\t'.join(keys)
