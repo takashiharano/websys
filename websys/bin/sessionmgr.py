@@ -57,8 +57,8 @@ def get_sessions_file_path(uid):
 #----------------------------------------------------------
 # Get all sessions info
 #----------------------------------------------------------
-def get_all_sessions_info():
-    return load_all_session_info_from_file()
+def get_all_sessions_info(clear_expired=False, now=None):
+    return load_all_session_info_from_file(clear_expired, now)
 
 def get_user_sessions(uid):
     path = get_sessions_file_path(uid)
@@ -452,7 +452,7 @@ def clear_all_expired_sessions():
 
 def clear_expired_sessions(uid, sessions, now):
     if sessions is None:
-        return
+        return None
 
     new_sessions = {}
     cleared = False
@@ -471,6 +471,9 @@ def clear_expired_sessions(uid, sessions, now):
 
     if cleared:
         save_user_sessions(uid, new_sessions)
+        sessions = new_sessions
+
+    return sessions
 
 #----------------------------------------------------------
 # Clear user sessions
@@ -486,18 +489,33 @@ def clear_user_sessions(uid):
 #----------------------------------------------------------
 # Load sessions info
 #----------------------------------------------------------
-def load_all_session_info_from_file():
+def load_all_session_info_from_file(clear_expired=False, now=None):
+    if clear_expired and now is None:
+        now = util.get_timestamp()
+
     user_dirs = util.list_dirs(USER_ROOT_PATH)
     sessions = {}
+
     for i in range(len(user_dirs)):
         uid = user_dirs[i]
         try:
             user_sessions = get_user_sessions(uid)
-            for sid in user_sessions:
-                session = user_sessions[sid]
-                sessions[sid] = session
         except:
-            pass
+            continue
+
+        if clear_expired:
+            try:
+                user_sessions = clear_expired_sessions(uid, user_sessions, now)
+            except:
+                pass
+
+        if user_sessions is None:
+            continue
+
+        for sid in user_sessions:
+            session = user_sessions[sid]
+            sessions[sid] = session
+
     return sessions
 
 #----------------------------------------------------------

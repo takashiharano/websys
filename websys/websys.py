@@ -216,10 +216,10 @@ def on_access():
 def _on_access(context):
     now = util.get_timestamp()
     now_ms = int(now * 1000)
-    sessionmgr.clear_all_expired_sessions()
 
     sid = util.get_cookie_val('sid')
-    sessions = sessionmgr.get_all_sessions_info()
+    sessions = sessionmgr.get_all_sessions_info(clear_expired=True, now=now)
+
     is_managed = False
 
     if sid in sessions:
