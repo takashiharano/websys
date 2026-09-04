@@ -30,6 +30,7 @@ websys.recvEncKey = 7;
 websys.initStatus = 0;
 websys.status = 0;
 websys.isDbgAvailable = false;
+websys.appId = null;
 websys.basePath = '';
 websys.sessionInfo = null;
 
@@ -1345,6 +1346,7 @@ websys.http = function(req, cb) {
   if (!data) data = {};
 
   var clinfo = websys.getClientInfo();
+  if (websys.appid) data['_appid'] = websys.appid;
   data['_tz'] = clinfo['tz'];
   data['_tzname'] = clinfo['tzname'];
   data['_screen'] = clinfo['screen'];
@@ -1669,7 +1671,8 @@ websys.onWebSysReady = function() {
 };
 
 websys.onWebSysReadyUserFn = null;
-websys.init = function(basePath, readyFn) {
+websys.init = function(appid, basePath, readyFn) {
+  websys.appid = appid;
   websys.basePath = basePath;
   websys.onWebSysReadyUserFn = readyFn;
   if (websys.initStatus == 1) {

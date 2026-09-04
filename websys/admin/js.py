@@ -21,7 +21,7 @@ def build_js(context):
     js += 'sysmgr.websysconf = {'
     js += 'LOGIN_FAILURE_MAX: ' + str(websysconf.LOGIN_FAILURE_MAX)
     js += '};'
-    js += 'websys.init(\'' + ROOT_PATH + '/\', sysmgr.onSysReady);'
+    js += 'websys.init(\'websys-admin\', \'' + ROOT_PATH + '/\', sysmgr.onSysReady);'
     return js
 
 #------------------------------------------------------------------------------

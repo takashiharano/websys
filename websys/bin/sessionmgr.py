@@ -42,7 +42,7 @@ SESSION_DATA_STRUCT = [
    {'name': 'c_addr'},
    {'name': 'c_host'},
    {'name': 'c_ua'},
-   {'name': 'path'}
+   {'name': 'app_id'}
 ]
 
 current_session_info = None
@@ -268,7 +268,7 @@ def generate_session_id(uid):
 #----------------------------------------------------------
 # Update last access info
 #----------------------------------------------------------
-def update_last_access_info(uid, sid, path):
+def update_last_access_info(uid, sid, app_id):
     now = util.get_timestamp()
     addr = websys.get_ip_addr()
     host = websys.get_host_name()
@@ -282,13 +282,13 @@ def update_last_access_info(uid, sid, path):
     lang = ln = os.environ.get('HTTP_ACCEPT_LANGUAGE', '')
     lang = util.replace(lang, ';q=[^,]+', '')
 
-    session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz, tzname, lang, screen, zoom, path)
+    session = update_session_info_in_session_file(uid, sid, now, addr, host, useragent, tz, tzname, lang, screen, zoom, app_id)
     return session
 
 #----------------------------------------------------------
 # Update session info
 #----------------------------------------------------------
-def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua=None, tz=None, tzname=None, lang=None, screen=None, zoom=None, path=None):
+def update_session_info_in_session_file(uid, sid, timestamp, addr=None, host=None, ua=None, tz=None, tzname=None, lang=None, screen=None, zoom=None, app_id=None):
     sessions = get_user_sessions(uid)
 
     if sessions is None:
@@ -301,7 +301,7 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
     uid = session['uid']
 
     prev_time = session['time']
-    session['time'] = time
+    session['time'] = timestamp
 
     if tz is not None:
         session['tz'] = tz
@@ -327,16 +327,16 @@ def update_session_info_in_session_file(uid, sid, time, addr=None, host=None, ua
     if zoom is not None:
         session['zoom'] = zoom
 
-    if path is not None:
-        session['path'] = path
+    if app_id is not None:
+        session['app_id'] = app_id
 
-    elapsed = time - prev_time
+    elapsed = timestamp - prev_time
     if elapsed > MIN_FILE_UPDATE_INTERVAL_SEC:
         save_user_sessions(uid, sessions)
-        usermgr.update_user_status_info(uid, 'last_access', time)
+        usermgr.update_user_status_info(uid, 'last_access', timestamp)
 
-        info = 'PATH=' + path
-        write_user_timeline_log(uid, sid, time, info)
+        info = 'APPID=' + app_id
+        write_user_timeline_log(uid, sid, timestamp, info)
 
     return session
 
@@ -353,7 +353,7 @@ def load_user_timeline_log(uid):
     logs = util.read_text_file_as_list(path)
     return logs
 
-def write_user_timeline_log(uid, sid, time, info=None):
+def write_user_timeline_log(uid, sid, timestamp, info=None):
     TIME_SLOT_MIN = 15
     MAX_LOG_LINES = 1000
     logs = load_user_timeline_log(uid)
@@ -363,7 +363,7 @@ def write_user_timeline_log(uid, sid, time, info=None):
         rb.add(logs[i])
 
     time_slot_sec = TIME_SLOT_MIN * 60
-    current_slot = int(time / time_slot_sec)
+    current_slot = int(timestamp / time_slot_sec)
 
     for i in range(rb.size):
         line = rb.get_reversed(i)
@@ -378,7 +378,7 @@ def write_user_timeline_log(uid, sid, time, info=None):
 
             break
 
-    text = str(time) + '\t' + sid
+    text = str(timestamp) + '\t' + sid
     if info is not None:
         text += '\t' + info
     rb.add(text)

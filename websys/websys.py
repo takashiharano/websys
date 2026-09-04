@@ -267,12 +267,8 @@ def _on_access(context):
     context.set_session_info(session_info)
 
     if is_managed:
-        uri = os.environ.get('REQUEST_URI', '')
-        simple_path = util.extract_string(uri, r'.*\/([^/?]+)\/.*')
-        if simple_path == '':
-            simple_path = '/'
-
-        session_info = sessionmgr.update_last_access_info(uid, sid, simple_path)
+        app_id = get_app_id()
+        session_info = sessionmgr.update_last_access_info(uid, sid, app_id)
         sessionmgr.set_current_session_info_to_global(session_info)
 
         context.set_session_info(session_info)
@@ -290,6 +286,16 @@ def _on_access(context):
         context.set_authorized(authorized)
 
     return context
+
+def get_app_id():
+    app_id = get_request_param('_appid', None)
+    if app_id is None:
+        uri = os.environ.get('REQUEST_URI', '')
+        simple_path = util.extract_string(uri, r'.*\/([^/?]+)\/.*')
+        if simple_path == '':
+            simple_path = '/'
+        app_id = 'path:' + simple_path
+    return app_id
 
 def get_current_context_from_global():
     global current_context
@@ -581,7 +587,7 @@ def build_auth_redirection_screen(root_path):
     html += '<script src="' + root_path + 'libs/util.js"></script>'
     html += '<script src="' + root_path + 'websys/websys.js"></script>'
     html += '<script>'
-    html += 'websys.init(\'' + root_path + '\');'
+    html += 'websys.init(null, \'' + root_path + '\');'
     html += '$onLoad = function() {websys.authRedirection(location.href);};'
     html += '</script>'
     html += '</head>'

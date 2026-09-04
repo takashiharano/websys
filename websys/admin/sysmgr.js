@@ -1035,8 +1035,8 @@ main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories, sessi
 };
 
 main.getLatestAccInd = function(accTime, dispAccTime, session, outOfRange) {
-  var path = session['path'];
-  var tt = accTime + ' ' + path;
+  var appid = session['app_id'];
+  var tt = accTime + ' ' + appid;
   var c = '*';
   var clz = 'timeline-acc-ind';
   if (outOfRange) {
@@ -1055,8 +1055,8 @@ main.getTimeslotInd = function(d) {
   if (i == 'LOGIN') {
     ind = 'I';
     d.tt += ' Login';
-  } else if (i && i.startsWith('PATH')) {
-    var i = i.replace(/PATH=/, '');
+  } else if (i && i.startsWith('APPID')) {
+    var i = i.replace(/APPID=/, '');
     d.tt += ' ' + i;
   }
   var s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + d.tt + '">' + ind + '</span>';
