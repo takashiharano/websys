@@ -363,6 +363,7 @@ def write_user_timeline_log(uid, sid, time, info=None):
         rb.add(logs[i])
 
     time_slot_sec = TIME_SLOT_MIN * 60
+    current_slot = int(time / time_slot_sec)
 
     for i in range(rb.size):
         line = rb.get_reversed(i)
@@ -370,10 +371,12 @@ def write_user_timeline_log(uid, sid, time, info=None):
 
         if values['sid'] == sid:
             log_time = values['time']
-            log_time_slot_sec = int(log_time / time_slot_sec) * time_slot_sec
-            elapsed_from_latest = time - log_time_slot_sec
-            if elapsed_from_latest <= time_slot_sec:
+            log_slot = int(log_time / time_slot_sec)
+
+            if current_slot == log_slot:
                 return
+
+            break
 
     text = str(time) + '\t' + sid
     if info is not None:
