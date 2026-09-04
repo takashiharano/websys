@@ -355,7 +355,9 @@ def load_user_timeline_log(uid):
 
 def write_user_timeline_log(uid, sid, timestamp, info=None):
     TIME_SLOT_MIN = 15
+    REPLACE_INTERVAL_SEC = 60
     MAX_LOG_LINES = 1000
+
     logs = load_user_timeline_log(uid)
 
     rb = util.RingBuffer(MAX_LOG_LINES)
@@ -375,16 +377,31 @@ def write_user_timeline_log(uid, sid, timestamp, info=None):
 
             if current_slot == log_slot:
                 prev_info = values['info']
-                if (prev_info is not None
-                        and prev_info.startswith('APPID=path:')
-                        and info is not None
-                        and info.startswith('APPID=')
-                        and not info.startswith('APPID=path:')):
+
+                # LOGIN has priority over other timeline info
+                if prev_info == 'LOGIN':
+                    return
+
+                replace = False
+
+                if info == 'LOGIN':
+                    replace = True
+                elif info is not None and info.startswith('APPID='):
+                    is_path = info.startswith('APPID=path:')
+                    prev_is_appid = prev_info is not None and prev_info.startswith('APPID=')
+                    prev_is_path = prev_info is not None and prev_info.startswith('APPID=path:')
+
+                    if not is_path and prev_is_appid:
+                        if prev_is_path or timestamp - log_time >= REPLACE_INTERVAL_SEC:
+                            replace = True
+
+                if replace:
                     logs = rb.get_all()
                     idx = len(logs) - 1 - i
-                    logs[idx] = str(log_time) + '\t' + sid + '\t' + info
+                    logs[idx] = str(timestamp) + '\t' + sid + '\t' + info
                     path = get_user_timeline_log_file_path(uid)
                     util.write_text_file_from_list(path, logs)
+
                 return
 
             break
