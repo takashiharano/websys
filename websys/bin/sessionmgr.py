@@ -374,6 +374,17 @@ def write_user_timeline_log(uid, sid, timestamp, info=None):
             log_slot = int(log_time / time_slot_sec)
 
             if current_slot == log_slot:
+                prev_info = values['info']
+                if (prev_info is not None
+                        and prev_info.startswith('APPID=path:')
+                        and info is not None
+                        and info.startswith('APPID=')
+                        and not info.startswith('APPID=path:')):
+                    logs = rb.get_all()
+                    idx = len(logs) - 1 - i
+                    logs[idx] = str(log_time) + '\t' + sid + '\t' + info
+                    path = get_user_timeline_log_file_path(uid)
+                    util.write_text_file_from_list(path, logs)
                 return
 
             break
