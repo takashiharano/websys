@@ -328,7 +328,7 @@ def get_request_query():
         if sendrecv_encryption:
             q = util.replace(q, '&?_trcid=.+', '')
             try:
-                q = bsb64.decode_string(q, recv_encryption_key)
+                q = bsb64.decode_to_string(q, recv_encryption_key)
             except:
                 pass
 
@@ -524,7 +524,7 @@ def _send_response(result, type, headers=None, encoding=None, encryption=False):
         content = result
     else:
         if encryption:
-            content = bsb64.encode_string(result, send_encryption_key)
+            content = bsb64.encode(result, send_encryption_key)
             type = 'text/plain'
         else:
             content = result

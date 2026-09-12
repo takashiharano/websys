@@ -31,7 +31,7 @@ def output_text_file(root_path, path):
     content = util.read_file(path, 't')
     enc_content = ''
     if content is not None:
-        enc_content = bsb64.encode_string(content, n)
+        enc_content = bsb64.encode(content, n)
     html = '<html><head><meta charset="utf-8">'
     html += '<script src="' + root_path + 'libs/util.js"></script>'
     html += '<style>body,pre{font-size:13px;font-family:Consolas,Monaco,Menlo,monospace,sans-serif;}</style>'
