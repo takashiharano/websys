@@ -38,7 +38,7 @@ def output_text_file(root_path, path):
     html += '<script>'
     html += 'var c=\'' + enc_content + '\';'
     html += 'onReady=function(){'
-    html += 'var d=util.decodeBSB64;'
+    html += 'var d=util.bsb64.decodeToString;'
     html += 'var a=d(c,' + str(n) + ');'
     html += 'a=util.escHtml(a);'
     html += 'document.getElementById(\'t\').innerHTML=a;'

@@ -1361,7 +1361,7 @@ websys.http = function(req, cb) {
     cb: websys.http.onDone,
     req: req
   }
-  var e = util.encodeBSB64;
+  var e = util.bsb64.encode;
   if (newReq.data) {
     if (newReq.data instanceof Object) {
       newReq.data = util.http.buildQueryString(newReq.data);
@@ -1374,7 +1374,7 @@ websys.http = function(req, cb) {
 };
 websys.http.onDone = function(xhr, res, req) {
   var orgReq = req.req;
-  var d = util.decodeBSB64;
+  var d = util.bsb64.decodeToString;
   websys.httpSessions--;
   if (websys.httpSessions <= 0) {
     websys.httpSessions = 0;
