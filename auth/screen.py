@@ -301,8 +301,8 @@ auth.checkPw = function(pw1, pw2) {
   var m;
   if (pw1 != pw2) {
     m = 'Password mismatched';
-  } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z0-9]{12,}$/.test(pw1)) {
-    m = 'Password must be 12+ chars with upper/lowercase letters and numbers.';
+  } else if (!/^\S{8,}$/.test(pw1)) {
+    m = 'Password must be at least 8 characters.';
   }
   if (m) {
     auth.textseq($el('#message'), m, 2, auth.onTextSeqCompleted);
