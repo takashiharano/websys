@@ -19,7 +19,7 @@ main.userEditMemoH = 74;
 main.LED_COLORS = [
   {t: 10 * util.MINUTE, color: 'led-color-green'},
   {t: 3 * util.HOUR, color: 'led-color-yellow'},
-  {t: 0, color: 'led-color-red'},
+  {t: 0, color: 'led-color-orange', dayChangedColor: 'led-color-red'},
 ];
 
 main.DAY = 86400000;
@@ -716,6 +716,9 @@ main.buildLedHtml = function(now, ts, inSec, active) {
       var c = COLORS[i];
       if ((elapsed <= c.t) || (c.t == 0)) {
         ledColor = c.color;
+        if (c.dayChangedColor && ((util.getMidnightTimestamp(now) != util.getMidnightTimestamp(tMs)))) {
+          ledColor = c.dayChangedColor;
+        }
         break;
       }
     }

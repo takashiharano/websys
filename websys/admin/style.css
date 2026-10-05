@@ -206,6 +206,10 @@ tr.item-list:hover {
   color: #cc0;
 }
 
+.led-color-orange {
+  color: #c80;
+}
+
 .led-color-red {
   color: #a44;
 }
