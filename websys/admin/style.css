@@ -299,3 +299,28 @@ tr.item-list:hover {
 .useredit-metadata {
   color: #ccc;
 }
+
+.pseudo-link {
+    white-space: pre;
+}
+
+.edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: #fff;
+  opacity: 0.65;
+  position: relative;
+  top: -1px;
+}
+
+.edit-button svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+
+.edit-button:hover {
+  opacity: 1;
+}

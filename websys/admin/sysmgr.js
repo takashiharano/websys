@@ -27,6 +27,7 @@ main.INTERVAL = 60000;
 main.USER_LIST_COLUMNS = [
   {key: 'elapsed', label: ''},
   {key: 'status_info.last_access', label: 'Accessed'},
+  {key: 'edit', label: '', sort: false},
   {key: 'uid', label: 'UID', style: 'min-width:10em;'},
   {key: 'full_name', label: 'Full name', style: 'min-width:8em;'},
   {key: 'native_name', label: 'Native name', style: 'min-width:8em;'},
@@ -506,7 +507,13 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
       if (!searchFieldName || (searchFieldName == 'info3'))dispInfo3 = main.highlightKeyword(info3, searchKeyword, searchCaseSensitive);
     }
 
-    dispUid = cInd + '<span class="pseudo-link link-button" onclick="main.editUser(\'' + uid + '\');" data-tooltip2="Edit">' + dispUid + '</span>';
+    var pencilSvg = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+      '<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M11.46 1.96a1.2 1.2 0 0 1 1.7 0l.88.88a1.2 1.2 0 0 1 0 1.7l-1.02 1.02-2.58-2.58 1.02-1.02z"></path>' +
+      '<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M9.73 3.67l2.58 2.58-6.26 6.26-3.45 1.05.85-3.45 6.28-6.45z"></path>' +
+      '<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M3.41 12.59l.63-1.72 1.09 1.09-1.72.63z"></path>' +
+      '</svg>';
+    var editLink = '<span class="pseudo-link link-button edit-button" onclick="main.editUser(\'' + uid + '\')" aria-label="Edit" data-tooltip2="Edit">' + pencilSvg + '</span>';
+    dispUid = cInd + main.buildCopyableLabel(uid, dispUid);
     dispFullName = main.buildCopyableLabel(full_name, dispFullName);
     dispNativeName = main.buildCopyableLabel(native_name, dispNativeName);
     dispKanaName = main.buildCopyableLabel(kana_name, dispKanaName);
@@ -536,6 +543,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     htmlList += '<tr class="item-list user-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'user-info\');">';
     htmlList += '<td class="item-list" style="text-align:center;">' + led + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + lastAccessDateS + '</td>';
+    htmlList += '<td class="item-list">' + editLink + '</td>';
     htmlList += '<td class="item-list" style="padding-right:10px;">' + dispUid + '</td>';
     htmlList += '<td class="item-list">' + dispFullName + '</td>';
     htmlList += '<td class="item-list">' + dispNativeName + '</td>';
@@ -701,7 +709,7 @@ main.buildCopyableLabel = function(v, s) {
   if (!s) s = v;
   v = v.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
   var label = s;
-  var r = '<pre class="pseudo-link" onclick="main.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</pre>';
+  var r = '<span class="pseudo-link" onclick="main.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</span>';
   return r;
 };
 
