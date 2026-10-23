@@ -1,3 +1,33 @@
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b1014;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #303b4d;
+  border: 2px solid #0b1014;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #39465b;
+}
+
+::-webkit-scrollbar-corner {
+  background: #0b1014;
+}
+
+textarea::-webkit-scrollbar,
+textarea::-webkit-scrollbar-track,
+textarea::-webkit-scrollbar-thumb,
+textarea::-webkit-scrollbar-corner {
+  cursor: default;
+}
+
 html, body {
   width: 100%;
   height: calc(100vh - 20px);
