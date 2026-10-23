@@ -135,6 +135,10 @@ def save_to_tsv_file(path, data_dict, fields):
             else:
                 value = data[key]
                 value_text = util.to_value_text(value, data_type)
+                value_text = str(value_text)
+                value_text = value_text.replace('\t', ' ')
+                value_text = value_text.replace('\r', ' ')
+                value_text = value_text.replace('\n', ' ')
 
             values.append(value_text)
 
