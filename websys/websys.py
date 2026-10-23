@@ -632,3 +632,16 @@ def synchronize_start():
 
 def synchronize_end():
     util.file_unlock(LOCK_FILE_PATH)
+
+#----------------------------------------------------------
+def is_valid_api_request():
+    method = os.environ.get('REQUEST_METHOD', '')
+    origin = os.environ.get('HTTP_ORIGIN', '')
+
+    if method != 'POST':
+        return False
+
+    if origin != websysconf.CSRF_ALLOWED_ORIGIN:
+        return False
+
+    return True

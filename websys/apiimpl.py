@@ -688,6 +688,10 @@ def get_session_list_from_session(context):
 # main
 #----------------------------------------------------------
 def main():
+    if not websys.is_valid_api_request():
+        websys.send_result_json('FORBIDDEN')
+        return
+
     context = websys.on_access()
     cmd = websys.get_request_param('cmd')
 

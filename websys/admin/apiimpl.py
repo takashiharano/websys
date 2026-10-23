@@ -186,6 +186,10 @@ def proc_api(context, act):
 
 #------------------------------------------------------------------------------
 def main():
+    if not websys.is_valid_api_request():
+        websys.send_result_json('FORBIDDEN')
+        return
+
     context = websys.on_access()
     act = get_request_param('act')
     if context.is_authorized():
