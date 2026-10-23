@@ -456,9 +456,11 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var createdDate = main.getDateTimeString(item.created_at, main.INSEC);
     var createdBy = item.created_by;
     if (!createdBy) createdBy = '-';
+    createdBy = util.escHtml(createdBy);
     var updatedDate = main.getDateTimeString(item.updated_at, main.INSEC);
     var updatedBy = item.updated_by;
     if (!updatedBy) updatedBy = '-';
+    updatedBy = util.escHtml(updatedBy);
     var pwChangedDate = main.getDateTimeString(statusInfo.pw_changed_at, main.INSEC);
     var info1 = item.info1;
     var info2 = item.info2;
@@ -478,16 +480,17 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var cInd = ((uid == currentUid) ? '<span class="text-skyblue" style="cursor:default;margin-right:2px;" data-tooltip2="You">*</span>' : '<span style="margin-right:2px;">&nbsp;</span>');
 
     var dispUid = uid;
-    var dispFullName = full_name;
-    var dispNativeName = native_name;
-    var dispKanaName = kana_name;
-    var dispLocalizedName = localized_name;
-    var dispEmail = email;
+    var dispUid = util.escHtml(uid);
+    var dispFullName = util.escHtml(full_name);
+    var dispNativeName = util.escHtml(native_name);
+    var dispKanaName = util.escHtml(kana_name);
+    var dispLocalizedName = util.escHtml(localized_name);
+    var dispEmail = util.escHtml(email);
     var dispGroups = groups;
     var dispPrivs = privs;
-    var dispInfo1 = info1;
-    var dispInfo2 = info2;
-    var dispInfo3 = info3;
+    var dispInfo1 = util.escHtml(info1);
+    var dispInfo2 = util.escHtml(info2);
+    var dispInfo3 = util.escHtml(info3);
 
     dispGroups = main.makeFilterableFieldValueLabel('groups', dispGroups);
     dispPrivs = main.makeFilterableFieldValueLabel('privs', dispPrivs);
@@ -659,16 +662,20 @@ main.buildFlagsTooltip = function(flags) {
 };
 
 main.highlightKeyword = function(v, searchKeyword, caseSensitive) {
-  if (!caseSensitive) searchKeyword = searchKeyword.toLowerCase();
+  var r = util.escHtml(v);
   try {
-    var pos = (caseSensitive ? v.indexOf(searchKeyword) : v.toLowerCase().indexOf(searchKeyword));
+    var source = (caseSensitive ? v : v.toLowerCase());
+    var keyword = (caseSensitive ? searchKeyword : searchKeyword.toLowerCase());
+    var pos = source.indexOf(keyword);
+
     if (pos != -1) {
-      var key = v.slice(pos, pos + searchKeyword.length);
-      var hl = '<span class="search-highlight">' + key + '</span>';
-      v = v.replace(key, hl, 'ig');
+      var before = util.escHtml(v.slice(0, pos));
+      var matched = util.escHtml(v.slice(pos, pos + keyword.length));
+      var after = util.escHtml(v.slice(pos + keyword.length));
+      r = before + '<span class="search-highlight">' + matched + '</span>' + after;
     }
   } catch (e) {}
-  return v;
+  return r;
 };
 
 main.searchUserByKeyword = function(item, filterCol, key, caseSensitive, exactMatch) {
@@ -706,10 +713,9 @@ main.searchByKeyword = function(targets, keyword, caseSensitive, exactMatch) {
 };
 
 main.buildCopyableLabel = function(v, s) {
-  if (!s) s = v;
-  v = v.replace(/\\/g, '\\\\').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
-  var label = s;
-  var r = '<span class="pseudo-link" onclick="main.copy(\'' + v + '\');" data-tooltip2="Click to copy">' + label + '</span>';
+  if (s == null) s = util.escHtml(v);
+  var d = util.escHtml(v);
+  var r = '<span class="pseudo-link" data-copy="' + d + '" onclick="main.copy(this.getAttribute(\'data-copy\'))" data-tooltip2="Click to copy">' + s + '</span>';
   return r;
 };
 
@@ -914,6 +920,7 @@ main.buildSessionInfoOne = function(session, now) {
   var cSid = websys.getSessionId();
   var uid = session['uid'];
   var full_name = session['user_full_name'];
+  full_name = util.escHtml(full_name);
   var loginT = session['c_time'];
   var ua = session['ua'];
   var laTime = session['time'];
@@ -955,6 +962,13 @@ main.buildSessionInfoOne = function(session, now) {
   var slotTimestampHistories = session['timeline_log'];
   var timeline = main.buildTimeLine(now, laTime, slotTimestampHistories, session);
 
+  dispUa = util.escHtml(dispUa);
+  var dispLang = util.escHtml(lang);
+  var dispTz = util.escHtml(tz);
+  var dispTzName = util.escHtml(tzname);
+  var dispZoom = util.escHtml(zoom);
+
+
   var html = '';
   html += '<tr class="item-list session-info" ondblclick="sysmgr.onListRowDblClick(this, \'session-info\');">';
   html += '<td style="padding-right:4px;">' + led + '</td>';
@@ -973,10 +987,10 @@ main.buildSessionInfoOne = function(session, now) {
   html += '<td style="text-align:right;">' + x + '</td>';
   html += '<td style="">' + sx + '</td>';
   html += '<td style="text-align:right;">' + y + '</td>';
-  html += '<td style="padding-right:10px;text-align:right;">' + zoom + '</td>';
-  html += '<td style="padding-right:6px;">' + tz + '</td>';
-  html += '<td style="padding-right:10px;">' + tzname + '</td>';
-  html += '<td style="padding-right:10px;">' + lang + '</td>';
+  html += '<td style="padding-right:10px;text-align:right;">' + dispZoom + '</td>';
+  html += '<td style="padding-right:6px;">' + dispTz + '</td>';
+  html += '<td style="padding-right:10px;">' + dispTzName + '</td>';
+  html += '<td style="padding-right:10px;">' + dispLang + '</td>';
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '<td';
   if (cHost) {
@@ -1048,13 +1062,14 @@ main.buildTimeLine = function(now, lastAccessTime, slotTimestampHistories, sessi
 main.getLatestAccInd = function(accTime, dispAccTime, session, outOfRange) {
   var appid = session['app_id'];
   var tt = accTime + ' ' + appid;
+  var ttStr = util.escHtml(util.escHtml(tt));
   var c = '*';
   var clz = 'timeline-acc-ind';
   if (outOfRange) {
     c = '&lt;';
     clz = 'timeline-acc-ind-out';
   }
-  var s = '<span class="' + clz + '" data-tooltip="' + tt + '">' + c + '</span>';
+  var s = '<span class="' + clz + '" data-tooltip="' + ttStr + '">' + c + '</span>';
   s += '<span class="timeline-acc-ind-time">' + dispAccTime + '</span>';
   return s;
 };
@@ -1070,7 +1085,8 @@ main.getTimeslotInd = function(d) {
     var i = i.replace(/APPID=/, '');
     d.tt += ' ' + i;
   }
-  var s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + d.tt + '">' + ind + '</span>';
+  var ttStr = util.escHtml(util.escHtml(d.tt));
+  var s = '<span class="timeline-acc-ind timeline-acc-ind-past" data-tooltip="' + ttStr + '">' + ind + '</span>';
   return s;
 };
 
@@ -1426,8 +1442,10 @@ main.setUserInfoToEditor = function(info) {
   if (uid) {
     var createdAt = main.getDateTimeString(info.created_at);
     var createdBy = info.created_by || '-';
+    createdBy = util.escHtml(createdBy);
     var updatedAt = main.getDateTimeString(info.updated_at);
     var updatedBy = info.updated_by || '-';
+    updatedBy = util.escHtml(updatedBy);
     var created = 'Created: ' + createdAt + '&nbsp;&nbsp;by ' + createdBy;
     var updated = 'Updated: ' + updatedAt + '&nbsp;&nbsp;by ' + updatedBy;
     $el('#user-created').innerHTML = created;
