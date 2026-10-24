@@ -24,7 +24,7 @@ import websys
 #----------------------------------------------------------
 def cmd_syslog(context):
     status = 'OK'
-    if context.is_admin():
+    if context.is_authorized() and context.is_admin():
         p_n = websys.get_request_param('n')
         n = 30
         if p_n is not None:
@@ -105,7 +105,7 @@ def cmd_logout(context):
 # Logout by SID
 def logout_by_sid(context, current_sid, sid):
     self_logout = False
-    if not context.has_permission('sysadmin'):
+    if not (context.is_authorized() and context.has_permission('sysadmin')):
         current_uid = context.get_user_id()
         target_session_info = sessionmgr.get_session_info(sid)
         if target_session_info is None:
@@ -128,7 +128,7 @@ def logout_by_uid(context, uid):
     if uid == current_uid:
         self_logout = True
     else:
-        if not context.has_permission('sysadmin'):
+        if not (context.is_authorized() and context.has_permission('sysadmin')):
             raise Exception('FORBIDDEN')
 
     i = sessionmgr.clear_user_sessions(uid)
@@ -139,7 +139,7 @@ def logout_by_uid(context, uid):
 
 # ALL Logout
 def all_logout(context, current_sid, self_logout=False):
-    if not context.has_permission('sysadmin'):
+    if not (context.is_authorized() and context.has_permission('sysadmin')):
         raise Exception('FORBIDDEN')
 
     sessions = sessionmgr.get_all_sessions_info()
@@ -216,7 +216,7 @@ def cmd_user(context):
           if uid == current_uid:
               user_info = usermgr.get_user_info(uid, w_memo=w_memo)
           else:
-              if context.has_permission('sysadmin'):
+              if context.is_authorized() and context.has_permission('sysadmin'):
                   user_info = usermgr.get_user_info(uid, w_memo=w_memo)
                   if user_info is None:
                       status = 'FAILED'
@@ -525,7 +525,7 @@ def cmd_group(context):
     if gid is None:
         status = 'NO_GID'
     else:
-        if context.has_permission('sysadmin'):
+        if context.is_authorized() and context.has_permission('sysadmin'):
             group_info = groupmgr.get_group_info(gid)
             if group_info is None:
                 status = 'FAILED'
