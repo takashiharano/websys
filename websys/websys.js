@@ -401,7 +401,7 @@ websys.syslog.cb = function(xhr, res) {
     var time = a[0];
     var type = a[2];
     var st = a[3];
-    var nm = a[4];
+    var uid = a[4];
     var addr = a[5];
     var host = a[6];
     var ua = a[7];
@@ -412,9 +412,10 @@ websys.syslog.cb = function(xhr, res) {
     ua = brws.name + ' ' + brws.version;
     time = time.replace(/T/, ' ');
     sid = util.snip(sid, 7, 3);
-    s += time + '\t' + type + '\t' + st + '\t' + nm + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\t' + info + '\n';
+    s += time + '\t' + type + '\t' + st + '\t' + uid + '\t' + addr + '\t' + host + '\t' + ua + '\t' + sid + '\t' + info + '\n';
   }
   var r = util.alignFields(s, '\t', 2);
+  r = util.escHtml(r);
   log.mlt(r);
 };
 
@@ -567,20 +568,20 @@ websys.buildSessinInfo = function(info, flgA) {
   var scr = screen + ' ' + zoom;
 
   var s = '';
-  s += 'uid     : ' + info['uid'] + '\n';
-  s += 'sid     : ' + info['sid'] + '\n';
-  s += 'time    : ' + util.getDateTimeString(info['time'], DATETIME_FORMAT) + ' <span style="color:#ccc;">' + info['tz'] + ' ' + info['tzname'] + '\n';
-  s += 'host    : ' + info['addr'] + '  ' + info['host'] + '\n';
-  s += 'ua      : ' + brwL.name + ' ' + brwL.version + '\n';
-  s += 'screen  : ' + scr + '\n';
-  s += 'lang    : ' + info['lang'] + '\n';
+  s += 'uid     : ' + websys.escapeText(info['uid']) + '\n';
+  s += 'sid     : ' + websys.escapeText(info['sid']) + '\n';
+  s += 'time    : ' + util.getDateTimeString(info['time'], DATETIME_FORMAT) + ' <span style="color:#ccc;">' + websys.escapeText(info['tz']) + ' ' + websys.escapeText(info['tzname']) + '\n';
+  s += 'host    : ' + websys.escapeText(info['addr']) + '  ' + websys.escapeText(info['host']) + '\n';
+  s += 'ua      : ' + websys.escapeText(brwL.name + ' ' + brwL.version) + '\n';
+  s += 'screen  : ' + websys.escapeText(scr) + '\n';
+  s += 'lang    : ' + websys.escapeText(info['lang']) + '\n';
   s += '</span>';
   if (flgA) {
     s += '<span style="color:#aaa;">';
     s += ' created:\n';
-    s += '    time: ' + util.getDateTimeString(info['c_time'], DATETIME_FORMAT) + ' ' + info['c_tz'] + ' ' + info['c_tzname'] + '\n';
-    s += '    host: ' + info['c_addr'] + '  ' + info['c_host'] + '\n';
-    s += '    ua  : ' + brwC.name + ' ' + brwC.version + '\n';
+    s += '    time: ' + util.getDateTimeString(info['c_time'], DATETIME_FORMAT) + ' ' + websys.escapeText(info['c_tz']) + ' ' + websys.escapeText(info['c_tzname']) + '\n';
+    s += '    host: ' + websys.escapeText(info['c_addr']) + '  ' + websys.escapeText(info['c_host']) + '\n';
+    s += '    ua  : ' + websys.escapeText(brwC.name + ' ' + brwC.version) + '\n';
     s += '</span>';
   }
   return s;
@@ -1562,6 +1563,10 @@ websys.getUserFlags = function() {
     flags = userInfo.flags;
   }
   return flags;
+};
+
+websys.escapeText = function(v) {
+  return util.escHtml(v == null ? '' : String(v));
 };
 
 /**
