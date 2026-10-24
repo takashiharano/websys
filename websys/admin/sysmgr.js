@@ -85,6 +85,7 @@ $onReady = function() {
 main.onSysReady = function() {
   main.reload();
   main.queueNextUpdateSessionInfo();
+  main.restartRefreshTimeCounter();
 };
 
 main.reload = function() {
@@ -801,7 +802,16 @@ main.getSessionListCb = function(xhr, res, req) {
   if (main.interval) {
     main.interval = 0;
     main.queueNextUpdateSessionInfo();
+    main.restartRefreshTimeCounter();
   }
+};
+
+main.restartRefreshTimeCounter = function() {
+  var nextRefresh = util.now() + main.INTERVAL;
+  var opt = {
+    unsigned: true
+  };
+  util.timecounter.start('#refresh-timer', nextRefresh, opt);
 };
 
 main.drawSessionList = function(sessions) {

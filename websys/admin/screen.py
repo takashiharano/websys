@@ -45,7 +45,7 @@ def build_main_screen(context):
 </div>
 <div id="user-list" style="width:100%;max-height:400px;overflow:auto;"></div>
 
-<pre style="margin-top:10px;"><span>Sessions</span> (<span id="session-num"></span>)<span style="margin-left:24px;"><span id="clock"></span></span>
+<pre style="margin-top:10px;"><span>Sessions</span> (<span id="session-num"></span>)<span style="margin-left:24px;"><span id="clock"></span><span id="refresh-timer" style="margin-left:16px;"></span></span>
 <div id="session-list" style="width:100%;max-height:250px;overflow:auto;"></div></pre>
 
 <div style="display:inline-block;margin-top:20px;margin-bottom:40px;">

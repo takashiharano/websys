@@ -317,6 +317,10 @@ tr.item-list:hover {
   color: #add396;
 }
 
+#refresh-timer {
+  color: #a0a0a0;
+}
+
 .list-field-name:hover {
   cursor: pointer;
 }
