@@ -5,6 +5,8 @@
 #==============================================================================
 import os
 import sys
+import html as htmlutil
+import urllib.parse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
@@ -20,8 +22,8 @@ post_url = '../test/' if DEBUG else './'
 
 # dir list
 def dir_list(root_path, self_path, auth_required=False, upload=False, info=''):
-    websys.on_access()
-    if auth_required and not authmgr.auth():
+    context = websys.on_access()
+    if auth_required and not context.is_authorized():
         websys.redirect_auth_screen()
         return
 
@@ -183,7 +185,7 @@ util.postSubmit = function(url, params, uriEnc) {
   </div>
 '''
     html += '  <div style="display:inline-block;">'
-    html += '<span>' + info + '</span>'
+    html += '<span>' + htmlutil.escape(info or '') + '</span>'
     html += '''
   </div>
 </div>
@@ -221,6 +223,9 @@ def dir_item(info, delete_enable):
     name = info['filename']
     ext = util.get_file_ext(name)
 
+    name_html = htmlutil.escape(name, quote=True)
+    name_url = htmlutil.escape(urllib.parse.quote(name, safe=''), quote=True)
+
     class_name = ''
     if is_hidden(name):
         class_name = 'hidden-file'
@@ -237,29 +242,26 @@ def dir_item(info, delete_enable):
     filename = ''
     with_a_tag = False
     if not is_hidden(name):
-        if info['isdir']:
+        if info['isdir'] or ext == 'html':
             with_a_tag = True
-            filename += '<a href="' + name + '"'
-        elif ext == 'html':
-            with_a_tag = True
-            filename += '<a href="' + name + '"'
+            filename += '<a href="' + name_url + '"'
         else:
             with_a_tag = True
-            filename += '<a href="./?file=' + name + '"'
+            filename += '<a href="./?file=' + name_url + '"'
 
         if class_name != '':
             filename += ' class="' + class_name + '"'
 
         filename += '>'
 
-    filename += name
+    filename += name_html
 
     if with_a_tag:
         filename += '</a>'
 
     src_link = ''
     if ext == 'html' or ext == 'py':
-        src_link += '<a href="./?file=' + name + '" class="src">[SRC]</a>'
+        src_link += '<a href="./?file=' + name_url + '" class="src">[SRC]</a>'
 
     html += filename
     html += src_link
@@ -272,7 +274,9 @@ def dir_item(info, delete_enable):
         html += '{:,d}'.format(info['size'])
 
         if delete_enable:
-            html += '<span class="delete-button pseudo-button" onclick="fm.delete(\'' + name + '\');">X</span>'
+            html += '<span class="delete-button pseudo-button"'
+            html += ' data-file="' + name_html + '"'
+            html += ' onclick="fm.delete(this.dataset.file)">X</span>'
 
     html += '</td>'
     html += '<td style="padding-left:10px;">' + util.get_datetime_str(info['mtime'], fmt='%Y-%m-%d %H:%M:%S') + '</td>'

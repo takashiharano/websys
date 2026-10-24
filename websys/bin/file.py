@@ -16,7 +16,7 @@ import bsb64
 
 import authmgr
 
-TXT_EXT = ['bas', 'bat', 'c', 'css', 'html', 'java', 'js', 'log', 'ps1', 'sh', 'txt', 'xml']
+TXT_EXT = ['bas', 'bat', 'c', 'css', 'html', 'java', 'js', 'log', 'ps1', 'py', 'sh', 'txt', 'xml']
 
 # is text file
 def is_text_file(filename):
@@ -47,9 +47,9 @@ def output_text_file(root_path, path):
     websys.send_response(html, 'text/html')
 
 def main(root_path, path, auth_required=True):
-    websys.on_access()
-    if auth_required and  not authmgr.auth():
-        util.send_response('FORBIDDEN')
+    context = websys.on_access()
+    if auth_required and not context.is_authorized():
+        util.send_response('FORBIDDEN', status=403)
     else:
         if is_text_file(path):
             output_text_file(root_path, path)
