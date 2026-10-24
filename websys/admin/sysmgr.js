@@ -967,7 +967,8 @@ main.buildSessionInfoOne = function(session, now) {
   var dispTz = util.escHtml(tz);
   var dispTzName = util.escHtml(tzname);
   var dispZoom = util.escHtml(zoom);
-
+  var dispHost = util.escHtml(util.escHtml(host || ''));
+  var dispCHost = util.escHtml(util.escHtml(cHost || ''));
 
   var html = '';
   html += '<tr class="item-list session-info" ondblclick="sysmgr.onListRowDblClick(this, \'session-info\');">';
@@ -980,7 +981,7 @@ main.buildSessionInfoOne = function(session, now) {
   html += '<td>' + timeline + '</td>';
   html += '<td style="padding-right:10px;"';
   if (host) {
-    html += ' data-tooltip="' + host + '"';
+    html += ' data-tooltip="' + dispHost + '"';
   }
   html += '>' + addr + '</td>';
   html += '<td style="padding-right:10px;">' + dispUa + '</td>';
@@ -994,7 +995,7 @@ main.buildSessionInfoOne = function(session, now) {
   html += '<td style="padding-right:10px;">' + loginTime + '</td>';
   html += '<td';
   if (cHost) {
-    html += ' data-tooltip="' + cHost + '"';
+    html += ' data-tooltip="' + dispCHost + '"';
   }
   html += '>' + cAddr + '</td>';
   html += '</tr>';
