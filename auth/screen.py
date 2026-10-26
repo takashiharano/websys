@@ -103,7 +103,7 @@ input:-webkit-autofill {
 </style>
 <script>
 var auth = {};
-auth.originUrl = '${%srcurl%}';
+auth.originUrl = ${%srcurl%};
 auth.led = null;
 auth.elCode = null;
 auth.retryNum = 0;
@@ -243,7 +243,15 @@ auth.disableOpenBtn = function() {
 auth.redirect = function() {
   var url = auth.originUrl;
   if (!url) return;
-  location.href = url;
+  var tgt;
+  try {
+    tgt = new URL(url, location.href);
+  } catch (e) {
+    return;
+  }
+  if (tgt.origin != location.origin) return;
+  if (tgt.protocol != 'http:' && tgt.protocol != 'https:') return;
+  location.href = tgt.href;
 };
 auth.goodBye = function() {
   auth.lock();
@@ -439,6 +447,7 @@ window.addEventListener('load', onLoad, true);
 
 def print_screen():
     srcurl = util.get_request_param('srcurl', '')
+    srcurl_json = util.to_json(srcurl).replace('<', '\\u003c')
     html = build_html()
-    html = util.replace(html, '\${%srcurl%}', srcurl);
+    html = html.replace('${%srcurl%}', srcurl_json)
     util.send_response(html, 'text/html')
