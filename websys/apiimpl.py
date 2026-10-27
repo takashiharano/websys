@@ -200,7 +200,8 @@ def cmd_user(context):
     status = 'OK'
     user_info = None
     uid = websys.get_request_param('uid')
-    w_memo = websys.get_request_param('w_memo', '0')
+    is_sysadmin = context.is_authorized() and context.has_permission('sysadmin')
+    w_memo = is_sysadmin and websys.get_request_param('w_memo') == '1'
 
     if uid is None:
         sid = context.get_session_id()
@@ -216,7 +217,7 @@ def cmd_user(context):
           if uid == current_uid:
               user_info = usermgr.get_user_info(uid, w_memo=w_memo)
           else:
-              if context.is_authorized() and context.has_permission('sysadmin'):
+              if is_sysadmin:
                   user_info = usermgr.get_user_info(uid, w_memo=w_memo)
                   if user_info is None:
                       status = 'FAILED'
