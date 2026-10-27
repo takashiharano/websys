@@ -35,7 +35,7 @@ def convert_to_safe_file_path(filename):
     name = filename.split('.', 1)[0].rstrip(' ').upper()
     if name in ('CON', 'PRN', 'AUX', 'NUL', 'CONIN$', 'CONOUT$'):
         return None
-    if re.fullmatch(r'(COM|LPT)[1-9¹²³]', name):
+    if re.fullmatch(r'(COM|LPT)[1-9]', name):
         return None
 
     base_dir = os.path.realpath(os.getcwd())
