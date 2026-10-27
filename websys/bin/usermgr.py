@@ -84,6 +84,14 @@ USER_STATUS_DATA_STRUCT = [
 #   ...
 # }
 
+def is_valid_uid(uid):
+    return util.match(uid, r'\A[a-zA-Z0-9@._-]+\Z') and not uid.endswith('.')
+
+def get_user_dir_path(uid):
+    if not is_valid_uid(uid):
+        raise Exception('INVALID_UID')
+    return os.path.join(USER_ROOT_PATH, uid)
+
 # get user info
 # return None is not exist
 def get_user_info(uid, w_memo=False):
@@ -156,6 +164,9 @@ def count_sessions_per_user():
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
 def add_user(uid, pw, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None, operator_full_name=''):
+    if not is_valid_uid(uid):
+        raise Exception('INVALID_UID')
+
     now = util.get_timestamp()
     users = get_all_user_info()
 
@@ -206,6 +217,9 @@ def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=
 
 # Modify a user
 def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
+    if not is_valid_uid(uid):
+        raise Exception('INVALID_UID')
+
     now = util.get_timestamp()
 
     users = get_all_user_info()
@@ -308,6 +322,9 @@ def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, 
 
 # Delete a user
 def delete_user(uid):
+    if not is_valid_uid(uid):
+        return False
+
     users = get_all_user_info()
     if users is None or uid not in users or uid == 'root':
         return False
@@ -323,7 +340,7 @@ def save_users(users):
     common.save_to_tsv_file(USER_LIST_FILE_PATH, users, USER_DATA_STRUCT)
 
 def delete_user_dir(uid):
-    path = USER_ROOT_PATH + '/' + uid
+    path = get_user_dir_path(uid)
     util.rmdir(path, True)
 
 #----------------------------------------------------------
@@ -411,7 +428,8 @@ def delete_user_password(uid):
 # User memo text
 #------------------------------------------------------------------------------
 def get_user_memo_file_path(uid):
-    return  USER_ROOT_PATH + '/' + uid + '/memo.txt'
+    user_dir_path = get_user_dir_path(uid)
+    return os.path.join(user_dir_path, 'memo.txt')
 
 def get_user_memo_text(uid):
     path = get_user_memo_file_path(uid)
@@ -472,7 +490,8 @@ def parse_int(s):
 # User status
 #------------------------------------------------------------------------------
 def get_user_status_file_path(uid):
-    return  USER_ROOT_PATH + '/' + uid + '/status.txt'
+    user_dir_path = get_user_dir_path(uid)
+    return os.path.join(user_dir_path, 'status.txt')
 
 def get_default_status_info():
     data_struct = USER_STATUS_DATA_STRUCT
