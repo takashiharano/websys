@@ -16,6 +16,8 @@ import util
 import dirlist
 import file
 
+PROTECT_EXTENSIONS = ('.cgi', '.py', '.pyc', '.so', '.pyd', '.php', '.pl', '.sh')
+
 #------------------------------------------------------------------------------
 def convert_to_safe_file_path(filename):
     if not isinstance(filename, str) or not filename or filename.startswith('.'):
@@ -64,7 +66,7 @@ def save_file():
     if not content or not filename:
         return 'NO_FILE_CONTENT'
 
-    if filename.lower().endswith('.cgi'):
+    if filename.lower().endswith(PROTECT_EXTENSIONS):
         filename += '.txt'
 
     filepath = convert_to_safe_file_path(filename)
