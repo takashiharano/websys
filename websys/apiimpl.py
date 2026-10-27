@@ -448,6 +448,11 @@ def cmd_passwd(context):
 
     try:
         usermgr.modify_user(uid, pw_hash, chg_pw=True, operator_full_name=operator_full_name)
+
+        if uid == own_uid:
+            current_sid = context.get_session_id()
+            sessionmgr.clear_user_sessions(uid, except_sid=current_sid)
+
         status = 'OK'
         logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + target)
     except Exception as e:

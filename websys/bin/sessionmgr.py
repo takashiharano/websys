@@ -509,12 +509,18 @@ def clear_expired_sessions(uid, sessions, now):
 #----------------------------------------------------------
 # Clear user sessions
 #----------------------------------------------------------
-def clear_user_sessions(uid):
+def clear_user_sessions(uid, except_sid=None):
     user_sessions = get_user_sessions(uid)
     if user_sessions is None:
         return 0
-    count =  len(user_sessions)
-    save_user_sessions(uid, {})
+
+    if except_sid is not None and except_sid in user_sessions:
+        count = len(user_sessions) - 1
+        if count > 0:
+            save_user_sessions(uid, {except_sid: user_sessions[except_sid]})
+    else:
+        count = len(user_sessions)
+        save_user_sessions(uid, {})
     return count
 
 #----------------------------------------------------------
