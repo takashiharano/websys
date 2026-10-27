@@ -18,6 +18,14 @@ LOCK_FILE_PATH = DATA_DIR + '/lock'
 USER_ROOT_PATH = DATA_DIR + '/users'
 PASSWORD_LIST_FILE_PATH = DATA_DIR + '/userspw.txt'
 LOG_FILE_PATH = DATA_DIR + '/logs/websys.log'
-
-ALGOTRITHM = 'SHA-256'
 USE_HOSTNAME = True
+ALGOTRITHM = 'SHA-256'
+
+PASSWORD_BLACKLIST = (
+    'pass1234',
+    'password',
+    'password123',
+    'password1234',
+    '12345678',
+    'qwerty123'
+)

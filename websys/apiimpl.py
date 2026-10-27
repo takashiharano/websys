@@ -439,6 +439,10 @@ def cmd_passwd(context):
         websys.send_result_json('ERR_PW', body=None)
         return
 
+    if is_blacklisted_password(uid, pw):
+        websys.send_result_json('ERR_PW_BLACKLISTED', body=None)
+        return
+
     pw_hash = util.hash(pw, websysconf.ALGOTRITHM)
 
     own_uid = context.get_user_id()
@@ -459,6 +463,13 @@ def cmd_passwd(context):
         status = 'ERR_' + str(e)
 
     websys.send_result_json(status, body=None)
+
+def is_blacklisted_password(uid, pw_hash):
+    for blocked_pw in websysconf.PASSWORD_BLACKLIST:
+        blocked_hash = util.hash(blocked_pw + uid, 'SHA-256')
+        if pw_hash == blocked_hash:
+            return True
+    return False
 
 #----------------------------------------------------------
 # userdel
