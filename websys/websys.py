@@ -214,9 +214,12 @@ def on_access():
     #}
     context = WebContext()
 
+    sid = util.get_cookie_val('sid')
+    host = get_host_name() if sid is not None and not sid.startswith('a_') else ''
+
     if synchronize_start():
         try:
-            context = _on_access(context)
+            context = _on_access(context, sid, host)
             context.set_status('OK')
         finally:
             synchronize_end()
@@ -227,14 +230,11 @@ def on_access():
 
     return context
 
-def _on_access(context):
+def _on_access(context, sid, host):
     now = util.get_timestamp()
     now_ms = int(now * 1000)
-
-    sid = util.get_cookie_val('sid')
-    sessions = sessionmgr.get_all_sessions_info(clear_expired=True, now=now)
-
     is_managed = False
+    sessions = sessionmgr.get_all_sessions_info(clear_expired=True, now=now)
 
     if sid in sessions:
         session_info = sessions[sid]
@@ -253,13 +253,13 @@ def _on_access(context):
         ts = util.to_int(ts)
 
         uid = None
-        if sid is None:
+        if sid is None or not sid.startswith('a_'):
             # New session
-            session_info = sessionmgr.create_new_session_info(uid, now)
+            session_info = sessionmgr.create_new_session_info(uid, now, host)
             ts = now_ms
         else:
             # Sesion already exists
-            session_info = sessionmgr.build_session_info(sid, uid, now)
+            session_info = sessionmgr.build_session_info(sid, uid, now, host)
 
         context.set_timestamp(ts)
 
@@ -268,7 +268,7 @@ def _on_access(context):
 
     if is_managed:
         app_id = get_app_id()
-        session_info = sessionmgr.update_last_access_info(uid, sid, app_id)
+        session_info = sessionmgr.update_last_access_info(uid, sid, app_id, host)
         sessionmgr.set_current_session_info_to_global(session_info)
 
         context.set_session_info(session_info)
@@ -409,7 +409,16 @@ def login(context, id, pw):
 def invalidate_existing_session(context):
     current_sid = context.get_session_id()
     if current_sid is not None:
-        authmgr.logout(current_sid, renew=True)
+        cleared_session = authmgr.logout(current_sid, renew=True)
+        if cleared_session is not None:
+            now = util.get_timestamp()
+            timestamp_millis = int(now * 1000)
+            session_info = sessionmgr.create_new_session_info(None, now, '')
+            context.set_session_info(session_info)
+            context.set_user_info(None)
+            context.set_authenticated(False)
+            context.set_authorized(False)
+            context.set_timestamp(timestamp_millis)
 
 #----------------------------------------------------------
 # logout

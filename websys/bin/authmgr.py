@@ -25,9 +25,10 @@ ALGOTRITHM = websysconf.ALGOTRITHM
 #  pw: SHA-256(pw + uid)
 #----------------------------------------------------------
 def login(uid, pw):
+    host = websys.get_host_name()
     if websys.synchronize_start():
         try:
-            ret = do_login(uid, pw)
+            ret = do_login(uid, pw, host)
             websys.synchronize_end()
         except Exception as e:
             websys.synchronize_end()
@@ -35,16 +36,16 @@ def login(uid, pw):
         return ret
     raise Exception('ERROR')
 
-def do_login(uid, pw):
+def do_login(uid, pw, host):
     try:
-        login_info = _login(uid, pw)
+        login_info = _login(uid, pw, host)
     except Exception as e:
         status = str(e)
         if status == 'USER_NOT_FOUND':
-            write_login_log(status, '')
+            write_login_log(status, '', host)
             status = 'FAILED'
         else:
-            write_login_log(status, uid)
+            write_login_log(status, uid, host)
         raise Exception(status)
 
     session_info = login_info['session_info']
@@ -58,10 +59,10 @@ def do_login(uid, pw):
 
     login_info['status'] = status
 
-    write_login_log(status, uid, session_info)
+    write_login_log(status, uid, host, session_info)
     return login_info
 
-def _login(uid, pw):
+def _login(uid, pw, host):
     user_info = usermgr.get_user_info(uid)
     if user_info is None:
         raise Exception('USER_NOT_FOUND')
@@ -93,7 +94,7 @@ def _login(uid, pw):
         usermgr.write_user_status_info(uid, user_status_info)
         raise Exception('FAILED')
 
-    new_session_info = sessionmgr.create_and_register_session_info(uid)
+    new_session_info = sessionmgr.create_and_register_session_info(uid, host)
     loggedin_user_info = user_info
     login_info = {
         'session_info': new_session_info,
@@ -146,13 +147,12 @@ def _auth(session_info, user_info):
 #----------------------------------------------------------
 # Write Login Log
 #----------------------------------------------------------
-def write_login_log(status, uid, session_info=None):
+def write_login_log(status, uid, host, session_info=None):
     sid = ''
     if session_info is not None:
         sid = session_info['sid']
 
     addr = websys.get_ip_addr()
-    host = websys.get_host_name()
     ua = websys.get_user_agent()
 
     logger.write_status_log('LOGIN', status, uid, addr, host, ua, sid)

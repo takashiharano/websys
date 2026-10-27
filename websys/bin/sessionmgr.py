@@ -160,23 +160,22 @@ def get_anonymous_session_period_sec():
 #----------------------------------------------------------
 # Create and register new session info
 #----------------------------------------------------------
-def create_and_register_session_info(uid):
+def create_and_register_session_info(uid, host):
     now = util.get_timestamp()
-    new_session_info = create_new_session_info(uid, now)
+    new_session_info = create_new_session_info(uid, now, host)
     append_session_info_to_session_file(uid, new_session_info)
     return new_session_info
 
 #----------------------------------------------------------
 # Create session info
 #----------------------------------------------------------
-def create_new_session_info(uid, now):
+def create_new_session_info(uid, now, host):
     sid = generate_session_id(uid)
-    new_session = build_session_info(sid, uid, now)
+    new_session = build_session_info(sid, uid, now, host)
     return new_session
 
-def build_session_info(sid, uid, now):
+def build_session_info(sid, uid, now, host):
     addr = websys.get_ip_addr()
-    host = websys.get_host_name()
     useragent = websys.get_user_agent()
 
     tz = websys.get_request_param('_tz', '')
@@ -257,21 +256,24 @@ def _in_top_n(v_list, n, v):
 # Generate session id
 #----------------------------------------------------------
 def generate_session_id(uid):
+    is_anonymous = False
     if uid is None:
+        is_anonymous = True
         uid = util.random_string(16)
     r = util.generate_uuid()
     timestamp = util.get_unixtime_millis()
     input = str(timestamp) + '_' + uid + '_' + r
     sid = util.hash(input, ALGOTRITHM)
+    if is_anonymous:
+        sid = 'a_' + sid
     return sid
 
 #----------------------------------------------------------
 # Update last access info
 #----------------------------------------------------------
-def update_last_access_info(uid, sid, app_id):
+def update_last_access_info(uid, sid, app_id, host):
     now = util.get_timestamp()
     addr = websys.get_ip_addr()
-    host = websys.get_host_name()
     useragent = websys.get_user_agent()
 
     tz = websys.get_request_param('_tz', None)

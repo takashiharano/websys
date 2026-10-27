@@ -94,6 +94,8 @@ def cmd_logout(context):
 
     headers = None
     if self_logout:
+        context.set_session_info(None)
+        context.set_timestamp(None)
         headers = websys.build_logout_cookies()
 
     cb_url = websys.get_request_param('url')
