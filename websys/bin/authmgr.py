@@ -29,10 +29,8 @@ def login(uid, pw):
     if websys.synchronize_start():
         try:
             ret = do_login(uid, pw, host)
+        finally:
             websys.synchronize_end()
-        except Exception as e:
-            websys.synchronize_end()
-            raise Exception(e)
         return ret
     raise Exception('ERROR')
 
@@ -119,8 +117,10 @@ def _login(uid, pw, host):
 def logout(sid, renew=False):
     session = None
     if websys.synchronize_start():
-        session = sessionmgr.clear_session(sid, renew)
-        websys.synchronize_end()
+        try:
+            session = sessionmgr.clear_session(sid, renew)
+        finally:
+            websys.synchronize_end()
     return session
 
 #----------------------------------------------------------

@@ -163,6 +163,7 @@ def count_sessions_per_user():
 
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
+@common.synchronized
 def add_user(uid, pw, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None, operator_full_name=''):
     if not is_valid_uid(uid):
         raise Exception('INVALID_UID')
@@ -216,6 +217,7 @@ def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=
     return user
 
 # Modify a user
+@common.synchronized
 def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
     if not is_valid_uid(uid):
         raise Exception('INVALID_UID')
@@ -321,6 +323,7 @@ def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, 
     return user
 
 # Delete a user
+@common.synchronized
 def delete_user(uid):
     if not is_valid_uid(uid):
         return False
@@ -523,6 +526,7 @@ def write_user_status_info(uid, info):
     util.save_properties(path, info)
 
 # Clear login failure counter and time
+@common.synchronized
 def clear_login_failed(uid):
     info = load_user_status_info(uid)
     info['login_failed_count'] = 0

@@ -13,6 +13,17 @@ import websysconf
 sys.path.append(websysconf.UTIL_PATH)
 import util
 
+def synchronized(func):
+    def wrapper(*args, **kwargs):
+        import websys
+        if not websys.synchronize_start():
+            raise Exception('SYSTEM_BUSY')
+        try:
+            return func(*args, **kwargs)
+        finally:
+            websys.synchronize_end()
+    return wrapper
+
 import logger
 
 def has_item(obj, key, value):

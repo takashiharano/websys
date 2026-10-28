@@ -10,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../libs'))
 import util
 
 util.append_system_path(__file__, './bin')
+import common
 import logger
 import websysconf
 import usermgr
@@ -124,6 +125,7 @@ def logout_by_sid(context, current_sid, sid):
     return self_logout
 
 # Logout by UID
+@common.synchronized
 def logout_by_uid(context, uid):
     self_logout = False
     current_uid = context.get_user_id()
@@ -458,7 +460,7 @@ def cmd_passwd(context):
 
         if uid == own_uid:
             current_sid = context.get_session_id()
-            sessionmgr.clear_user_sessions(uid, except_sid=current_sid)
+            common.synchronized(sessionmgr.clear_user_sessions)(uid, except_sid=current_sid)
 
         status = 'OK'
         logger.write_event_log(context, 'CHG_PW', 'OK', 'target=' + target)
@@ -493,10 +495,13 @@ def cmd_userdel(context):
                 status = 'ERR_PROHIBITED_UID'
             else:
                 status = 'ERR_NO_SUCH_UID'
-                deleted = usermgr.delete_user(uid)
-                if deleted:
-                    logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
-                    status = 'OK'
+                try:
+                    deleted = usermgr.delete_user(uid)
+                    if deleted:
+                        logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
+                        status = 'OK'
+                except Exception as e:
+                    status = 'ERR:' + str(e)
     else:
         status = 'FORBIDDEN'
 
@@ -525,9 +530,12 @@ def cmd_unlockuser(context):
         if uid is None:
             status = 'ERR_NO_UID'
         else:
-            usermgr.clear_login_failed(uid)
-            logger.write_event_log(context, 'UNLOCK_USER', 'OK', 'target=' + uid)
-            status = 'OK'
+            try:
+                usermgr.clear_login_failed(uid)
+                logger.write_event_log(context, 'UNLOCK_USER', 'OK', 'target=' + uid)
+                status = 'OK'
+            except Exception as e:
+                status = 'ERR:' + str(e)
     else:
         status = 'FORBIDDEN'
 
@@ -656,10 +664,13 @@ def cmd_delgroup(context):
             status = 'ERR_NO_GID'
         else:
             status = 'ERR_NO_SUCH_GID'
-            deleted = groupmgr.delete_group(gid)
-            if deleted:
-                logger.write_event_log(context, 'DEL_GROUP', 'OK', 'gid=' + gid)
-                status = 'OK'
+            try:
+                deleted = groupmgr.delete_group(gid)
+                if deleted:
+                    logger.write_event_log(context, 'DEL_GROUP', 'OK', 'gid=' + gid)
+                    status = 'OK'
+            except Exception as e:
+                status = 'ERR:' + str(e)
     else:
         status = 'FORBIDDEN'
 

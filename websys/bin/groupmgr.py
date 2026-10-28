@@ -82,6 +82,7 @@ def get_group_list():
     return group_list
 
 # Add a group
+@common.synchronized
 def add_group(gid, name='', privs='', desc='', status=None, operator_full_name=''):
     groups = get_all_group_info()
     if groups is None:
@@ -108,6 +109,7 @@ def add_group(gid, name='', privs='', desc='', status=None, operator_full_name='
     return group
 
 # Modify a group
+@common.synchronized
 def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None, operator_full_name=''):
     now = util.get_timestamp()
 
@@ -152,6 +154,7 @@ def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None
     return group
 
 # Delete a group
+@common.synchronized
 def delete_group(gid):
     groups = get_all_group_info()
     if groups is None or gid not in groups:
