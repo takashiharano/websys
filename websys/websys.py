@@ -357,7 +357,7 @@ def get_request_param(key=None, default=None):
 
     if q is None:
         q = default
-    else:
+    elif key is None:
         q = util.decode_uri(q)
 
     return q
