@@ -586,7 +586,9 @@ main.makeFilterableFieldValueLabel = function(fieldName, s) {
   var r = '';
   for (var i = 0; i < a.length; i++) {
     var v = a[i];
-    var w = '<span class="filter-link" onclick="main.filterUserByFieldFromLink(\'' + fieldName + '\', \'' + v + '\')">' + v + '</span>';
+    var f = util.escHtml(fieldName);
+    var value = util.escHtml(v);
+    var w = '<span class="filter-link" data-field="' + f + '" data-value="' + value + '" onclick="main.filterUserByFieldFromLink(this.dataset.field, this.dataset.value)">' + value + '</span>';
     if (i > 0) r += ' ';
     r += w;
   }
