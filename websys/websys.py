@@ -240,6 +240,8 @@ def _on_access(context, sid, host):
         session_info = sessions[sid]
         uid = session_info['uid']
         user_info = usermgr.get_user_info(uid)
+        if user_info is None:
+            return context
         is_managed = True
     else:
         # Anonymous
