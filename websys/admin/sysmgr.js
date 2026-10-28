@@ -1334,7 +1334,7 @@ main.openUserInfoEditorWindow = function(mode, uid) {
 
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Password</td>';
-  html += '    <td><input type="password" id="pw1" style="width:calc(100% - 100px);" autocomplete="new-password"><button class="button-small" style="margin-left:4px" onclick="main.setRandomPasswordT();">RANDOM</button><button class="button-small" style="margin-left:4px" onclick="main.setRandomPasswordN();">4 DIGIT</button></td>';
+  html += '    <td><input type="password" id="pw1" style="width:calc(100% - 100px);" autocomplete="new-password"><button class="button-small" style="margin-left:4px" onclick="main.setRandomPassword();">RANDOM</button></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Re-type</td>';
@@ -2207,16 +2207,9 @@ main.setPasswordTextMode = function(m) {
   $el('#pwdtxt-button').innerText = label;
 };
 
-main.setRandomPasswordT = function() {
-  var tbl = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  main.setRandomPassword(tbl, 12);
-};
-main.setRandomPasswordN = function() {
-  var tbl = '0123456789'
-  main.setRandomPassword(tbl, 4);
-};
-main.setRandomPassword = function(tbl, n) {
-  var v = util.randomString(tbl, n);
+main.setRandomPassword = function() {
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var v = util.randomString(chars, 12);
   $el('#pw1').value = v;
   $el('#pw2').value = v;
   main.setPasswordTextMode('T');
