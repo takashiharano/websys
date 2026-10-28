@@ -5,7 +5,7 @@
 #==============================================================================
 import os
 import sys
-import json
+import tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
@@ -156,7 +156,24 @@ def save_to_tsv_file(path, data_dict, fields):
         lines.append('\t'.join(values))
 
     s = '\n'.join(lines) + '\n'
-    util.write_text_file(path, s)
+    util.make_parent_dir(path)
+    tmp_path = create_temp_file(path)
+    try:
+        util.write_text_file(tmp_path, s, make_dir=False)
+        os.replace(tmp_path, path)
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+def create_temp_file(path):
+    base_name = os.path.basename(path)
+    prefix = '.' + base_name + '.'
+    suffix = '.tmp'
+    abs_path = os.path.abspath(path)
+    dir = os.path.dirname(abs_path)
+    fd, tmp_path = tempfile.mkstemp(prefix=prefix, suffix=suffix, dir=dir)
+    os.close(fd)
+    return tmp_path
 
 def _build_data_header(fields):
     keys = []
