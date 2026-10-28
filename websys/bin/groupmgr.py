@@ -27,6 +27,9 @@ GROUP_DATA_FIELDS = [
     {'name': 'updated_by'}
 ]
 
+def is_valid_gid(gid):
+    return util.match(gid, r'\A[a-zA-Z0-9@._-]+\Z') and not gid.endswith('.')
+
 # Object structure
 # group
 # {
@@ -84,6 +87,9 @@ def get_group_list():
 # Add a group
 @common.synchronized
 def add_group(gid, name='', privs='', desc='', status=None, operator_full_name=''):
+    if not is_valid_gid(gid):
+        raise Exception('INVALID_GID')
+
     groups = get_all_group_info()
     if groups is None:
         groups = {}

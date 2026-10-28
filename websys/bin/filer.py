@@ -5,7 +5,6 @@
 #==============================================================================
 import os
 import sys
-import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
@@ -20,22 +19,7 @@ PROTECT_EXTENSIONS = ('.cgi', '.py', '.pyc', '.so', '.pyd', '.php', '.pl', '.sh'
 
 #------------------------------------------------------------------------------
 def convert_to_safe_file_path(filename):
-    if not isinstance(filename, str) or not filename or filename.startswith('.'):
-        return None
-
-    if any(c in filename for c in '/\\:<>"|?*'):
-        return None
-
-    if any(ord(c) < 32 or ord(c) == 127 for c in filename):
-        return None
-
-    if filename.endswith(('.', ' ')):
-        return None
-
-    name = filename.split('.', 1)[0].rstrip(' ').upper()
-    if name in ('CON', 'PRN', 'AUX', 'NUL', 'CONIN$', 'CONOUT$'):
-        return None
-    if re.fullmatch(r'(COM|LPT)[1-9]', name):
+    if util.is_unsafe_path_component(filename):
         return None
 
     base_dir = os.path.realpath(os.getcwd())

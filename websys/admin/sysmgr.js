@@ -1934,14 +1934,14 @@ main.drawGroupList = function(list) {
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
     html += '<tr class="item-list group-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'group-info\');">';
-    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="main.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + gid + '</span></td>';
-    html += '<td class="item-list">' + name + '</td>';
-    html += '<td class="item-list">' + privs + '</td>';
-    html += '<td class="item-list">' + desc + '</td>';
+    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="main.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + util.escHtml(gid) + '</span></td>';
+    html += '<td class="item-list">' + util.escHtml(name) + '</td>';
+    html += '<td class="item-list">' + util.escHtml(privs) + '</td>';
+    html += '<td class="item-list">' + util.escHtml(desc) + '</td>';
     html += '<td class="item-list">' + createdDate + '</td>';
-    html += '<td class="item-list">' + createdBy + '</td>';
+    html += '<td class="item-list">' + util.escHtml(createdBy) + '</td>';
     html += '<td class="item-list">' + updatedDate + '</td>';
-    html += '<td class="item-list">' + updatedBy + '</td>';
+    html += '<td class="item-list">' + util.escHtml(updatedBy) + '</td>';
     html += '</tr>';
   }
   html += '</table>';

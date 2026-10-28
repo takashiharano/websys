@@ -88,7 +88,7 @@ def is_valid_uid(uid):
     return util.match(uid, r'\A[a-zA-Z0-9@._-]+\Z') and not uid.endswith('.')
 
 def get_user_dir_path(uid):
-    if not is_valid_uid(uid):
+    if util.is_unsafe_path_component(uid):
         raise Exception('INVALID_UID')
     return os.path.join(USER_ROOT_PATH, uid)
 
@@ -219,9 +219,6 @@ def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=
 # Modify a user
 @common.synchronized
 def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
-    if not is_valid_uid(uid):
-        raise Exception('INVALID_UID')
-
     now = util.get_timestamp()
 
     users = get_all_user_info()
@@ -325,9 +322,6 @@ def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, 
 # Delete a user
 @common.synchronized
 def delete_user(uid):
-    if not is_valid_uid(uid):
-        return False
-
     users = get_all_user_info()
     if users is None or uid not in users or uid == 'root':
         return False
