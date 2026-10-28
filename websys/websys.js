@@ -85,7 +85,9 @@ websys.changePw = function() {
   if (!pw1) {
     m = 'Password is required';
   } else if (pw1 != pw2) {
-    m = 'Password mismatch';
+    m = 'Password mismatched';
+  } else if (!/^\S{8,}$/.test(pw1)) {
+    m = 'Password must be at least 8 characters.';
   } else if (!uid) {
     m = 'Not logged in'
   }
