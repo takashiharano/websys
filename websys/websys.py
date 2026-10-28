@@ -297,6 +297,7 @@ def get_app_id():
         if simple_path == '':
             simple_path = '/'
         app_id = 'path:' + simple_path
+    app_id = util.replace(app_id, r'[\x00-\x1f\x7f]', ' ')
     return app_id
 
 def get_current_context_from_global():
