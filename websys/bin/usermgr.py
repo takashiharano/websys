@@ -382,7 +382,7 @@ def get_password_list():
 
 def save_password_list(pw_list):
     path = PASSWORD_LIST_FILE_PATH
-    util.write_text_file_from_list(path, pw_list)
+    util.write_text_file_from_list(path, pw_list, atomic=True)
 
 def get_user_password(uid):
     pw_list = get_password_list()
@@ -438,7 +438,7 @@ def save_user_memo(uid, memo):
     if memo == '':
         util.delete_file(path)
     else:
-        util.write_text_file(path, memo)
+        util.write_file_atomically(path, memo)
 
 #------------------------------------------------------------------------------
 # User Flags
@@ -517,7 +517,7 @@ def load_user_status_info(uid):
 
 def write_user_status_info(uid, info):
     path = get_user_status_file_path(uid)
-    util.save_properties(path, info)
+    util.save_properties(path, info, atomic=True)
 
 # Clear login failure counter and time
 @common.synchronized
