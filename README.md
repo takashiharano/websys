@@ -1,8 +1,8 @@
-# WebSys
+# Web Authentication and Authorization
 
-WebSys is a lightweight, file-based authentication and authorization system for web applications. It provides user accounts, group-based permissions, session management, and a browser-based administration interface without requiring a database server.
+A lightweight, file-based authentication and authorization system for web applications. It provides user accounts, group-based permissions, session management, and a browser-based administration interface without requiring a database server.
 
-It is designed for personal projects and small to medium-sized groups that want a simple system to deploy, maintain, and move between servers.
+Designed for personal projects and small to medium-sized groups, it emphasizes simple deployment, minimal dependencies, and easy migration between servers.
 
 ## Features
 
