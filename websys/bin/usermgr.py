@@ -17,7 +17,6 @@ import common
 import sessionmgr
 
 USER_LIST_FILE_PATH = websysconf.DATA_DIR + '/users.tsv'
-PASSWORD_LIST_FILE_PATH = websysconf.PASSWORD_LIST_FILE_PATH
 USER_ROOT_PATH = websysconf.USER_ROOT_PATH
 PW_RESET_LOGIN_EXPIRE_SEC = websysconf.PW_RESET_LOGIN_EXPIRE_SEC
 
@@ -328,7 +327,6 @@ def delete_user(uid):
     sessionmgr.clear_user_sessions(uid)
     users.pop(uid)
     save_users(users)
-    delete_user_password(uid)
     delete_user_dir(uid)
     return True
 
@@ -375,51 +373,17 @@ def has_privilege(user_info, priv_name):
 #------------------------------------------------------------------------------
 # Password
 #------------------------------------------------------------------------------
-def get_password_list():
-    path = PASSWORD_LIST_FILE_PATH
-    pw_list = util.read_text_file_as_list(path)
-    return pw_list
-
-def save_password_list(pw_list):
-    path = PASSWORD_LIST_FILE_PATH
-    util.write_text_file_from_list(path, pw_list, atomic=True)
+def get_user_password_file_path(uid):
+    user_dir_path = get_user_dir_path(uid)
+    return os.path.join(user_dir_path, 'password.txt')
 
 def get_user_password(uid):
-    pw_list = get_password_list()
-    for i in range(len(pw_list)):
-        data = pw_list[i]
-        a = data.split('\t')
-        if a[0] == uid:
-            return a[1]
-    return None
+    path = get_user_password_file_path(uid)
+    return util.read_text_file(path)
 
 def save_user_password(uid, pw):
-    new_data = uid + '\t' + pw
-    pw_list = get_password_list()
-    for i in range(len(pw_list)):
-        data = pw_list[i]
-        a = data.split('\t')
-        if a[0] == uid:
-            pw_list[i] = new_data
-            save_password_list(pw_list)
-            return
-
-    pw_list.append(new_data)
-    save_password_list(pw_list)
-
-def delete_user_password(uid):
-    pw_list = get_password_list()
-    idx = -1
-    for i in range(len(pw_list)):
-        data = pw_list[i]
-        a = data.split('\t')
-        if a[0] == uid:
-            idx = i
-            break
-
-    if idx >= 0:
-        pw_list.pop(idx)
-        save_password_list(pw_list)
+    path = get_user_password_file_path(uid)
+    util.write_file_atomically(path, pw)
 
 #------------------------------------------------------------------------------
 # User memo text
