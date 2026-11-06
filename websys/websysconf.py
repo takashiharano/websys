@@ -16,7 +16,8 @@ PW_RESET_LOGIN_EXPIRE_SEC = 7 * util.DAY
 DATA_DIR = util.get_relative_path(__file__, '../../private/websys')
 LOCK_FILE_PATH = DATA_DIR + '/lock'
 USER_ROOT_PATH = DATA_DIR + '/users'
-LOG_FILE_PATH = DATA_DIR + '/logs/websys.log'
+LOG_DIR_PATH = DATA_DIR + '/logs'
+LOG_FILE_PATH = LOG_DIR_PATH + '/websys.log'
 USE_HOSTNAME = True
 ALGOTRITHM = 'SHA-256'
 

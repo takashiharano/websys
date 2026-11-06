@@ -81,8 +81,8 @@ def remove_item_value(items, ritems):
         items = util.remove_item_value(items, item, separator=' ')
     return items
 
-def write_error_file(s):
-    path = websysconf.DATA_DIR + '/error.txt'
+def write_error_log_file(s):
+    path = websysconf.LOG_DIR_PATH + '/error.log'
     t = util.get_datetime_str()
     s = '---\n[' + t + ']\n' + s
     util.append_text_file(path, s)
@@ -122,7 +122,7 @@ def parse_tsv_field_values(tsv_text, data_fields_def, path):
     }
 
     if status != 'OK':
-        write_error_file(tsv_text)
+        write_error_log_file(tsv_text)
 
     return result
 
