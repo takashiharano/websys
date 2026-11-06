@@ -413,7 +413,7 @@ def is_disabled(user_info):
 def is_expired(user_info, now):
     if has_user_flag(user_info, U_FLG_NEED_PW_CHANGE):
         updated_at = user_info['updated_at']
-        if round(now - updated_at) > PW_RESET_LOGIN_EXPIRE_SEC:
+        if updated_at != 0 and round(now - updated_at) > PW_RESET_LOGIN_EXPIRE_SEC:
             return True
     return False
 
