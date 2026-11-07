@@ -490,29 +490,21 @@ def cmd_userdel(context):
         uid = websys.get_request_param('uid')
         if uid is None:
             status = 'ERR_NO_UID'
+        elif uid == context.get_user_id():
+            status = 'ERR_CANNOT_DELETE_SELF'
         else:
-            if _is_prohibited_uid(uid):
-                status = 'ERR_PROHIBITED_UID'
-            else:
-                status = 'ERR_NO_SUCH_UID'
-                try:
-                    deleted = usermgr.delete_user(uid)
-                    if deleted:
-                        logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
-                        status = 'OK'
-                except Exception as e:
-                    status = 'ERR:' + str(e)
+            status = 'ERR_NO_SUCH_UID'
+            try:
+                deleted = usermgr.delete_user(uid)
+                if deleted:
+                    logger.write_event_log(context, 'DEL_USER', 'OK', 'target=' + uid)
+                    status = 'OK'
+            except Exception as e:
+                status = 'ERR:' + str(e)
     else:
         status = 'FORBIDDEN'
 
     websys.send_result_json(status, body=None)
-
-def _is_prohibited_uid(uid):
-    PROHIBITED_UIDS = ['root']
-    for puid in PROHIBITED_UIDS:
-        if uid == puid:
-            return True
-    return False
 
 #----------------------------------------------------------
 # unlockuser

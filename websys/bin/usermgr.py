@@ -322,7 +322,7 @@ def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, 
 @common.synchronized
 def delete_user(uid):
     users = get_all_user_info()
-    if users is None or uid not in users or uid == 'root':
+    if users is None or uid not in users:
         return False
     sessionmgr.clear_user_sessions(uid)
     users.pop(uid)
