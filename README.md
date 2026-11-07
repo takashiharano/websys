@@ -28,7 +28,7 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
   - `sha.js` https://github.com/caligatio/jsSHA
   - `debug.js` https://debugjs.net/
 
-**The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository includes the `auth/` and `websys/` components, along with `_private/` containing the initial data files.
+**The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository includes `public/auth/` and `public/websys/`, along with `private/` containing the initial data files.
 
 ## Deployment
 
@@ -78,13 +78,13 @@ server/
 
 ### Setup
 
-Place the repository's `auth/` and `websys/` directories under the web document root, alongside the separately installed libraries. Keep application data in a directory outside the document root.
+Place the contents of the repository's `public/` directory under the web document root, and keep `private/` alongside it, outside the document root.
 
-1. Copy `auth/` and `websys/` to the web document root.
+1. Copy `public/auth/` and `public/websys/` to the web document root.
 2. Install the required shared libraries in `libs/`.
 3. Configure the web server to execute `.cgi` files with Python 3, and set their executable permissions as needed.
-4. Edit `websys/websysconf.py` for your environment, including the allowed request origin and data storage paths.
-5. Copy the contents of `_private/websys/` to `private/websys/` outside the web document root, and ensure the CGI process can write to this directory.
+4. Edit `public/websys/websysconf.py` for your environment, including the allowed request origin and data storage paths.
+5. Copy the repository's `private/` directory alongside the web document root, and ensure the CGI process can write to `private/websys/`.
 
 The default relative paths assume the layout shown above. No database server, package manager, or build process is required for WebSys itself.
 
@@ -101,7 +101,7 @@ Create the necessary user accounts, including an administrator account for ongoi
 
 ## Configuration
 
-Settings are defined in `websys/websysconf.py`. They include:
+Settings are defined in `public/websys/websysconf.py`. They include:
 
 | Setting | Purpose |
 | --- | --- |
@@ -119,6 +119,8 @@ User, session, and group information is maintained in text-based files under the
 
 ## Usage
 
+To manage users, groups, and sessions, access `http(s)://SERVER/websys/admin/`. Administration requires either an account with `is_admin` enabled or the `sysadmin` privilege.
+
 After deployment, the main endpoints are:
 
 | Path | Purpose |
@@ -126,8 +128,6 @@ After deployment, the main endpoints are:
 | `/auth/` | Login and password-change interface |
 | `/websys/admin/` | Administration interface |
 | `/websys/api.cgi` | WebSys application API |
-
-The administration interface supports managing user accounts, group privileges, and active sessions. Administration requires the appropriate `sysadmin` permission.
 
 ### Using WebSys in a Python CGI application
 
@@ -143,7 +143,7 @@ def main():
         return
 
     if not context.has_permission('<privilege-name>'):
-        websys.blue_screen('FORBIDDEN')
+        websys.send_response('FORBIDDEN', 'text/plain')
         return
 
     websys.send_response('Hello', 'text/plain')
