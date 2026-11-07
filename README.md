@@ -16,68 +16,88 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
 - Text-based storage with no database setup
 - Python and JavaScript interfaces for integration with other web applications
 
-## Project structure
-
-```text
-websys/
-├── auth/
-│   ├── index.cgi
-│   └── screen.py
-├── websys/
-│   ├── admin/
-│   ├── bin/
-│   ├── api.cgi
-│   ├── apiimpl.py
-│   ├── index.cgi
-│   ├── index_impl.py
-│   ├── websys.js
-│   ├── websys.py
-│   └── websysconf.py
-└── LICENSE
-```
-
-- `auth/` provides the login and password-change screens.
-- `websys/` contains the authentication and authorization API, client-side integration code, and configuration.
-- `websys/admin/` provides the browser-based administration interface.
-- `websys/bin/` contains WebSys's user, group, session, and related management modules.
-
 ## Requirements and dependencies
 
 - Python 3
 - A web server configured to execute Python CGI scripts (for example, Apache with CGI enabled)
 - A writable data directory outside the web document root
 - The following **separately supplied libraries**, placed in a sibling `libs/` directory:
-  - `util.py`
-  - `util.js`
-  - `bsb64.py`
-  - `sha.js`
-  - `debug.js` (used by the administration interface)
+  - `util.py` https://libutil.com/
+  - `util.js` https://libutil.com/
+  - `bsb64.py` https://libutil.com/bsb64/
+  - `sha.js` https://github.com/caligatio/jsSHA
+  - `debug.js` https://debugjs.net/
 
-**The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository itself consists of the `auth/` and `websys/` components and their associated files.
+**The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository includes the `auth/` and `websys/` components, along with `_private/` containing the initial data files.
 
 ## Deployment
 
-Place the repository's `auth/` and `websys/` directories under the web document root, alongside the separately installed libraries. Keep application data in a directory outside the document root.
-
-A typical layout is:
+### Directory layout
 
 ```text
 server/
-├── public/
-│   ├── auth/
-│   ├── websys/
-│   └── libs/
-└── private/
-    └── websys/
+|
++- private/
+|  |
+|  +- websys/
+|     |
+|     +- users/
+|     |  |
+|     |  +- admin/
+|     |     |
+|     |     +- password.txt
+|     +- users.tsv
+|
++- public/
+   |
+   +- auth/
+   |  |
+   |  +- index.cgi
+   |  +- screen.py
+   |
+   +- libs/
+   +- websys/
+      |
+      +- admin/
+      +- bin/
+      +- api.cgi
+      +- apiimpl.py
+      +- index.cgi
+      +- index_impl.py
+      +- websys.js
+      +- websys.py
+      +- websysconf.py
+
 ```
+- `private/websys/` stores user data, passwords, sessions, and logs outside the web document root.
+- `auth/` provides the login and password-change screens.
+- `libs/` contains separately supplied shared libraries.
+- `websys/` contains the authentication and authorization API, client-side integration code, and configuration.
+- `websys/admin/` provides the browser-based administration interface.
+- `websys/bin/` contains WebSys's user, group, session, and related management modules.
+
+### Setup
+
+Place the repository's `auth/` and `websys/` directories under the web document root, alongside the separately installed libraries. Keep application data in a directory outside the document root.
 
 1. Copy `auth/` and `websys/` to the web document root.
 2. Install the required shared libraries in `libs/`.
 3. Configure the web server to execute `.cgi` files with Python 3, and set their executable permissions as needed.
 4. Edit `websys/websysconf.py` for your environment, including the allowed request origin and data storage paths.
-5. Ensure the CGI process can write to the private data directory, and provision an initial administrator account before using the management interface.
+5. Copy the contents of `_private/websys/` to `private/websys/` outside the web document root, and ensure the CGI process can write to this directory.
 
 The default relative paths assume the layout shown above. No database server, package manager, or build process is required for WebSys itself.
+
+### Initial administrator setup
+
+WebSys includes a default administrator account for initial setup:
+
+- Username: `admin`
+- Password: The same as the username
+
+After deployment, log in using this account. A password change is required at the first login. Using a strong, unique password is strongly recommended.
+
+Create the necessary user accounts, including an administrator account for ongoing use. Verify that the new administrator account works, then delete the initial `admin` account. Do not continue using the default account for regular administration.
 
 ## Configuration
 
@@ -122,19 +142,17 @@ def main():
         websys.redirect_auth_screen('../')
         return
 
-    if not context.has_permission('privilege'):
+    if not context.has_permission('<privilege-name>'):
         websys.blue_screen('FORBIDDEN')
         return
 
     websys.send_response('Hello', 'text/plain')
 ```
 
-The application's Python import path must include the deployed `websys/` directory. The example permission `privilege` must be assigned to the user directly or through a group. Other context methods include `get_user_id()`, `is_member_of()`, and `has_privilege()`.
+The application's Python import path must include the deployed `websys/` directory. Replace `<privilege-name>` with a permission assigned to the user directly or through a group. Other context methods include `get_user_id()`, `is_member_of()`, and `has_privilege()`.
 
 Browser-side applications can use `websys.js` to request session information and interact with the WebSys API.
 
 ## License
 
 WebSys is released under the [MIT License](LICENSE).
-
-Copyright 2020 Takashi Harano.
