@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
 import websys
 
-sys.path.append(websysconf.UTIL_PATH)
+sys.path.append(websysconf.LIBS_PATH)
 import util
 
 import logger

@@ -1,8 +1,8 @@
 import os
 import sys
 
-UTIL_PATH = os.path.join(os.path.dirname(__file__), '../libs')
-sys.path.append(UTIL_PATH)
+LIBS_PATH = os.path.join(os.path.dirname(__file__), '../libs')
+sys.path.append(LIBS_PATH)
 import util
 
 CSRF_ALLOWED_ORIGIN = 'http://localhost'

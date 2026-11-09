@@ -125,7 +125,7 @@ Settings are defined in `public/websys/websysconf.py`. They include:
 
 | Setting | Purpose |
 | --- | --- |
-| `UTIL_PATH` | Location of the shared Python utility libraries |
+| `LIBS_PATH` | Path to the shared Python libraries directory |
 | `CSRF_ALLOWED_ORIGIN` | Allowed origin for API requests |
 | `DATA_DIR` | Directory used for persistent WebSys data |
 | `SESSION_TIMEOUT_SEC` | Session timeout |
