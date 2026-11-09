@@ -25,12 +25,12 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
   - `util.py` https://libutil.com/
   - `util.js` https://libutil.com/
   - `bsb64.py` https://libutil.com/bsb64/
-  - `sha.js` https://github.com/caligatio/jsSHA
   - `debug.js` https://debugjs.net/
+  - `sha.js` https://github.com/caligatio/jsSHA
 
 **The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository includes `public/auth/` and `public/websys/`, along with `private/` containing the initial data files.
 
-Download the latest version of each library from its respective source and place the files in the public/libs/ directory. Any method of obtaining the files is acceptable.
+Download the latest version of each library from its respective source and place the files in the `public/libs/` directory. Any method of obtaining the files is acceptable.
 
 ## Deployment
 
@@ -41,36 +41,54 @@ server/
 |
 +- private/
 |  |
-|  +- websys/
+|  +- websys/ [755]
 |     |
-|     +- users/
+|     +- users/ [755]
 |     |  |
-|     |  +- admin/
+|     |  +- admin/ [755]
 |     |     |
-|     |     +- password.txt
-|     +- users.tsv
+|     |     +- password.txt [666]
+|     +- users.tsv [666]
 |
 +- public/
    |
-   +- auth/
+   +- auth/ [755]
    |  |
-   |  +- index.cgi
-   |  +- screen.py
+   |  +- index.cgi [755]
+   |  +- screen.py [644]
    |
-   +- libs/
-   +- websys/
+   +- libs/ [755]
+   |  |
+   |  +- *.py [644]
+   |  +- *.js [644]
+   |
+   +- websys/ [755]
       |
-      +- admin/
-      +- bin/
-      +- api.cgi
-      +- apiimpl.py
-      +- index.cgi
-      +- index_impl.py
-      +- websys.js
-      +- websys.py
-      +- websysconf.py
+      +- admin/ [755]
+      |  |
+      |  +- api.cgi [755]
+      |  +- apiimpl.py [644]
+      |  +- index.cgi [755]
+      |  +- js.py [644]
+      |  +- screen.py [644]
+      |  +- style.css [644]
+      |  +- sysmgr.js [644]
+      |
+      +- bin/ [755]
+      |  |
+      |  +- *.py [644]
+      |
+      +- api.cgi [755]
+      +- apiimpl.py [644]
+      +- index.cgi [755]
+      +- index_impl.py [644]
+      +- websys.js [644]
+      +- websys.py [644]
+      +- websysconf.py [644]
 
 ```
+Numbers in brackets indicate file permissions (octal notation). Appropriate permissions may vary depending on the server environment.
+
 - `private/websys/` stores user data, passwords, sessions, and logs outside the web document root.
 - `auth/` provides the login and password-change screens.
 - `libs/` contains separately supplied shared libraries.
@@ -86,7 +104,7 @@ Place the contents of the repository's `public/` directory under the web documen
 2. Install the required shared libraries in `libs/`.
 3. Configure the web server to execute `.cgi` files with Python 3, and set their executable permissions as needed.
 4. Edit `CSRF_ALLOWED_ORIGIN` in `public/websys/websysconf.py` to match your site's origin. Other settings can generally be left at their defaults.
-5. Copy the repository's `private/` directory alongside the web document root, and ensure the CGI process can write to `private/websys/`.
+5. Copy the repository's `private/` directory alongside the web document root, and ensure the CGI process has the necessary permissions to create, modify, and delete files under `private/websys/`.
 
 The default relative paths assume the layout shown above. No database server, package manager, or build process is required for WebSys itself.
 
