@@ -30,6 +30,8 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
 
 **The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository includes `public/auth/` and `public/websys/`, along with `private/` containing the initial data files.
 
+Download the latest version of each library from its respective source and place the files in the public/libs/ directory. Any method of obtaining the files is acceptable.
+
 ## Deployment
 
 ### Directory layout
@@ -83,7 +85,7 @@ Place the contents of the repository's `public/` directory under the web documen
 1. Copy `public/auth/` and `public/websys/` to the web document root.
 2. Install the required shared libraries in `libs/`.
 3. Configure the web server to execute `.cgi` files with Python 3, and set their executable permissions as needed.
-4. Edit `public/websys/websysconf.py` for your environment, including the allowed request origin and data storage paths.
+4. Edit `CSRF_ALLOWED_ORIGIN` in `public/websys/websysconf.py` to match your site's origin. Other settings can generally be left at their defaults.
 5. Copy the repository's `private/` directory alongside the web document root, and ensure the CGI process can write to `private/websys/`.
 
 The default relative paths assume the layout shown above. No database server, package manager, or build process is required for WebSys itself.
