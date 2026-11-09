@@ -10,10 +10,8 @@ import urllib.parse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
-import websys
-
-sys.path.append(websysconf.LIBS_PATH)
 import util
+import websys
 import authmgr
 
 DEBUG = False

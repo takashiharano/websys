@@ -8,14 +8,12 @@ import sys
 
 ROOT_PATH = '../../'
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_PATH + 'libs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import websysconf
 import util
-
-util.append_system_path(__file__, ROOT_PATH + 'websys')
 import websys
 
 util.append_system_path(__file__, ROOT_PATH + 'websys/bin')
-import websysconf
 import usermgr
 import groupmgr
 import sessionmgr

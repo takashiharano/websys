@@ -8,8 +8,6 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
-
-sys.path.append(websysconf.LIBS_PATH)
 import util
 
 def force_unlock():

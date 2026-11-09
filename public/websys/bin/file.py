@@ -8,10 +8,8 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
-import websys
-
-sys.path.append(websysconf.LIBS_PATH)
 import util
+import websys
 import bsb64
 
 import authmgr
@@ -32,8 +30,10 @@ def output_text_file(root_path, path):
     enc_content = ''
     if content is not None:
         enc_content = bsb64.encode(content, n)
+
+    libs_url = root_path + websysconf.LIBS_URL_PATH
     html = '<html><head><meta charset="utf-8">'
-    html += '<script src="' + root_path + 'libs/util.js"></script>'
+    html += '<script src="' + libs_url + 'util.js"></script>'
     html += '<style>body,pre{font-size:13px;font-family:Consolas,Monaco,Menlo,monospace,sans-serif;}</style>'
     html += '<script>'
     html += 'var c=\'' + enc_content + '\';'
@@ -44,6 +44,7 @@ def output_text_file(root_path, path):
     html += 'document.getElementById(\'t\').innerHTML=a;'
     html += '};window.addEventListener(\'DOMContentLoaded\',onReady,true);'
     html += '</script></head><body><pre id="t"></pre></body></html>'
+
     websys.send_response(html, 'text/html')
 
 def main(root_path, path, auth_required=True):

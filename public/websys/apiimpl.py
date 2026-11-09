@@ -3,16 +3,12 @@
 # Copyright 2020 Takashi Harano
 # Released under the MIT License
 #==============================================================================
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '../libs'))
+import websysconf
 import util
 
 util.append_system_path(__file__, './bin')
 import common
 import logger
-import websysconf
 import usermgr
 import groupmgr
 import sessionmgr

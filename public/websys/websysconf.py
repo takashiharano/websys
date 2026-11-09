@@ -1,7 +1,9 @@
 import os
 import sys
 
-LIBS_PATH = os.path.join(os.path.dirname(__file__), '../libs')
+LIBS_DIR = 'libs'
+LIBS_PATH = os.path.join(os.path.dirname(__file__), '..', LIBS_DIR)
+LIBS_URL_PATH = LIBS_DIR + '/'
 sys.path.append(LIBS_PATH)
 import util
 

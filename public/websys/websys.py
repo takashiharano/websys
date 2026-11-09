@@ -8,8 +8,6 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
-
-sys.path.append(websysconf.LIBS_PATH)
 import util
 import bsb64
 
@@ -592,11 +590,12 @@ def redirect_auth_screen(root_path=None):
 
 #------------------------------------------------------------------------------
 def build_auth_redirection_screen(root_path):
+    libs_url = root_path + websysconf.LIBS_URL_PATH
     html = '<!DOCTYPE html>'
     html += '<html>'
     html += '<head>'
     html += '<meta charset="utf-8">'
-    html += '<script src="' + root_path + 'libs/util.js"></script>'
+    html += '<script src="' + libs_url + 'util.js"></script>'
     html += '<script src="' + root_path + 'websys/websys.js"></script>'
     html += '<script>'
     html += 'websys.init(null, \'' + root_path + '\');'

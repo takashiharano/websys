@@ -21,7 +21,7 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
 - Python 3
 - A web server configured to execute Python CGI scripts (for example, Apache with CGI enabled)
 - A writable data directory outside the web document root
-- The following **separately supplied libraries**, placed in a sibling `libs/` directory:
+- The following **separately supplied libraries**, placed in `public/libs/` by default:
   - `util.py` https://libutil.com/
   - `util.js` https://libutil.com/
   - `bsb64.py` https://libutil.com/bsb64/
@@ -30,7 +30,7 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
 
 **The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository includes `public/auth/` and `public/websys/`, along with `private/` containing the initial data files.
 
-Download the latest version of each library from its respective source and place the files in the `public/libs/` directory. Any method of obtaining the files is acceptable.
+Download the latest version of each library from its respective source and place the files in the directory specified by `LIBS_DIR` (`public/libs/` by default). Any method of obtaining the files is acceptable.
 
 ## Deployment
 
@@ -101,7 +101,7 @@ Numbers in brackets indicate file permissions (octal notation). Appropriate perm
 Place the contents of the repository's `public/` directory under the web document root, and keep `private/` alongside it, outside the document root.
 
 1. Copy `public/auth/` and `public/websys/` to the web document root.
-2. Install the required shared libraries in `libs/`.
+2. Install the required shared libraries in `public/libs/`, or configure `LIBS_DIR` for a different location.
 3. Configure the web server to execute `.cgi` files with Python 3, and set their executable permissions as needed.
 4. Edit `CSRF_ALLOWED_ORIGIN` in `public/websys/websysconf.py` to match your site's origin. Other settings can generally be left at their defaults.
 5. Copy the repository's `private/` directory alongside the web document root, and ensure the CGI process has the necessary permissions to create, modify, and delete files under `private/websys/`.
@@ -125,7 +125,9 @@ Settings are defined in `public/websys/websysconf.py`. They include:
 
 | Setting | Purpose |
 | --- | --- |
+| `LIBS_DIR` | Shared libraries directory relative to `public/` |
 | `LIBS_PATH` | Path to the shared Python libraries directory |
+| `LIBS_URL_PATH` | URL path to the shared JavaScript libraries |
 | `CSRF_ALLOWED_ORIGIN` | Allowed origin for API requests |
 | `DATA_DIR` | Directory used for persistent WebSys data |
 | `SESSION_TIMEOUT_SEC` | Session timeout |
@@ -134,6 +136,8 @@ Settings are defined in `public/websys/websysconf.py`. They include:
 | `LOGIN_LOCK_PERIOD_SEC` | Login lock duration |
 | `ANONYMOUS_SESSION_PERIOD_SEC` | Lifetime of anonymous sessions |
 | `LOG_FILE_PATH` | System log location |
+
+`LIBS_PATH` and `LIBS_URL_PATH` are derived from `LIBS_DIR`. Change `LIBS_DIR` to relocate the shared libraries within the web document root.
 
 User, session, and group information is maintained in text-based files under the configured data directory. Backups and migrations can be performed by copying the application files and private data, while preserving their directory layout and permissions.
 

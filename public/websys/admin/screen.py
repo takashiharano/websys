@@ -8,12 +8,10 @@ import sys
 
 ROOT_PATH = '../../'
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_PATH + 'libs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import websysconf
 import util
-
-util.append_system_path(__file__, ROOT_PATH + '/websys')
 import websys
-
 import js
 
 #------------------------------------------------------------------------------
@@ -24,11 +22,12 @@ def build_main_screen(context):
 <meta name="referrer" content="never">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 '''
+    libs_url = ROOT_PATH + websysconf.LIBS_URL_PATH
     html += '<title>WebSys</title>'
     html += '<link rel="stylesheet" href="style.css" />'
-    html += '<script src="' + ROOT_PATH + 'libs/sha.js"></script>'
-    html += '<script src="' + ROOT_PATH + 'libs/debug.js"></script>'
-    html += '<script src="' + ROOT_PATH + 'libs/util.js"></script>'
+    html += '<script src="' + libs_url + 'sha.js"></script>'
+    html += '<script src="' + libs_url + 'debug.js"></script>'
+    html += '<script src="' + libs_url + 'util.js"></script>'
     html += '<script src="' + ROOT_PATH + 'websys/websys.js"></script>'
     html += '<script src="sysmgr.js"></script>'
     html += '''<script src="./?res=js"></script>
@@ -71,10 +70,11 @@ def build_forbidden_screen(context):
 <meta name="referrer" content="never">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 '''
+    libs_url = ROOT_PATH + websysconf.LIBS_URL_PATH
     html += '<title>WebSys</title>'
     html += '<link rel="stylesheet" href="style.css" />'
-    html += '<script src="' + ROOT_PATH + 'libs/debug.js"></script>'
-    html += '<script src="' + ROOT_PATH + 'libs/util.js"></script>'
+    html += '<script src="' + libs_url + 'debug.js"></script>'
+    html += '<script src="' + libs_url + 'util.js"></script>'
     html += '<script src="' + ROOT_PATH + 'websys/websys.js"></script>'
     html += '''
 </head>
@@ -90,8 +90,9 @@ def build_auth_redirection_screen():
 <meta name="referrer" content="no-referrer">
 <meta name="referrer" content="never">
 '''
-    html += '<script src="' + ROOT_PATH + 'libs/debug.js"></script>'
-    html += '<script src="' + ROOT_PATH + 'libs/util.js"></script>'
+    libs_url = ROOT_PATH + websysconf.LIBS_URL_PATH
+    html += '<script src="' + libs_url + 'debug.js"></script>'
+    html += '<script src="' + libs_url + 'util.js"></script>'
     html += '<script src="' + ROOT_PATH + 'websys/websys.js"></script>'
     html += '<script src="./?res=js"></script>'
     html += '''
