@@ -183,6 +183,9 @@ class WebContext:
     # Returns if the user has privilege in privileges or groups
     # priv_name: case-insensitive
     def has_permission(self, priv_name):
+        if not self.is_authenticated():
+            return False
+
         permitted = self.has_privilege(priv_name)
 
         if not permitted:
