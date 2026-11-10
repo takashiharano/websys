@@ -167,7 +167,8 @@ import websys
 
 def main():
     context = websys.on_access()
-    if not context.is_authorized():
+
+    if not context.is_authenticated():
         websys.redirect_auth_screen('../')
         return
 
