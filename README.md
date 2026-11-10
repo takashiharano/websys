@@ -110,14 +110,19 @@ The default relative paths assume the layout shown above. No database server, pa
 
 ### Initial administrator setup
 
-WebSys includes a default administrator account for initial setup:
+WebSys includes a default `admin` account intended exclusively for initial setup.
+This is a temporary bootstrap account and must be deleted once a separate administrator account has been created and verified.
 
-- Username: `admin`
-- Password: The same as the username
+1. Open `http(s)://SERVER/websys/admin/`.
+2. Log in with the following credentials:
+   - Username: `admin`
+   - Password: `admin`
+3. Complete the mandatory password change at first login.
+4. Create a new administrator account for ongoing administration.
+5. Log out, then log in as the new administrator and verify access to the administration interface.
+6. Delete the initial `admin` account immediately after verification.
 
-After deployment, log in using this account. A password change is required at the first login. Using a strong, unique password is strongly recommended.
-
-Create the necessary user accounts, including an administrator account for ongoing use. Verify that the new administrator account works, then delete the initial `admin` account. Do not continue using the default account for regular administration.
+**Do not retain or reuse the bootstrap `admin` account for regular administration.**
 
 ## Configuration
 
@@ -143,7 +148,7 @@ User, session, and group information is maintained in text-based files under the
 
 ## Usage
 
-To manage users, groups, and sessions, access `http(s)://SERVER/websys/admin/`. Administration requires either an account with `is_admin` enabled or the `sysadmin` privilege.
+For regular administration, use an account with `is_admin` enabled or the `sysadmin` privilege.
 
 After deployment, the main endpoints are:
 
