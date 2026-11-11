@@ -265,7 +265,7 @@ def cmd_useradd(context):
     pw = websys.get_request_param('pw')
     p_admin = websys.get_request_param('is_admin')
     p_groups = websys.get_request_param('groups', '')
-    p_privs = websys.get_request_param('privs')
+    p_privileges = websys.get_request_param('privileges')
     info1 = websys.get_request_param('info1', '')
     info2 = websys.get_request_param('info2', '')
     info3 = websys.get_request_param('info3', '')
@@ -297,11 +297,11 @@ def cmd_useradd(context):
         groups = util.replace(groups, r'\s{2,}', ' ')
         groups = groups.strip()
 
-    privs = ''
-    if p_privs is not None:
-        privs = p_privs
-        privs = util.replace(privs, r'\s{2,}', ' ')
-        privs = privs.strip()
+    privileges = ''
+    if p_privileges is not None:
+        privileges = p_privileges
+        privileges = util.replace(privileges, r'\s{2,}', ' ')
+        privileges = privileges.strip()
 
     if p_flags == '':
         p_flags = None
@@ -310,7 +310,7 @@ def cmd_useradd(context):
     operator_full_name = user_info['full_name']
 
     try:
-        usermgr.add_user(uid, pw_hash, full_name=full_name, native_name=native_name, kana_name=kana_name, localized_name=localized_name, email=email, is_admin=is_admin, groups=groups, privs=privs, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo, operator_full_name=operator_full_name)
+        usermgr.add_user(uid, pw_hash, full_name=full_name, native_name=native_name, kana_name=kana_name, localized_name=localized_name, email=email, is_admin=is_admin, groups=groups, privileges=privileges, info1=info1, info2=info2, info3=info3, flags=p_flags, memo=memo, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'ADD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -351,11 +351,11 @@ def cmd_usermod(context):
 
     is_admin = None
     groups = None
-    agroup = None
-    rgroup = None
-    privs = None
-    aprivs = None
-    rprivs = None
+    a_group = None
+    r_group = None
+    privileges = None
+    a_privileges = None
+    r_privileges = None
     info1 = None
     info2 = None
     info3 = None
@@ -373,17 +373,17 @@ def cmd_usermod(context):
             groups = util.replace(groups, r'\s{2,}', ' ')
             groups = groups.strip()
 
-        agroup = _get_optional_param_by_list('agroup')
-        rgroup = _get_optional_param_by_list('rgroup')
+        a_group = _get_optional_param_by_list('a_group')
+        r_group = _get_optional_param_by_list('r_group')
 
-        p_privs = websys.get_request_param('privs')
-        if p_privs is not None:
-            privs = p_privs
-            privs = util.replace(privs, r'\s{2,}', ' ')
-            privs = privs.strip()
+        p_privileges = websys.get_request_param('privileges')
+        if p_privileges is not None:
+            privileges = p_privileges
+            privileges = util.replace(privileges, r'\s{2,}', ' ')
+            privileges = privileges.strip()
 
-        aprivs = _get_optional_param_by_list('aprivs')
-        rprivs = _get_optional_param_by_list('rprivs')
+        a_privileges = _get_optional_param_by_list('a_privileges')
+        r_privileges = _get_optional_param_by_list('r_privileges')
         info1 = websys.get_request_param('info1', '')
         info2 = websys.get_request_param('info2', '')
         info3 = websys.get_request_param('info3', '')
@@ -396,7 +396,7 @@ def cmd_usermod(context):
     operator_full_name = user_info['full_name']
 
     try:
-        usermgr.modify_user(uid, pw_hash, full_name=full_name, native_name=native_name, kana_name=kana_name, localized_name=localized_name, email=email, is_admin=is_admin, groups=groups, agroup=agroup, rgroup=rgroup, privs=privs, aprivs=aprivs, rprivs=rprivs, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo, operator_full_name=operator_full_name)
+        usermgr.modify_user(uid, pw_hash, full_name=full_name, native_name=native_name, kana_name=kana_name, localized_name=localized_name, email=email, is_admin=is_admin, groups=groups, a_group=a_group, r_group=r_group, privileges=privileges, a_privileges=a_privileges, r_privileges=r_privileges, info1=info1, info2=info2, info3=info3, flags=u_flags, memo=memo, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'MOD_USER', 'OK', 'target=' + uid)
         status = 'OK'
     except Exception as e:
@@ -564,24 +564,24 @@ def cmd_addgroup(context):
 
     gid = websys.get_request_param('gid')
     name = websys.get_request_param('name', '')
-    p_privs = websys.get_request_param('privs')
+    p_privileges = websys.get_request_param('privileges')
     desc = websys.get_request_param('desc', '')
 
     if gid is None:
         websys.send_result_json('ERR_GID', body=None)
         return
 
-    privs = ''
-    if p_privs is not None:
-        privs = p_privs
-        privs = util.replace(privs, r'\s{2,}', ' ')
-        privs = privs.strip()
+    privileges = ''
+    if p_privileges is not None:
+        privileges = p_privileges
+        privileges = util.replace(privileges, r'\s{2,}', ' ')
+        privileges = privileges.strip()
 
     user_info = context.get_user_info()
     operator_full_name = user_info['full_name']
 
     try:
-        groupmgr.add_group(gid, name=name, privs=privs, desc=desc, operator_full_name=operator_full_name)
+        groupmgr.add_group(gid, name=name, privileges=privileges, desc=desc, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'ADD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:
@@ -607,20 +607,20 @@ def cmd_modgroup(context):
         websys.send_result_json('ERR_NO_GID', body=None)
         return
 
-    privs = None
-    aprivs = None
-    rprivs = None
+    privileges = None
+    a_privileges = None
+    r_privileges = None
     desc = None
 
     name = websys.get_request_param('name')
-    p_privs = websys.get_request_param('privs')
-    if p_privs is not None:
-        privs = p_privs
-        privs = util.replace(privs, r'\s{2,}', ' ')
-        privs = privs.strip()
+    p_privileges = websys.get_request_param('privileges')
+    if p_privileges is not None:
+        privileges = p_privileges
+        privileges = util.replace(privileges, r'\s{2,}', ' ')
+        privileges = privileges.strip()
 
-    aprivs = _get_optional_param_by_list('aprivs')
-    rprivs = _get_optional_param_by_list('rprivs')
+    a_privileges = _get_optional_param_by_list('a_privileges')
+    r_privileges = _get_optional_param_by_list('r_privileges')
 
     desc = websys.get_request_param('desc', '')
 
@@ -628,7 +628,7 @@ def cmd_modgroup(context):
     operator_full_name = user_info['full_name']
 
     try:
-        groupmgr.modify_group(gid, name=name, privs=privs, aprivs=aprivs, rprivs=rprivs, desc=desc, operator_full_name=operator_full_name)
+        groupmgr.modify_group(gid, name=name, privileges=privileges, a_privileges=a_privileges, r_privileges=r_privileges, desc=desc, operator_full_name=operator_full_name)
         logger.write_event_log(context, 'MOD_GROUP', 'OK', 'gid=' + gid)
         status = 'OK'
     except Exception as e:

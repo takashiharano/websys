@@ -16,7 +16,7 @@ GROUPS_FILE_PATH = websysconf.DATA_DIR + '/groups.tsv'
 GROUP_DATA_FIELDS = [
     {'name': 'gid'},
     {'name': 'name'},
-    {'name': 'privs'},
+    {'name': 'privileges'},
     {'name': 'desc'},
     {'name': 'created_at', 'type': 'float'},
     {'name': 'created_by'},
@@ -33,7 +33,7 @@ def is_valid_gid(gid):
 #   "g1": {
 #     "gid": "g1",
 #     "name": "Group1",
-#     "privs": "p1 p2",
+#     "privileges": "p1 p2",
 #     "desc": "foo",
 #     "created_at": 1784967352.923123,
 #     "created_by": "John Doe",
@@ -43,7 +43,7 @@ def is_valid_gid(gid):
 #   "g2": {
 #     "gid": "g2",
 #     "name": "Group2",
-#     "privs": "p1",
+#     "privileges": "p1",
 #     "desc": "bar",
 #     "created_at": 1784967352.923123,
 #     "created_by": "John Doe",
@@ -83,7 +83,7 @@ def get_group_list():
 
 # Add a group
 @common.synchronized
-def add_group(gid, name='', privs='', desc='', status=None, operator_full_name=''):
+def add_group(gid, name='', privileges='', desc='', status=None, operator_full_name=''):
     if not is_valid_gid(gid):
         raise Exception('INVALID_GID')
 
@@ -99,7 +99,7 @@ def add_group(gid, name='', privs='', desc='', status=None, operator_full_name='
     group = {
         'gid': gid,
         'name': name,
-        'privs': privs,
+        'privileges': privileges,
         'desc': desc,
         'created_at': now,
         'created_by': operator_full_name,
@@ -113,7 +113,7 @@ def add_group(gid, name='', privs='', desc='', status=None, operator_full_name='
 
 # Modify a group
 @common.synchronized
-def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None, operator_full_name=''):
+def modify_group(gid, name=None, privileges=None, a_privileges=None, r_privileges=None, desc=None, operator_full_name=''):
     now = util.get_timestamp()
 
     groups = get_all_group_info()
@@ -129,16 +129,16 @@ def modify_group(gid, name=None, privs=None, aprivs=None, rprivs=None, desc=None
         group['name'] = name
         updated = True
 
-    if privs is not None:
-        group['privs'] = privs
+    if privileges is not None:
+        group['privileges'] = privileges
         updated = True
 
-    if aprivs is not None:
-        group['privs'] = common.add_item_value(group['privs'], aprivs)
+    if a_privileges is not None:
+        group['privileges'] = common.add_item_value(group['privileges'], a_privileges)
         updated = True
 
-    if rprivs is not None:
-        group['privs'] = common.remove_item_value(group['privs'], rprivs)
+    if r_privileges is not None:
+        group['privileges'] = common.remove_item_value(group['privileges'], r_privileges)
         updated = True
 
     if desc is not None:
@@ -167,18 +167,18 @@ def delete_group(gid):
     return True
 
 def get_group_privileges(gid):
-    privs = None
+    privileges = None
     group = get_group_info(gid)
     if group is not None:
-        if 'privs' in group:
-            privs = group['privs']
-    return privs
+        if 'privileges' in group:
+            privileges = group['privileges']
+    return privileges
 
-def has_privilege_in_group(gid, priv_name):
+def has_privilege_in_group(gid, privilege_name):
     group = get_group_info(gid)
-    return common.has_item(group, 'privs', priv_name)
+    return common.has_item(group, 'privileges', privilege_name)
 
-def has_privilege_in_groups(group_ids, priv_name, groups=None):
+def has_privilege_in_groups(group_ids, privilege_name, groups=None):
     has_privilege = False
 
     if groups is None:
@@ -188,7 +188,7 @@ def has_privilege_in_groups(group_ids, priv_name, groups=None):
         for gid in group_ids:
             if gid in groups:
                 group = groups[gid]
-                if common.has_item(group, 'privs', priv_name):
+                if common.has_item(group, 'privileges', privilege_name):
                     has_privilege = True
                     break
 

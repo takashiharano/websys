@@ -36,7 +36,7 @@ main.USER_LIST_COLUMNS = [
   {key: 'email', label: 'Email', style: 'min-width:10em;'},
   {key: 'is_admin', label: 'Admin'},
   {key: 'groups', label: 'Groups', style: 'min-width:8em;', filterMatchType: 'exact'},
-  {key: 'privs', label: 'Privileges', filterMatchType: 'exact'},
+  {key: 'privileges', label: 'Privileges', filterMatchType: 'exact'},
   {key: 'info1', label: 'Info1'},
   {key: 'info2', label: 'Info2'},
   {key: 'info3', label: 'Info3'},
@@ -444,7 +444,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var localized_name = item.localized_name;
     var email = item.email;
     var groups = item.groups;
-    var privs = item.privs;
+    var privileges = item.privileges;
     var flags = item.flags;
     var statusInfo = item.status_info;
     var loginFailedCount = statusInfo.login_failed_count;
@@ -488,13 +488,13 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     var dispLocalizedName = util.escHtml(localized_name);
     var dispEmail = util.escHtml(email);
     var dispGroups = groups;
-    var dispPrivs = privs;
+    var dispPrivileges = privileges;
     var dispInfo1 = util.escHtml(info1);
     var dispInfo2 = util.escHtml(info2);
     var dispInfo3 = util.escHtml(info3);
 
     dispGroups = main.makeFilterableFieldValueLabel('groups', dispGroups);
-    dispPrivs = main.makeFilterableFieldValueLabel('privs', dispPrivs);
+    dispPrivileges = main.makeFilterableFieldValueLabel('privileges', dispPrivileges);
 
     var searchFieldName = main.filteringFieldName;
     if (searchKeyword) {
@@ -505,7 +505,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
       if (!searchFieldName || (searchFieldName == 'localized_name'))dispLocalizedName = main.highlightKeyword(localized_name, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'email'))dispEmail = main.highlightKeyword(email, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'groups'))dispGroups = main.highlightKeyword(groups, searchKeyword, searchCaseSensitive);
-      if (!searchFieldName || (searchFieldName == 'privs'))dispPrivs = main.highlightKeyword(privs, searchKeyword, searchCaseSensitive);
+      if (!searchFieldName || (searchFieldName == 'privileges'))dispPrivileges = main.highlightKeyword(privileges, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'info1'))dispInfo1 = main.highlightKeyword(info1, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'info2'))dispInfo2 = main.highlightKeyword(info2, searchKeyword, searchCaseSensitive);
       if (!searchFieldName || (searchFieldName == 'info3'))dispInfo3 = main.highlightKeyword(info3, searchKeyword, searchCaseSensitive);
@@ -556,7 +556,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
     htmlList += '<td class="item-list">' + dispEmail + '</td>';
     htmlList += '<td class="item-list" style="text-align:center;">' + (item.is_admin ? 'Y' : '') + '</td>';
     htmlList += '<td class="item-list">' + dispGroups + '</td>';
-    htmlList += '<td class="item-list">' + dispPrivs + '</td>';
+    htmlList += '<td class="item-list">' + dispPrivileges + '</td>';
     htmlList += '<td class="item-list">' + dispInfo1 + '</td>';
     htmlList += '<td class="item-list">' + dispInfo2 + '</td>';
     htmlList += '<td class="item-list">' + dispInfo3 + '</td>';
@@ -694,7 +694,7 @@ main.searchUserByKeyword = function(item, filterCol, key, caseSensitive, exactMa
     targets.push(item.localized_name);
     targets.push(item.email);
     targets.push(item.groups);
-    targets.push(item.privs);
+    targets.push(item.privileges);
     targets.push(item.info1);
     targets.push(item.info2);
     targets.push(item.info3);
@@ -1306,7 +1306,7 @@ main.openUserInfoEditorWindow = function(mode, uid) {
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Privileges</td>';
-  html += '    <td><input type="text" id="privs" spellcheck="false" style="width:100%;"></td>';
+  html += '    <td><input type="text" id="privileges" spellcheck="false" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td class="user-edit-field-name">Info1</td>';
@@ -1472,7 +1472,7 @@ main.setUserInfoToEditor = function(info) {
   $el('#email').value = info.email;
   $el('#isadmin').checked = info.is_admin;
   $el('#groups').value = info.groups;
-  $el('#privs').value = info.privs;
+  $el('#privileges').value = info.privileges;
   $el('#info1').value = info.info1;
   $el('#info2').value = info.info2;
   $el('#info3').value = info.info3;
@@ -1497,7 +1497,7 @@ main.clearUserInfoEditor = function() {
     email: '',
     is_admin: false,
     groups: '',
-    privs: '',
+    privileges: '',
     info1: '',
     info2: '',
     info3: '',
@@ -1529,7 +1529,7 @@ main.addUser = function() {
   var email = $el('#email').value;
   var isAdmin = $el('#isadmin').checked;
   var groups = $el('#groups').value;
-  var privs = $el('#privs').value;
+  var privileges = $el('#privileges').value;
   var info1 = $el('#info1').value;
   var info2 = $el('#info2').value;
   var info3 = $el('#info3').value;
@@ -1580,12 +1580,12 @@ main.addUser = function() {
   }
   groups = clnsRes.val;
 
-  clnsRes = main.cleansePrivileges(privs);
+  clnsRes = main.cleansePrivileges(privileges);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  privs = clnsRes.val;
+  privileges = clnsRes.val;
 
   clnsRes = main.cleansePW(pw1, pw2, 'new');
   if (clnsRes.msg) {
@@ -1604,7 +1604,7 @@ main.addUser = function() {
     email: email,
     is_admin: isAdmin,
     groups: groups,
-    privs: privs,
+    privileges: privileges,
     info1: info1,
     info2: info2,
     info3: info3,
@@ -1628,7 +1628,7 @@ main.updateUser = function() {
   var email = $el('#email').value;
   var isAdmin = $el('#isadmin').checked;
   var groups = $el('#groups').value;
-  var privs = $el('#privs').value;
+  var privileges = $el('#privileges').value;
   var info1 = $el('#info1').value;
   var info2 = $el('#info2').value;
   var info3 = $el('#info3').value;
@@ -1672,12 +1672,12 @@ main.updateUser = function() {
   }
   groups = clnsRes.val;
 
-  clnsRes = main.cleansePrivileges(privs);
+  clnsRes = main.cleansePrivileges(privileges);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return false;
   }
-  privs = clnsRes.val;
+  privileges = clnsRes.val;
 
   var clnsRes = main.cleansePW(pw1, pw2, 'edit');
   if (clnsRes.msg) {
@@ -1695,7 +1695,7 @@ main.updateUser = function() {
     email: email,
     is_admin: isAdmin,
     groups: groups,
-    privs: privs,
+    privileges: privileges,
     info1: info1,
     info2: info2,
     info3: info3,
@@ -1924,7 +1924,7 @@ main.drawGroupList = function(list) {
     var group = list[i];
     var gid = group.gid;
     var name = group.name;
-    var privs = (group.privs ? group.privs : '');
+    var privileges = (group.privileges ? group.privileges : '');
     var desc = (group.desc ? group.desc : '');
     var createdDate = main.getDateTimeString(group.created_at, main.INSEC);
     var createdBy = group.created_by;
@@ -1938,7 +1938,7 @@ main.drawGroupList = function(list) {
     html += '<tr class="item-list group-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'group-info\');">';
     html += '<td class="item-list"><span class="pseudo-link link-button" onclick="main.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + util.escHtml(gid) + '</span></td>';
     html += '<td class="item-list">' + util.escHtml(name) + '</td>';
-    html += '<td class="item-list">' + util.escHtml(privs) + '</td>';
+    html += '<td class="item-list">' + util.escHtml(privileges) + '</td>';
     html += '<td class="item-list">' + util.escHtml(desc) + '</td>';
     html += '<td class="item-list">' + createdDate + '</td>';
     html += '<td class="item-list">' + util.escHtml(createdBy) + '</td>';
@@ -1993,7 +1993,7 @@ main.openGroupInfoEditorWindow = function(mode, gid) {
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Privileges</td>';
-  html += '    <td><input type="text" id="group-privs" spellcheck="false" style="width:100%;"></td>';
+  html += '    <td><input type="text" id="group-privileges" spellcheck="false" style="width:100%;"></td>';
   html += '  </tr>';
   html += '  <tr>';
   html += '    <td>Description</td>';
@@ -2044,7 +2044,7 @@ main.openGroupInfoEditorWindow = function(mode, gid) {
 main.addGroup = function() {
   var gid = $el('#gid').value.trim();
   var name = $el('#group-name').value;
-  var privs = $el('#group-privs').value;
+  var privileges = $el('#group-privileges').value;
   var desc = $el('#group-desc').value;
 
   if (!gid) {
@@ -2052,17 +2052,17 @@ main.addGroup = function() {
     return;
   }
 
-  var clnsRes = main.cleansePrivileges(privs);
+  var clnsRes = main.cleansePrivileges(privileges);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
     return;
   }
-  privs = clnsRes.val;
+  privileges = clnsRes.val;
 
   var params = {
     gid: gid,
     name: name,
-    privs: privs,
+    privileges: privileges,
     desc: desc
   };
 
@@ -2073,13 +2073,13 @@ main.addGroup = function() {
 main.updateGroup = function() {
   var gid = $el('#gid').value;
   var name = $el('#group-name').value;
-  var privs = $el('#group-privs').value;
+  var privileges = $el('#group-privileges').value;
   var desc = $el('#group-desc').value;
 
   var params = {
     gid: gid,
     name: name,
-    privs: privs,
+    privileges: privileges,
     desc: desc
   };
 
@@ -2159,7 +2159,7 @@ main.setGroupInfoToEditor = function(info) {
     $el('#gid').removeClass('edit-disabled');
   }
   $el('#group-name').value = info.name;
-  $el('#group-privs').value = info.privs;
+  $el('#group-privileges').value = info.privileges;
   $el('#group-desc').value = (info.desc ? info.desc : '');
 };
 
@@ -2167,7 +2167,7 @@ main.clearGroupInfoEditor = function() {
   var info = {
     gid: '',
     name: '',
-    privs: '',
+    privileges: '',
     desc: ''
   };
   main.setGroupInfoToEditor(info);

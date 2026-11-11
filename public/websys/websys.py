@@ -89,7 +89,7 @@ class WebContext:
     #   "localized_name": "root_L",
     #   "is_admin": true,
     #   "groups": "GROUP1 GROUP2",
-    #   "privs": "PRIVILEGE1 PRIVILEGE2",
+    #   "privileges": "PRIVILEGE1 PRIVILEGE2",
     #   "flags": 0,
     #   "status": 0,
     #   "created_at": 1667047612.967891,

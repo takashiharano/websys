@@ -30,7 +30,7 @@ USER_DATA_STRUCT = [
     {'name': 'email'},
     {'name': 'is_admin', 'type': 'bool'},
     {'name': 'groups'},
-    {'name': 'privs'},
+    {'name': 'privileges'},
     {'name': 'info1'},
     {'name': 'info2'},
     {'name': 'info3'},
@@ -51,8 +51,8 @@ USER_STATUS_DATA_STRUCT = [
 ]
 
 # User data format
-# #uid	full_name	native_name	kana_name	localized_name	is_admin	groups	privs	info1	info2	info3	flags	created_at	created_by	updated_at	updated_by
-# admin	Admin	ADMIN		Administrator	1	g1	p1	Info1	Info2	Info3	0	1721446496.789123	1721446496.789123
+# #uid	full_name	native_name	kana_name	localized_name	email	is_admin	groups	privileges	info1	info2	info3	flags	created_at	created_by	updated_at	updated_by
+# admin	Administrator	ADMIN		Admin	admin@example.com	1	g1	p1	Info1	Info2	Info3	0	1721446496.789123	alice	1721446496.789123	bob
 
 # Object structure
 # users
@@ -66,7 +66,7 @@ USER_STATUS_DATA_STRUCT = [
 #     "email": "user@host",
 #     "is_admin": true,
 #     "groups": "GROUP1 GROUP2",
-#     "privs": "PRIVILEGE1 PRIVILEGE2",
+#     "privileges": "PRIVILEGE1 PRIVILEGE2",
 #     "info1": "Info1",
 #     "info2": "Info2",
 #     "info3": "Info3",
@@ -160,7 +160,7 @@ def count_sessions_per_user():
 # Create a user
 # pw: SHA-256(SHA-256(pw + uid))
 @common.synchronized
-def add_user(uid, pw, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, memo=None, operator_full_name=''):
+def add_user(uid, pw, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=False, groups='', privileges='', info1='', info2='', info3='', flags=None, memo=None, operator_full_name=''):
     if not is_valid_uid(uid):
         raise Exception('INVALID_UID')
 
@@ -172,7 +172,7 @@ def add_user(uid, pw, full_name=None, native_name=None, kana_name=None, localize
     elif uid in users:
         raise Exception('ALREADY_EXISTS')
 
-    user = create_new_user(now, uid, full_name, native_name, kana_name, localized_name, email, is_admin, groups, privs, info1, info2, info3, flags, operator_full_name=operator_full_name)
+    user = create_new_user(now, uid, full_name, native_name, kana_name, localized_name, email, is_admin, groups, privileges, info1, info2, info3, flags, operator_full_name=operator_full_name)
 
     users[uid] = user
     save_users(users)
@@ -184,7 +184,7 @@ def add_user(uid, pw, full_name=None, native_name=None, kana_name=None, localize
 
     return user
 
-def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=None, localized_name=None, email='', is_admin=False, groups='', privs='', info1='', info2='', info3='', flags=None, operator_full_name=''):
+def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=None, localized_name=None, email='', is_admin=False, groups='', privileges='', info1='', info2='', info3='', flags=None, operator_full_name=''):
     if flags is None:
         u_flags = U_FLG_NEED_PW_CHANGE
     else:
@@ -199,7 +199,7 @@ def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=
         'email': email,
         'is_admin': is_admin,
         'groups': groups,
-        'privs': privs,
+        'privileges': privileges,
         'info1': info1,
         'info2': info2,
         'info3': info3,
@@ -214,7 +214,7 @@ def create_new_user(timestamp, uid, full_name=None, native_name=None, kana_name=
 
 # Modify a user
 @common.synchronized
-def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=None, groups=None, agroup=None, rgroup=None, privs=None, aprivs=None, rprivs=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
+def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, localized_name=None, email=None, is_admin=None, groups=None, a_group=None, r_group=None, privileges=None, a_privileges=None, r_privileges=None, info1=None, info2=None, info3=None, flags=None, memo=None, chg_pw=False, operator_full_name=''):
     now = util.get_timestamp()
 
     users = get_all_user_info()
@@ -255,24 +255,24 @@ def modify_user(uid, pw=None, full_name=None, native_name=None, kana_name=None, 
         user['groups'] = groups
         updated = True
 
-    if agroup is not None:
-        user['groups'] = common.add_item_value(user['groups'], agroup)
+    if a_group is not None:
+        user['groups'] = common.add_item_value(user['groups'], a_group)
         updated = True
 
-    if rgroup is not None:
-        user['groups'] = common.remove_item_value(user['groups'], rgroup)
+    if r_group is not None:
+        user['groups'] = common.remove_item_value(user['groups'], r_group)
         updated = True
 
-    if privs is not None:
-        user['privs'] = privs
+    if privileges is not None:
+        user['privileges'] = privileges
         updated = True
 
-    if aprivs is not None:
-        user['privs'] = common.add_item_value(user['privs'], aprivs)
+    if a_privileges is not None:
+        user['privileges'] = common.add_item_value(user['privileges'], a_privileges)
         updated = True
 
-    if rprivs is not None:
-        user['privs'] = common.remove_item_value(user['privs'], rprivs)
+    if r_privileges is not None:
+        user['privileges'] = common.remove_item_value(user['privileges'], r_privileges)
         updated = True
 
     if info1 is not None:
@@ -356,16 +356,16 @@ def is_member_of(user_info, group_name):
 
 #----------------------------------------------------------
 # has_privilege
-# priv_name: case-insensitive
+# privilege_name: case-insensitive
 #----------------------------------------------------------
-def has_privilege(user_info, priv_name):
+def has_privilege(user_info, privilege_name):
     if user_info is None:
         return False
 
     if is_admin(user_info):
         return True
 
-    return common.has_item(user_info, 'privs', priv_name)
+    return common.has_item(user_info, 'privileges', privilege_name)
 
 #------------------------------------------------------------------------------
 # Password

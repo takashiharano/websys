@@ -183,7 +183,7 @@ websys.gencode = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.privs = privs;
+    param.privileges = privs;
   }
 
   var req = {
@@ -746,7 +746,7 @@ websys.cmdUserAdd = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.privs = privs;
+    param.privileges = privs;
   }
   if (info1) {
     try {
@@ -817,8 +817,8 @@ websys.cmdUserMod = function(arg, tbl, echo) {
   var email = dbg.getOptVal(arg, 'email');
   var admin = dbg.getOptVal(arg, 'admin');
   var groups = dbg.getOptVal(arg, 'g');
-  var agroup = dbg.getOptVal(arg, 'aG');
-  var rgroup = dbg.getOptVal(arg, 'rG');
+  var aGroup = dbg.getOptVal(arg, 'aG');
+  var rGroup = dbg.getOptVal(arg, 'rG');
   var privs = dbg.getOptVal(arg, 'privs');
   var aprivs = dbg.getOptVal(arg, 'aPriv');
   var rprivs = dbg.getOptVal(arg, 'rPriv');
@@ -897,23 +897,23 @@ websys.cmdUserMod = function(arg, tbl, echo) {
     }
     param.groups = groups;
   }
-  if (agroup) {
+  if (aGroup) {
     try {
-      agroup = eval(agroup);
+      aGroup = eval(aGroup);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.agroup = agroup;
+    param.a_group = aGroup;
   }
-  if (rgroup) {
+  if (rGroup) {
     try {
-      rgroup = eval(rgroup);
+      rGroup = eval(rGroup);
     } catch (e) {
       log.e(e);
       return;
     }
-    param.rgroup = rgroup;
+    param.r_group = rGroup;
   }
   if (privs) {
     try {
@@ -922,7 +922,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.privs = privs;
+    param.privileges = privs;
   }
   if (aprivs) {
     try {
@@ -931,7 +931,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.aprivs = aprivs;
+    param.a_privileges = aprivs;
   }
   if (rprivs) {
     try {
@@ -940,7 +940,7 @@ websys.cmdUserMod = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.rprivs = rprivs;
+    param.r_privileges = rprivs;
   }
   if (info1) {
     try {
@@ -1110,7 +1110,7 @@ websys.cmdAddGroup = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.privs = privs;
+    param.privileges = privs;
   }
   var req = {
     url: websys.basePath + 'websys/api.cgi',
@@ -1160,7 +1160,7 @@ websys.cmdModGroup = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.privs = privs;
+    param.privileges = privs;
   }
   if (aprivs) {
     try {
@@ -1169,7 +1169,7 @@ websys.cmdModGroup = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.aprivs = aprivs;
+    param.a_privileges = aprivs;
   }
   if (rprivs) {
     try {
@@ -1178,7 +1178,7 @@ websys.cmdModGroup = function(arg, tbl, echo) {
       log.e(e);
       return;
     }
-    param.rprivs = rprivs;
+    param.r_privileges = rprivs;
   }
   if (desc) {
     try {
