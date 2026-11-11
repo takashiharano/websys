@@ -215,7 +215,7 @@ def on_access():
     #}
     context = WebContext()
 
-    sid = util.get_cookie_val('sid')
+    sid = util.get_cookie_val(websysconf.SESSION_COOKIE_NAME)
     host = get_host_name() if sid is not None and not sid.startswith('a_') else ''
 
     if synchronize_start():
@@ -431,7 +431,7 @@ def logout(sid):
     return authmgr.logout(sid)
 
 def build_logout_cookies():
-    names = ['sid', 'ts']
+    names = [websysconf.SESSION_COOKIE_NAME, 'ts']
     cookies = []
     for i in range(len(names)):
         name = names[i]
@@ -480,7 +480,7 @@ def get_response_cookies(context):
         if uid is not None:
             for_anonymous = False
 
-        cookies = append_cookie(cookies, 'sid', sid, for_anonymous)
+        cookies = append_cookie(cookies, websysconf.SESSION_COOKIE_NAME, sid, for_anonymous)
 
     if for_anonymous:
         ts = context.get_timestamp()
