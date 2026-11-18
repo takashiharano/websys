@@ -1961,12 +1961,15 @@ main.newGroup = function() {
 };
 
 main.editGroup = function(gid) {
-  main.groupEditMode = (gid ? 'edit' : 'new');
+  var mode = (gid ? 'edit' : 'new');
+  main.groupEditMode = mode;
   if (!main.groupEditWindow) {
-    main.groupEditWindow = main.openGroupInfoEditorWindow(main.groupEditMode, gid);
+    main.groupEditWindow = main.openGroupInfoEditorWindow(mode, gid);
+  } else {
+    main.groupEditWindow.setTitle((mode == 'new' ? 'New' : 'Edit') + ' Group');
   }
   main.clearGroupInfoEditor();
-  if (gid) {
+  if (mode == 'edit') {
     var params = {
       gid: gid
     };
@@ -1979,9 +1982,7 @@ main.editGroup = function(gid) {
 main.openGroupInfoEditorWindow = function(mode, gid) {
   var html = '';
   html += '<div style="position:relative;width:100%;height:100%;text-align:center;vertical-align:middle">';
-  if (mode == 'edit') {
-    html += '<div style="position:absolute;top:8px;right:8px;"><button class="button-red" onclick="main.deleteGroup(\'' + gid + '\');">DEL</button></div>';
-  }
+  html += '<div style="position:absolute;top:8px;right:8px;"><button id="group-del-button" class="button-red" onclick="main.deleteGroup($el(\'#gid\').value);">DEL</button></div>';
   html += '<div style="padding:4px;position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;width:360px;height:120px;text-align:left;">';
 
   html += '<table>';
@@ -2053,13 +2054,13 @@ main.addGroup = function() {
 
   if (!gid) {
     main.showInfotip('Group ID is required.', 2000);
-    return;
+    return false;
   }
 
   var clnsRes = main.cleansePrivileges(privileges);
   if (clnsRes.msg) {
     main.showInfotip(clnsRes.msg, 2000);
-    return;
+    return false;
   }
   privileges = clnsRes.val;
 
@@ -2071,6 +2072,7 @@ main.addGroup = function() {
   };
 
   main.execCmd('addgroup', params, main.updateGroupCb);
+  return true;
 };
 
 //-----------------------------------------------------------------------------
@@ -2088,6 +2090,7 @@ main.updateGroup = function() {
   };
 
   main.execCmd('modgroup', params, main.updateGroupCb);
+  return true;
 };
 
 main.updateGroupCb = function(xhr, res) {
@@ -2158,9 +2161,11 @@ main.setGroupInfoToEditor = function(info) {
   if (gid) {
     $el('#gid').disabled = true;
     $el('#gid').addClass('edit-disabled');
+    $el('#group-del-button').show();
   } else {
     $el('#gid').disabled = false;
     $el('#gid').removeClass('edit-disabled');
+    $el('#group-del-button').hide();
   }
   $el('#group-name').value = info.name;
   $el('#group-privileges').value = info.privileges;
@@ -2178,11 +2183,10 @@ main.clearGroupInfoEditor = function() {
 };
 
 main.saveGroupInfo = function() {
-  $el('#group-edit-ok-button').disabled = true;
-  if (main.groupEditMode == 'new') {
-    main.addGroup();
-  } else {
-    main.updateGroup();
+  var f = ((main.groupEditMode == 'new') ? main.addGroup : main.updateGroup);
+  var requested = f();
+  if (requested) {
+    $el('#group-edit-ok-button').disabled = true;
   }
 };
 
