@@ -53,6 +53,12 @@ main.USER_LIST_COLUMNS = [
   {key: 'status_info.pw_changed_at', label: 'PwChanged at'}
 ];
 
+var PENCIL_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+'<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M11.46 1.96a1.2 1.2 0 0 1 1.7 0l.88.88a1.2 1.2 0 0 1 0 1.7l-1.02 1.02-2.58-2.58 1.02-1.02z"></path>' +
+'<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M9.73 3.67l2.58 2.58-6.26 6.26-3.45 1.05.85-3.45 6.28-6.45z"></path>' +
+'<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M3.41 12.59l.63-1.72 1.09 1.09-1.72.63z"></path>' +
+'</svg>';
+
 main.listStatus = {
   sortIdx: 0,
   sortOrder: 1
@@ -511,12 +517,7 @@ main._drawUserList = function(items, sortIdx, sortOrder, searchKeyword, filter, 
       if (!searchFieldName || (searchFieldName == 'info3'))dispInfo3 = main.highlightKeyword(info3, searchKeyword, searchCaseSensitive);
     }
 
-    var pencilSvg = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
-      '<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M11.46 1.96a1.2 1.2 0 0 1 1.7 0l.88.88a1.2 1.2 0 0 1 0 1.7l-1.02 1.02-2.58-2.58 1.02-1.02z"></path>' +
-      '<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M9.73 3.67l2.58 2.58-6.26 6.26-3.45 1.05.85-3.45 6.28-6.45z"></path>' +
-      '<path fill="currentColor" stroke="currentColor" stroke-width="0.45" stroke-linejoin="round" d="M3.41 12.59l.63-1.72 1.09 1.09-1.72.63z"></path>' +
-      '</svg>';
-    var editLink = '<span class="pseudo-link link-button edit-button" onclick="main.editUser(\'' + uid + '\')" aria-label="Edit" data-tooltip2="Edit">' + pencilSvg + '</span>';
+    var editLink = '<span class="pseudo-link link-button edit-button" onclick="main.editUser(\'' + uid + '\')" aria-label="Edit" data-tooltip2="Edit">' + PENCIL_SVG + '</span>';
     dispUid = cInd + main.buildCopyableLabel(uid, dispUid);
     dispFullName = main.buildCopyableLabel(full_name, dispFullName);
     dispNativeName = main.buildCopyableLabel(native_name, dispNativeName);
@@ -1910,6 +1911,7 @@ main.getGroupListCb = function(xhr, res) {
 main.drawGroupList = function(list) {
   var html = '<table>';
   html += '<tr class="item-list-header">';
+  html += '<th></th>';
   html += '<th class="item-list" style="min-width:10em;">GID</th>';
   html += '<th class="item-list" style="min-width:15em;">Name</th>';
   html += '<th class="item-list" style="min-width:20em;">Privileges</th>';
@@ -1935,8 +1937,10 @@ main.drawGroupList = function(list) {
 
     var clz = ((i % 2 == 0) ? 'row-odd' : 'row-even');
 
+    var editLink = '<span class="pseudo-link link-button edit-button" onclick="main.editGroup(\'' + gid + '\')" aria-label="Edit" data-tooltip2="Edit">' + PENCIL_SVG + '</span>';
     html += '<tr class="item-list group-info ' + clz + '" ondblclick="sysmgr.onListRowDblClick(this, \'group-info\');">';
-    html += '<td class="item-list"><span class="pseudo-link link-button" onclick="main.editGroup(\'' + gid + '\');" data-tooltip2="Edit">' + util.escHtml(gid) + '</span></td>';
+    html += '<td class="item-list">' + editLink + '</td>';
+    html += '<td class="item-list">' + util.escHtml(gid) + '</td>';
     html += '<td class="item-list">' + util.escHtml(name) + '</td>';
     html += '<td class="item-list">' + util.escHtml(privileges) + '</td>';
     html += '<td class="item-list">' + util.escHtml(desc) + '</td>';
