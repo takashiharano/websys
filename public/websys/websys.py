@@ -21,15 +21,15 @@ LOCK_FILE_PATH = websysconf.LOCK_FILE_PATH
 g_root_path = ''
 query = None
 query_cached = False
-sendrecv_encryption = True
-recv_encryption_key = 1
-send_encryption_key = 7
+sendrecv_scramble = True
+recv_scramble_key = 1
+send_scramble_key = 7
 
 current_context = None
 
-def init(http_encryption):
-    global sendrecv_encryption
-    sendrecv_encryption = http_encryption
+def init(http_scramble):
+    global sendrecv_scramble
+    sendrecv_scramble = http_scramble
     reset_request_query_cache()
 
 #----------------------------------------------------------
@@ -329,10 +329,10 @@ def get_request_query():
     q = util.get_query()
 
     if q is not None and util.typename(q) != 'FieldStorage':
-        if sendrecv_encryption:
+        if sendrecv_scramble:
             q = util.replace(q, '&?_trcid=.+', '')
             try:
-                q = bsb64.decode_to_string(q, recv_encryption_key)
+                q = bsb64.decode_to_string(q, recv_scramble_key)
             except:
                 pass
 
@@ -515,9 +515,9 @@ def build_cookie_for_clear(name):
 #----------------------------------------------------------
 # send response
 #----------------------------------------------------------
-def send_response(result, type, headers=None, encoding=None, encryption=None):
-    if encryption is None:
-        encryption = sendrecv_encryption
+def send_response(result, type, headers=None, encoding=None, scramble=None):
+    if scramble is None:
+        scramble = sendrecv_scramble
 
     context = get_current_context_from_global()
     cookies = get_response_cookies(context)
@@ -527,17 +527,17 @@ def send_response(result, type, headers=None, encoding=None, encryption=None):
             headers = []
         headers += cookies
 
-    _send_response(result, type, headers, encoding, encryption)
+    _send_response(result, type, headers, encoding, scramble)
 
-def _send_response(result, type, headers=None, encoding=None, encryption=False):
+def _send_response(result, type, headers=None, encoding=None, scramble=False):
     if type == 'application/json' and util.typename(result) != 'str':
         result = util.to_json(result)
 
     if type == 'text/html':
         content = result
     else:
-        if encryption:
-            content = bsb64.encode(result, send_encryption_key)
+        if scramble:
+            content = bsb64.encode(result, send_scramble_key)
             type = 'text/plain'
         else:
             content = result
@@ -545,10 +545,10 @@ def _send_response(result, type, headers=None, encoding=None, encryption=False):
     util.send_response(content, type, headers=headers)
 
 #----------------------------------------------------------
-def send_result_json(status, body=None, headers=None, http_headers=None, encryption=None):
+def send_result_json(status, body=None, headers=None, http_headers=None, scramble=None):
     result = util.build_result_object(status, body, headers)
     content = util.to_json(result)
-    send_response(content, 'application/json', headers=http_headers, encryption=encryption)
+    send_response(content, 'application/json', headers=http_headers, scramble=scramble)
 
 #----------------------------------------------------------
 # Blue Screen

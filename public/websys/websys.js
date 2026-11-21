@@ -25,8 +25,8 @@ websys.USER_FLAGS = [
   }
 }());
 
-websys.sendEncKey = 1;
-websys.recvEncKey = 7;
+websys.sendScrambleKey = 1;
+websys.recvScrambleKey = 7;
 websys.initStatus = 0;
 websys.status = 0;
 websys.isDbgAvailable = false;
@@ -1369,7 +1369,7 @@ websys.http = function(req, cb) {
     if (newReq.data instanceof Object) {
       newReq.data = util.http.buildQueryString(newReq.data);
     }
-    newReq.data = e(newReq.data, websys.sendEncKey);
+    newReq.data = e(newReq.data, websys.sendScrambleKey);
   }
   websys.onHttpOn();
   websys.httpSessions++;
@@ -1387,7 +1387,7 @@ websys.http.onDone = function(xhr, res, req) {
     try {
       if (typeof res == 'string') {
         res = res.trim();
-        res = d(res, websys.recvEncKey);
+        res = d(res, websys.recvScrambleKey);
         var resObj = util.fromJSON(res);
       } else {
         resObj = res;
