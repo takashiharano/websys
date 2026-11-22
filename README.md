@@ -24,7 +24,7 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
 - The following **separately supplied libraries**, placed in `public/libs/` by default:
   - `util.py` https://libutil.com/
   - `util.js` https://libutil.com/
-  - `bsb64.py` https://libutil.com/bsb64/
+  - `xb64.py` https://libutil.com/xb64/
   - `debug.js` https://debugjs.net/
   - `sha.js` https://github.com/caligatio/jsSHA
 
@@ -82,6 +82,8 @@ server/
       +- apiimpl.py [644]
       +- index.cgi [755]
       +- index_impl.py [644]
+      +- js.cgi [755]
+      +- js_impl.py [644]
       +- websys.js [644]
       +- websys.py [644]
       +- websysconf.py [644]
@@ -134,6 +136,9 @@ Settings are defined in `public/websys/websysconf.py`. They include:
 | `LIBS_PATH` | Path to the shared Python libraries directory |
 | `LIBS_URL_PATH` | URL path to the shared JavaScript libraries |
 | `CSRF_ALLOWED_ORIGIN` | Allowed origin for API requests |
+| `SCRAMBLE_KEY_1` | XB64 key for HTTP requests (browser to server) |
+| `SCRAMBLE_KEY_2` | XB64 key for HTTP responses (server to browser) |
+| `SCRAMBLE_KEY_3` | XB64 key for text-file viewing |
 | `DATA_DIR` | Directory used for persistent WebSys data |
 | `SESSION_TIMEOUT_SEC` | Session timeout |
 | `MAX_SESSIONS_PER_USER` | Maximum sessions per account |
@@ -157,6 +162,7 @@ After deployment, the main endpoints are:
 | `/auth/` | Login and password-change interface |
 | `/websys/admin/` | Administration interface |
 | `/websys/api.cgi` | WebSys application API |
+| `/websys/js.cgi` | JavaScript interface with configuration applied |
 
 ### Using WebSys in a Python CGI application
 
@@ -181,8 +187,11 @@ def main():
 
 The application's Python import path must include the deployed `websys/` directory. Replace `<privilege-name>` with a permission assigned to the user directly or through a group. Other context methods include `get_user_id()`, `is_member_of()`, and `has_privilege()`.
 
-Browser-side applications can use `websys.js` to request session information and interact with the WebSys API.
+Browser-side applications can load `/websys/js.cgi` to request session information and interact with the WebSys API. This endpoint serves `websys.js` with the WebSys configuration applied.
 
+```html
+<script src="/websys/js.cgi"></script>
+```
 ## License
 
 WebSys is released under the [MIT License](LICENSE).
