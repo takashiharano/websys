@@ -23,7 +23,7 @@ def build_html():
 <meta name="referrer" content="never">
 <script src="../libs/sha.js"></script>
 <script src="../libs/util.js"></script>
-<script src="../websys/websys.js"></script>
+<script src="../websys/js.cgi"></script>
 <title>Login</title>
 <style>
 body {
