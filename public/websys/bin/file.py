@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
 import util
 import websys
-import bsb64
+import xb64
 
 import authmgr
 
@@ -25,11 +25,11 @@ def is_text_file(filename):
     return False
 
 def output_text_file(root_path, path):
-    n = 7
+    k = websysconf.SCRAMBLE_KEY_3
     content = util.read_file(path, 't')
     enc_content = ''
     if content is not None:
-        enc_content = bsb64.encode(content, n)
+        enc_content = xb64.encode(content, k)
 
     libs_url = root_path + websysconf.LIBS_URL_PATH
     html = '<html><head><meta charset="utf-8">'
@@ -38,8 +38,8 @@ def output_text_file(root_path, path):
     html += '<script>'
     html += 'var c=\'' + enc_content + '\';'
     html += 'onReady=function(){'
-    html += 'var d=util.bsb64.decodeToString;'
-    html += 'var a=d(c,' + str(n) + ');'
+    html += 'var d=util.xb64.decodeToString;'
+    html += 'var a=d(c, \'' + k + '\');'
     html += 'a=util.escHtml(a);'
     html += 'document.getElementById(\'t\').innerHTML=a;'
     html += '};window.addEventListener(\'DOMContentLoaded\',onReady,true);'

@@ -28,7 +28,7 @@ def build_main_screen(context):
     html += '<script src="' + libs_url + 'sha.js"></script>'
     html += '<script src="' + libs_url + 'debug.js"></script>'
     html += '<script src="' + libs_url + 'util.js"></script>'
-    html += '<script src="' + ROOT_PATH + 'websys/websys.js"></script>'
+    html += '<script src="' + ROOT_PATH + 'websys/js.cgi"></script>'
     html += '<script src="sysmgr.js"></script>'
     html += '''<script src="./?res=js"></script>
 </head>
@@ -65,17 +65,9 @@ def build_main_screen(context):
 #------------------------------------------------------------------------------
 def build_forbidden_screen(context):
     html = '''<!DOCTYPE html><html><head><meta charset="utf-8">
-<meta name="robots" content="none">
-<meta name="referrer" content="no-referrer">
-<meta name="referrer" content="never">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 '''
-    libs_url = ROOT_PATH + websysconf.LIBS_URL_PATH
     html += '<title>WebSys</title>'
     html += '<link rel="stylesheet" href="style.css" />'
-    html += '<script src="' + libs_url + 'debug.js"></script>'
-    html += '<script src="' + libs_url + 'util.js"></script>'
-    html += '<script src="' + ROOT_PATH + 'websys/websys.js"></script>'
     html += '''
 </head>
 <body>
@@ -86,14 +78,11 @@ FORBIDDEN
 #------------------------------------------------------------------------------
 def build_auth_redirection_screen():
     html = '''<!DOCTYPE html><html><head><meta charset="utf-8">
-<meta name="robots" content="none">
-<meta name="referrer" content="no-referrer">
-<meta name="referrer" content="never">
 '''
     libs_url = ROOT_PATH + websysconf.LIBS_URL_PATH
     html += '<script src="' + libs_url + 'debug.js"></script>'
     html += '<script src="' + libs_url + 'util.js"></script>'
-    html += '<script src="' + ROOT_PATH + 'websys/websys.js"></script>'
+    html += '<script src="../js.cgi"></script>'
     html += '<script src="./?res=js"></script>'
     html += '''
 <script>

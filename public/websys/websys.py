@@ -9,7 +9,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import websysconf
 import util
-import bsb64
+import xb64
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'bin'))
 import usermgr
@@ -22,8 +22,6 @@ g_root_path = ''
 query = None
 query_cached = False
 sendrecv_scramble = True
-recv_scramble_key = 1
-send_scramble_key = 7
 
 current_context = None
 
@@ -332,7 +330,7 @@ def get_request_query():
         if sendrecv_scramble:
             q = util.replace(q, '&?_trcid=.+', '')
             try:
-                q = bsb64.decode_to_string(q, recv_scramble_key)
+                q = xb64.decode_to_string(q, websysconf.SCRAMBLE_KEY_1)
             except:
                 pass
 
@@ -537,7 +535,7 @@ def _send_response(result, type, headers=None, encoding=None, scramble=False):
         content = result
     else:
         if scramble:
-            content = bsb64.encode(result, send_scramble_key)
+            content = xb64.encode(result, websysconf.SCRAMBLE_KEY_2)
             type = 'text/plain'
         else:
             content = result
@@ -599,7 +597,7 @@ def build_auth_redirection_screen(root_path):
     html += '<head>'
     html += '<meta charset="utf-8">'
     html += '<script src="' + libs_url + 'util.js"></script>'
-    html += '<script src="' + root_path + 'websys/websys.js"></script>'
+    html += '<script src="' + root_path + 'websys/js.cgi"></script>'
     html += '<script>'
     html += 'websys.init(null, \'' + root_path + '\');'
     html += '$onLoad = function() {websys.authRedirection(location.href);};'

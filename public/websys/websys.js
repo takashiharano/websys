@@ -25,8 +25,6 @@ websys.USER_FLAGS = [
   }
 }());
 
-websys.sendScrambleKey = 1;
-websys.recvScrambleKey = 7;
 websys.initStatus = 0;
 websys.status = 0;
 websys.isDbgAvailable = false;
@@ -1364,12 +1362,12 @@ websys.http = function(req, cb) {
     cb: websys.http.onDone,
     req: req
   }
-  var e = util.bsb64.encode;
+  var e = util.xb64.encode;
   if (newReq.data) {
     if (newReq.data instanceof Object) {
       newReq.data = util.http.buildQueryString(newReq.data);
     }
-    newReq.data = e(newReq.data, websys.sendScrambleKey);
+    newReq.data = e(newReq.data, websys.requestScrambleKey);
   }
   websys.onHttpOn();
   websys.httpSessions++;
@@ -1377,7 +1375,7 @@ websys.http = function(req, cb) {
 };
 websys.http.onDone = function(xhr, res, req) {
   var orgReq = req.req;
-  var d = util.bsb64.decodeToString;
+  var d = util.xb64.decodeToString;
   websys.httpSessions--;
   if (websys.httpSessions <= 0) {
     websys.httpSessions = 0;
@@ -1387,7 +1385,7 @@ websys.http.onDone = function(xhr, res, req) {
     try {
       if (typeof res == 'string') {
         res = res.trim();
-        res = d(res, websys.recvScrambleKey);
+        res = d(res, websys.responseScrambleKey);
         var resObj = util.fromJSON(res);
       } else {
         resObj = res;
