@@ -196,6 +196,9 @@ Browser-side applications can load `/websys/js.cgi` to access session informatio
 websys.init('<app-id>', '/');
 </script>
 ```
+
+To use password-changing functions through the JavaScript interface, also load /libs/sha.js.
+
 ## License
 
 This project is released under the [MIT License](LICENSE).
