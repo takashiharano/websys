@@ -28,7 +28,7 @@ Designed for personal projects and small to medium-sized groups, it emphasizes s
   - `debug.js` https://debugjs.net/
   - `sha.js` https://github.com/caligatio/jsSHA
 
-**The `libs/` directory is not part of the WebSys repository.** Its contents are shared, general-purpose dependencies, not WebSys modules. They must be installed separately. The repository includes `public/auth/` and `public/websys/`, along with `private/` containing the initial data files.
+**The `libs/` directory is not included in this repository.** Its contents are shared, general-purpose dependencies, not application-specific modules. They must be installed separately. The repository includes `public/auth/` and `public/websys/`, along with `private/` containing the initial data files.
 
 Download the latest version of each library from its respective source and place the files in the directory specified by `LIBS_DIR` (`public/libs/` by default). Any method of obtaining the files is acceptable.
 
@@ -96,7 +96,7 @@ Numbers in brackets indicate file permissions (octal notation). Appropriate perm
 - `libs/` contains separately supplied shared libraries.
 - `websys/` contains the authentication and authorization API, client-side integration code, and configuration.
 - `websys/admin/` provides the browser-based administration interface.
-- `websys/bin/` contains WebSys's user, group, session, and related management modules.
+- `websys/bin/` contains modules for user, group, session, and related management.
 
 ### Setup
 
@@ -108,11 +108,11 @@ Place the contents of the repository's `public/` directory under the web documen
 4. Edit `CSRF_ALLOWED_ORIGIN` in `public/websys/websysconf.py` to match your site's origin. Other settings can generally be left at their defaults.
 5. Copy the repository's `private/` directory alongside the web document root, and ensure the CGI process has the necessary permissions to create, modify, and delete files under `private/websys/`.
 
-The default relative paths assume the layout shown above. No database server, package manager, or build process is required for WebSys itself.
+The default relative paths assume the layout shown above. No database server, package manager, or build process is required.
 
 ### Initial administrator setup
 
-WebSys includes a default `admin` account intended exclusively for initial setup.
+An initial `admin` account is included exclusively for setup.
 This is a temporary bootstrap account and must be deleted once a separate administrator account has been created and verified.
 
 1. Open `http(s)://SERVER/websys/admin/`.
@@ -139,7 +139,7 @@ Settings are defined in `public/websys/websysconf.py`. They include:
 | `SCRAMBLE_KEY_1` | XB64 key for HTTP requests (browser to server) |
 | `SCRAMBLE_KEY_2` | XB64 key for HTTP responses (server to browser) |
 | `SCRAMBLE_KEY_3` | XB64 key for text-file viewing |
-| `DATA_DIR` | Directory used for persistent WebSys data |
+| `DATA_DIR` | Directory used for persistent data |
 | `SESSION_TIMEOUT_SEC` | Session timeout |
 | `MAX_SESSIONS_PER_USER` | Maximum sessions per account |
 | `LOGIN_FAILURE_MAX` | Number of failed login attempts before locking |
@@ -161,10 +161,10 @@ After deployment, the main endpoints are:
 | --- | --- |
 | `/auth/` | Login and password-change interface |
 | `/websys/admin/` | Administration interface |
-| `/websys/api.cgi` | WebSys application API |
+| `/websys/api.cgi` | Authentication and management API |
 | `/websys/js.cgi` | JavaScript interface with configuration applied |
 
-### Using WebSys in a Python CGI application
+### Using the API in a Python CGI application
 
 An application can obtain a request context and check authentication and permissions through `websys.py`:
 
@@ -187,11 +187,15 @@ def main():
 
 The application's Python import path must include the deployed `websys/` directory. Replace `<privilege-name>` with a permission assigned to the user directly or through a group. Other context methods include `get_user_id()`, `is_member_of()`, and `has_privilege()`.
 
-Browser-side applications can load `/websys/js.cgi` to request session information and interact with the WebSys API. This endpoint serves `websys.js` with the WebSys configuration applied.
+Browser-side applications can load `/websys/js.cgi` to access session information and interact with the API. This endpoint serves `websys.js` with the configured settings applied.
 
 ```html
+<script src="/libs/util.js"></script>
 <script src="/websys/js.cgi"></script>
+<script>
+websys.init('<app-id>', '/');
+</script>
 ```
 ## License
 
-WebSys is released under the [MIT License](LICENSE).
+This project is released under the [MIT License](LICENSE).
