@@ -201,4 +201,4 @@ To use password-changing functions through the JavaScript interface, also load /
 
 ## License
 
-This project is released under the [MIT License](LICENSE).
+[MIT License](LICENSE)
