@@ -515,7 +515,7 @@ def build_cookie_for_clear(name):
 #----------------------------------------------------------
 # send response
 #----------------------------------------------------------
-def send_response(result, type, headers=None, encoding=None, scramble=None):
+def send_response(result, type, headers=None, encoding=None, scramble=None, status=200):
     if scramble is None:
         scramble = g_http_scramble
 
@@ -527,9 +527,9 @@ def send_response(result, type, headers=None, encoding=None, scramble=None):
             headers = []
         headers += cookies
 
-    _send_response(result, type, headers, encoding, scramble)
+    _send_response(result, type, headers, encoding, scramble, status=status)
 
-def _send_response(result, type, headers=None, encoding=None, scramble=False):
+def _send_response(result, type, headers=None, encoding=None, scramble=False, status=200):
     if type == 'application/json' and util.typename(result) != 'str':
         result = util.to_json(result)
 
@@ -542,7 +542,7 @@ def _send_response(result, type, headers=None, encoding=None, scramble=False):
         else:
             content = result
 
-    util.send_response(content, type, headers=headers)
+    util.send_response(content, type, headers=headers, status=status)
 
 #----------------------------------------------------------
 def send_result_json(status, body=None, headers=None, http_headers=None, scramble=None):
