@@ -4,7 +4,7 @@
 import authimpl
 
 def main():
-    authimpl.print_screen()
+    authimpl.main()
 
 if __name__ == '__main__':
     main()

@@ -342,8 +342,8 @@ def get_request_query():
     return query
 
 def get_request_param(key=None, default=None):
-    content_type = os.environ.get('CONTENT_TYPE', '')
-    if content_type.startswith('multipart/form-data'):
+    content_type = os.environ.get('CONTENT_TYPE', '').split(';', 1)[0].strip().lower()
+    if content_type in ('multipart/form-data', 'application/json'):
         return default
 
     q = get_request_query()

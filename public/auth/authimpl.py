@@ -10,7 +10,10 @@ ROOT_DIR = '../'
 sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_DIR + 'libs'))
 import util
 
-SCREEN_TYPE = 0
+sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_DIR + 'websys'))
+import websys
+
+SCREEN_TYPE = 1
 
 def build_html():
     html = '''
@@ -451,3 +454,71 @@ def print_screen():
     html = build_html()
     html = html.replace('${%srcurl%}', srcurl_json)
     util.send_response(html, 'text/html')
+
+#------------------------------------------------------------------------------
+def proc_login():
+    try:
+        data = util.from_json(util.read_stdin().decode())
+        id = data['id']
+        password = data['password']
+
+        if not id or not password:
+            return 'INVALID_REQUEST'
+
+        pw = util.hash(password + id, 'SHA-256')
+    except (ValueError, KeyError, TypeError):
+        return 'INVALID_REQUEST'
+
+    context = websys.on_access()
+    if context.get_status() != 'OK':
+        return context.get_status()
+
+    result = websys.login(context, id, pw)
+    return result['status']
+
+def send_login_response(status):
+    status_map = {
+        'OK': 200,
+        'INVALID_REQUEST': 400,
+        'FAILED': 403,
+        'DISABLED': 403,
+        'EXPIRED': 403,
+        'LOCKED': 403,
+        'NEED_PWD_CHG': 403,
+        'SYSTEM_BUSY': 503
+    }
+
+    http_status = status_map.get(status, 500)
+    headers = [{'Cache-Control': 'no-store'}]
+
+    if status in ('OK', 'NEED_PWD_CHG'):
+        cookie = websys.build_cookie_for_clear('ts')
+        headers.append({'Set-Cookie': cookie})
+
+    if status == 'OK':
+        result = {'status': 'OK'}
+    else:
+        result = {'error': status if http_status != 500 else 'INTERNAL_ERROR'}
+
+    websys.send_response(result, 'application/json', headers=headers, status=http_status)
+
+def main():
+    method = os.environ.get('REQUEST_METHOD', 'GET')
+    content_type = os.environ.get('CONTENT_TYPE', '').split(';', 1)[0].strip().lower()
+
+    if method == 'GET':
+        print_screen()
+    elif method == 'POST':
+        if content_type == 'application/json':
+            websys.init(http_scramble=False)
+            status = proc_login()
+            send_login_response(status)
+        elif content_type == 'application/x-www-form-urlencoded':
+            print_screen()
+        else:
+            data = {'error': 'UNSUPPORTED_MEDIA_TYPE'}
+            util.send_response(data, 'application/json', status=415)
+    else:
+        headers = [{'Allow': 'GET, POST'}]
+        data = {'error': 'METHOD_NOT_ALLOWED'}
+        util.send_response(data, 'application/json', status=405, headers=headers)
