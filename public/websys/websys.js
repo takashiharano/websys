@@ -1359,11 +1359,13 @@ websys.http = function(req, cb) {
     data: data,
     async: true,
     chache: false,
+    responseType: 'text',
+    scramble: req.scramble == null ? websys.defaultHttpScramble : req.scramble,
     cb: websys.http.onDone,
     req: req
   }
   var e = util.xb64.encode;
-  if (newReq.data) {
+  if (newReq.scramble && newReq.data) {
     if (newReq.data instanceof Object) {
       newReq.data = util.http.buildQueryString(newReq.data);
     }
@@ -1385,7 +1387,9 @@ websys.http.onDone = function(xhr, res, req) {
     try {
       if (typeof res == 'string') {
         res = res.trim();
-        res = d(res, websys.responseScrambleKey);
+        if (req.scramble) {
+          res = d(res, websys.responseScrambleKey);
+        }
         var resObj = util.fromJSON(res);
       } else {
         resObj = res;
@@ -1394,7 +1398,7 @@ websys.http.onDone = function(xhr, res, req) {
         setTimeout(websys.getUserSessionInfo, 0);
       }
     } catch (e) {}
-    // always Content-Type: text/plain; charset=utf-8
+    // always Content-Type: text/plain; charset=utf-8 if req.scramble is true
     if (orgReq.responseType == 'json') {
       res = util.fromJSON(res);
     }

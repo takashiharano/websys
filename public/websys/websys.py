@@ -21,13 +21,15 @@ LOCK_FILE_PATH = websysconf.LOCK_FILE_PATH
 g_root_path = ''
 query = None
 query_cached = False
-sendrecv_scramble = True
+http_scramble = websysconf.DEFAULT_HTTP_SCRAMBLE
 
 current_context = None
 
-def init(http_scramble):
-    global sendrecv_scramble
-    sendrecv_scramble = http_scramble
+def init(scramble=None):
+    global http_scramble
+    if scramble is None:
+        scramble = websysconf.DEFAULT_HTTP_SCRAMBLE
+    http_scramble = scramble
     reset_request_query_cache()
 
 #----------------------------------------------------------
@@ -327,7 +329,7 @@ def get_request_query():
     q = util.get_query()
 
     if q is not None and util.typename(q) != 'FieldStorage':
-        if sendrecv_scramble:
+        if http_scramble:
             q = util.replace(q, '&?_trcid=.+', '')
             try:
                 q = xb64.decode_to_string(q, websysconf.SCRAMBLE_KEY_1)
@@ -515,7 +517,7 @@ def build_cookie_for_clear(name):
 #----------------------------------------------------------
 def send_response(result, type, headers=None, encoding=None, scramble=None):
     if scramble is None:
-        scramble = sendrecv_scramble
+        scramble = http_scramble
 
     context = get_current_context_from_global()
     cookies = get_response_cookies(context)
