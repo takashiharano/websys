@@ -1,10 +1,10 @@
 #!python
 #!/usr/bin/python3
 
-import screen
+import authimpl
 
 def main():
-    screen.print_screen()
+    authimpl.print_screen()
 
 if __name__ == '__main__':
     main()

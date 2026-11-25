@@ -10,7 +10,7 @@ ROOT_DIR = '../'
 sys.path.append(os.path.join(os.path.dirname(__file__), ROOT_DIR + 'libs'))
 import util
 
-SCREEN_TYPE = 1
+SCREEN_TYPE = 0
 
 def build_html():
     html = '''
